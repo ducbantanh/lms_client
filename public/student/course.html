@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <title>Khóa học · LAN LMS</title>
+  <title>Khóa học · FIT LMS (Khoa CNTT - Đại học Hà Nội)</title>
   <link rel="stylesheet" href="/vendor/fonts/source-sans-pro.css">
   <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
   <link rel="stylesheet" href="/vendor/adminlte/adminlte.min.css">
@@ -12,17 +12,45 @@
 </head>
 <body class="hold-transition layout-top-nav app-loading">
 <div class="wrapper">
-  <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+
+  <!-- Top University Branding Bar -->
+  <header class="fit-university-header">
+    <div class="container">
+      <div class="d-flex align-items-center justify-content-between">
+        <div class="fit-brand-group">
+          <div class="fit-emblem-badge">
+            <i class="fas fa-graduation-cap"></i>
+          </div>
+          <div class="fit-brand-text">
+            <span class="fit-sub-title">Trường Đại học Hà Nội · Khoa Công nghệ Thông tin</span>
+            <span class="fit-main-title">FIT <span>LMS</span> <span class="fit-badge-tag">Học Phần</span></span>
+          </div>
+        </div>
+        <div class="d-none d-md-block text-right">
+          <span class="text-muted small"><i class="fas fa-network-wired mr-1 text-fit-orange"></i>Mạng Nội Bộ LAN</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- FIT Dark Slate Navigation Bar -->
+  <nav class="main-header navbar navbar-expand navbar-fit">
     <div class="container">
       <a href="/student/" class="navbar-brand">
-        <i class="fas fa-network-wired text-primary mr-1"></i>
-        <span class="brand-text font-weight-light">LAN LMS</span>
+        <span class="brand-badge">FIT</span>
+        <span>Học Tập Trực Tuyến</span>
       </a>
+
       <ul class="navbar-nav ml-auto align-items-center">
-        <li class="nav-item mr-3"><span id="ws-status" class="badge badge-secondary">Mất kết nối</span></li>
-        <li class="nav-item d-none d-sm-block mr-2 text-muted" id="nav-name"></li>
+        <li class="nav-item mr-3">
+          <span id="ws-status" class="badge badge-secondary py-1 px-2">Mất kết nối</span>
+        </li>
+        <li class="nav-item d-none d-sm-flex align-items-center mr-3 text-white">
+          <i class="fas fa-user-circle mr-1 text-fit-orange"></i>
+          <span id="nav-name" class="font-weight-bold" style="font-size: 0.92rem;"></span>
+        </li>
         <li class="nav-item">
-          <button type="button" id="btn-logout" class="btn btn-sm btn-outline-secondary">
+          <button type="button" id="btn-logout" class="btn btn-sm btn-outline-light">
             <i class="fas fa-sign-out-alt mr-1"></i>Đăng xuất
           </button>
         </li>
@@ -30,35 +58,115 @@
     </div>
   </nav>
 
+  <!-- Main Content Wrapper -->
   <div class="content-wrapper">
-    <div class="content-header">
+    
+    <!-- Course Banner & Breadcrumb -->
+    <div class="content-header bg-white border-bottom py-3">
       <div class="container">
-        <a href="/student/" class="small"><i class="fas fa-arrow-left mr-1"></i>Trang của tôi</a>
-        <h1 class="m-0 mt-1" id="c-title">…</h1>
-        <div class="text-muted">
-          <span class="badge badge-light text-mono" id="c-code"></span>
-          <span class="small ml-1" id="c-teacher"></span>
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb bg-transparent p-0 mb-2 small">
+            <li class="breadcrumb-item"><a href="/student/"><i class="fas fa-home mr-1"></i>Trang sinh viên</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Chi tiết môn học</li>
+          </ol>
+        </nav>
+        
+        <div class="d-flex flex-wrap justify-content-between align-items-start">
+          <div>
+            <div class="d-flex align-items-center flex-wrap gap-2 mb-1">
+              <span class="badge badge-fit-orange text-mono mr-2" id="c-code" style="font-size: 0.85rem;"></span>
+              <h1 class="m-0 font-weight-bold" style="font-size: 1.55rem; color: var(--fit-slate-dark);" id="c-title">…</h1>
+            </div>
+            <div class="text-muted small mt-1">
+              <span id="c-teacher" class="font-weight-bold mr-3 text-fit-blue"></span>
+            </div>
+            <p class="mt-2 mb-0 text-muted" id="c-desc" style="max-width: 850px; font-size: 0.95rem;"></p>
+          </div>
+          <div class="mt-2 mt-md-0">
+            <a href="/student/" class="btn btn-outline-secondary btn-sm">
+              <i class="fas fa-arrow-left mr-1"></i>Về danh sách môn học
+            </a>
+          </div>
         </div>
-        <p class="mt-2 mb-0" id="c-desc"></p>
       </div>
     </div>
 
-    <div class="content">
+    <!-- Course Content Details -->
+    <div class="content pt-4 pb-5">
       <div class="container">
         <div class="row">
-          <div class="col-lg-8" id="sections"></div>
+          
+          <!-- Left Column: Course Sections & Files -->
+          <div class="col-lg-8 mb-4">
+            <div class="mb-3 d-flex justify-content-between align-items-center">
+              <h2 class="h5 font-weight-bold m-0" style="color: var(--fit-slate-dark);">
+                <i class="fas fa-folder-open text-fit-orange mr-2"></i>Nội dung học phần & Tài liệu
+              </h2>
+            </div>
+            <div id="sections"></div>
+          </div>
+
+          <!-- Right Column: Assessments & Exams -->
           <div class="col-lg-4">
-            <div class="card card-outline card-danger">
-              <div class="card-header"><h3 class="card-title"><i class="fas fa-file-signature mr-1"></i>Bài kiểm tra</h3></div>
+            <div class="card card-outline card-danger shadow-sm mb-4">
+              <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h3 class="card-title font-weight-bold" style="color: var(--fit-danger);">
+                  <i class="fas fa-file-signature text-danger mr-1"></i>Bài kiểm tra & Thi
+                </h3>
+                <span class="badge badge-danger">Trực tuyến</span>
+              </div>
               <div class="card-body p-0" id="assessments"></div>
             </div>
+
+            <!-- Notes Card -->
+            <div class="card shadow-sm">
+              <div class="card-header bg-white">
+                <h3 class="card-title font-weight-bold" style="font-size: 0.92rem;">
+                  <i class="fas fa-exclamation-circle text-fit-orange"></i>LƯU Ý KHI LÀM BÀI
+                </h3>
+              </div>
+              <div class="card-body p-3 small text-muted">
+                <ul class="pl-3 mb-0">
+                  <li class="mb-1">Đối với bài thi có hẹn giờ, đề thi PDF sẽ tự động hiển thị khi đến giờ mở.</li>
+                  <li class="mb-1">Hết giờ làm bài, hệ thống sẽ khóa truy cập file đề.</li>
+                  <li>Nếu gặp sự cố mạng phòng máy, báo ngay cho cán bộ coi thi.</li>
+                </ul>
+              </div>
+            </div>
           </div>
+
         </div>
       </div>
     </div>
   </div>
 
-  <footer class="main-footer small"><div class="container">LAN LMS · beta</div></footer>
+  <!-- University Footer -->
+  <footer class="fit-footer">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-7 mb-3 mb-md-0">
+          <div class="fit-footer-title">
+            <i class="fas fa-university text-fit-orange"></i>
+            Khoa Công nghệ Thông tin — <span>Trường Đại học Hà Nội</span>
+          </div>
+          <p><i class="fas fa-map-marker-alt mr-2 text-muted"></i>Phòng 210 Nhà C, Km 9 Đường Nguyễn Trãi, Q. Thanh Xuân, Hà Nội</p>
+          <p><i class="fas fa-envelope mr-2 text-muted"></i>fit@hanu.edu.vn · (024) 3854-4338</p>
+        </div>
+        <div class="col-md-5 text-md-right">
+          <div class="fit-footer-title justify-content-md-end">
+            <span>FIT LMS</span> Sinh Viên
+          </div>
+          <p>Hệ thống hỗ trợ học tập và thi trực tuyến phòng máy</p>
+        </div>
+      </div>
+      <hr>
+      <div class="fit-footer-copyright">
+        <span>&copy; 2026 Faculty of Information Technology - Hanoi University. All rights reserved.</span>
+        <span>FIT LMS · LAN Edition</span>
+      </div>
+    </div>
+  </footer>
+
 </div>
 
 <script src="/vendor/jquery/jquery.min.js"></script>

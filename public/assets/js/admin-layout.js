@@ -1,4 +1,4 @@
-// Khung giao diện chung cho các trang quản lý (admin + giảng viên): navbar + sidebar AdminLTE.
+// Khung giao diện chung cho các trang quản lý (admin + giảng viên): navbar + sidebar phong cách FIT LMS HANU.
 // Mục menu hiện theo permission nên giảng viên chỉ thấy "Khóa học".
 // Trang mới chỉ cần thêm 1 mục vào MENU và gọi initAdminLayout().
 
@@ -7,33 +7,46 @@ import { logout, hasPermission, homeFor } from './api.js';
 import { roleName } from './messages-vi.js';
 
 const MENU = [
-  { key: 'dashboard', href: '/admin/', icon: 'fas fa-tachometer-alt', label: 'Tổng quan', permission: 'presence.view' },
-  { key: 'users', href: '/admin/users.html', icon: 'fas fa-users', label: 'Người dùng', permission: 'users.manage' },
+  { key: 'dashboard', href: '/admin/', icon: 'fas fa-tachometer-alt', label: 'Tổng quan hệ thống', permission: 'presence.view' },
+  { key: 'users', href: '/admin/users.html', icon: 'fas fa-users-cog', label: 'Quản lý người dùng', permission: 'users.manage' },
   { key: 'import', href: '/admin/import.html', icon: 'fas fa-file-import', label: 'Import sinh viên', permission: 'users.manage' },
-  { key: 'courses', href: '/teacher/', icon: 'fas fa-chalkboard-teacher', label: 'Khóa học', permission: 'courses.manage' },
-  // P1: { key: 'audit', href: '/admin/audit.html', icon: 'fas fa-clipboard-list', label: 'Nhật ký', permission: 'audit.view' },
-  // P3: { key: 'notifications', href: '/admin/notifications.html', icon: 'fas fa-bullhorn', label: 'Gửi thông báo', permission: 'users.manage' },
+  { key: 'courses', href: '/teacher/', icon: 'fas fa-chalkboard-teacher', label: 'Quản lý khóa học', permission: 'courses.manage' },
 ];
 
 const WS_STATUS = {
   connecting: { cls: 'badge-warning', text: 'Đang kết nối' },
-  open: { cls: 'badge-success', text: 'Realtime' },
+  open: { cls: 'badge-success', text: '● Realtime' },
   closed: { cls: 'badge-secondary', text: 'Mất kết nối' },
   revoked: { cls: 'badge-danger', text: 'Đã đăng xuất' },
 };
 
 export function initAdminLayout({ active, user }) {
   document.getElementById('app-navbar').innerHTML = `
-    <ul class="navbar-nav">
+    <ul class="navbar-nav align-items-center">
       <li class="nav-item">
-        <a class="nav-link" data-widget="pushmenu" href="#" role="button" aria-label="Thu gọn menu"><i class="fas fa-bars"></i></a>
+        <a class="nav-link text-dark" data-widget="pushmenu" href="#" role="button" aria-label="Thu gọn menu">
+          <i class="fas fa-bars"></i>
+        </a>
+      </li>
+      <li class="nav-item d-none d-md-block">
+        <span class="text-muted small font-weight-bold ml-2">
+          TRƯỜNG ĐẠI HỌC HÀ NỘI · <span class="text-fit-orange font-weight-bold">KHOA CÔNG NGHỆ THÔNG TIN</span>
+        </span>
       </li>
     </ul>
     <ul class="navbar-nav ml-auto align-items-center">
-      <li class="nav-item mr-3"><span id="ws-status" class="badge badge-secondary">Mất kết nối</span></li>
-      <li class="nav-item d-none d-sm-block mr-2 text-muted">${esc(user.fullName)}</li>
+      <li class="nav-item mr-3">
+        <span id="ws-status" class="badge badge-secondary py-1 px-2">Mất kết nối</span>
+      </li>
+      <li class="nav-item d-none d-sm-flex align-items-center mr-3">
+        <i class="fas fa-user-circle fa-lg mr-2 text-fit-orange"></i>
+        <div class="d-flex flex-column text-left">
+          <span class="text-dark font-weight-bold" style="font-size: 0.9rem; line-height: 1.2;">${esc(user.fullName)}</span>
+          <span class="text-muted small" style="font-size: 0.75rem;">${esc(roleName(user.role))}</span>
+        </div>
+      </li>
       <li class="nav-item">
-        <button type="button" id="btn-logout" class="btn btn-sm btn-outline-secondary">
+        <button type="button" id="btn-logout" class="btn btn-sm btn-outline-danger">
           <i class="fas fa-sign-out-alt mr-1"></i>Đăng xuất
         </button>
       </li>
@@ -43,24 +56,38 @@ export function initAdminLayout({ active, user }) {
     .map((m) => `
       <li class="nav-item">
         <a href="${m.href}" class="nav-link ${m.key === active ? 'active' : ''}">
-          <i class="nav-icon ${m.icon}"></i><p>${esc(m.label)}</p>
+          <i class="nav-icon ${m.icon}"></i>
+          <p>${esc(m.label)}</p>
         </a>
       </li>`).join('');
 
+  const initialLetter = (user.fullName || user.username || 'U').charAt(0).toUpperCase();
+
   document.getElementById('app-sidebar').innerHTML = `
     <a href="${homeFor(user)}" class="brand-link">
-      <i class="fas fa-network-wired brand-image ml-3 mt-1"></i>
-      <span class="brand-text font-weight-light">LAN LMS</span>
+      <div class="brand-logo-fit">
+        <i class="fas fa-graduation-cap"></i>
+      </div>
+      <div>
+        <span class="brand-text">FIT <span>LMS</span></span>
+        <span class="brand-sub">Khoa CNTT · ĐH Hà Nội</span>
+      </div>
     </a>
     <div class="sidebar">
-      <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+      <div class="user-panel d-flex align-items-center mt-3 pb-3 mb-3">
+        <div class="user-avatar-circle mr-2">
+          ${esc(initialLetter)}
+        </div>
         <div class="info">
-          <span class="d-block text-white">${esc(user.username)}</span>
-          <small class="text-muted">${esc(roleName(user.role))}</small>
+          <span class="d-block text-white font-weight-bold" style="font-size: 0.92rem;">${esc(user.username)}</span>
+          <span class="badge badge-fit-orange mt-1" style="font-size: 0.72rem;">${esc(roleName(user.role))}</span>
         </div>
       </div>
       <nav class="mt-2">
-        <ul class="nav nav-pills nav-sidebar flex-column" role="menu">${items}</ul>
+        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
+          <li class="nav-header text-uppercase text-muted" style="font-size: 0.72rem; letter-spacing: 0.8px;">Phân hệ quản trị</li>
+          ${items}
+        </ul>
       </nav>
     </div>`;
 
@@ -71,8 +98,10 @@ export function initAdminLayout({ active, user }) {
     setWsStatus(status) {
       const s = WS_STATUS[status] || WS_STATUS.closed;
       const el = document.getElementById('ws-status');
-      el.className = `badge ${s.cls}`;
-      el.textContent = s.text;
+      if (el) {
+        el.className = `badge ${s.cls} py-1 px-2`;
+        el.textContent = s.text;
+      }
     },
   };
 }

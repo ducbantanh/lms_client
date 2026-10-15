@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <title>Import sinh viên · LAN LMS</title>
+  <title>Import sinh viên · FIT LMS (Khoa CNTT - Đại học Hà Nội)</title>
   <link rel="stylesheet" href="/vendor/fonts/source-sans-pro.css">
   <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
   <link rel="stylesheet" href="/vendor/adminlte/adminlte.min.css">
@@ -12,68 +12,122 @@
 </head>
 <body class="hold-transition sidebar-mini layout-fixed app-loading">
 <div class="wrapper">
+  
   <nav class="main-header navbar navbar-expand navbar-white navbar-light" id="app-navbar"></nav>
   <aside class="main-sidebar sidebar-dark-primary elevation-4" id="app-sidebar"></aside>
 
   <div class="content-wrapper">
-    <div class="content-header">
-      <div class="container-fluid"><h1 class="m-0">Import sinh viên</h1></div>
+    <!-- Header Section -->
+    <div class="content-header bg-white border-bottom py-3 mb-4">
+      <div class="container-fluid d-flex flex-wrap justify-content-between align-items-center">
+        <div>
+          <h1 class="m-0 font-weight-bold" style="font-size: 1.55rem; color: var(--fit-slate-dark);">
+            Import tài khoản sinh viên hàng loạt
+          </h1>
+          <p class="text-muted small mb-0 mt-1">
+            <i class="fas fa-file-import mr-1 text-fit-orange"></i>Tạo nhanh danh sách sinh viên theo lớp học phần từ văn bản hoặc file .txt UTF-8
+          </p>
+        </div>
+        <div class="mt-2 mt-sm-0">
+          <a href="/admin/users.html" class="btn btn-outline-secondary btn-sm">
+            <i class="fas fa-arrow-left mr-1"></i>Về danh sách người dùng
+          </a>
+        </div>
+      </div>
     </div>
 
+    <!-- Main Content Section -->
     <section class="content">
       <div class="container-fluid">
         <div class="row">
-          <div class="col-lg-6">
-            <div class="card card-primary card-outline">
-              <div class="card-header"><h3 class="card-title">Danh sách cần tạo</h3></div>
-              <div class="card-body">
-                <p class="text-muted small mb-2">
-                  Mỗi dòng một sinh viên: <code>mã_SV|ddmmyyyy|Họ và tên</code>.
-                  Dòng trống và dòng bắt đầu bằng <code>#</code> bị bỏ qua.
-                  Mật khẩu ban đầu là ngày sinh; sinh viên phải đổi ở lần đăng nhập đầu.
-                  Tài khoản đã tồn tại sẽ <b>không</b> bị ghi đè.
-                </p>
-                <textarea id="content" class="form-control text-mono" rows="12" spellcheck="false"
-                          placeholder="B21DCCN001|01012003|Nguyễn Văn A&#10;B21DCCN002|15022003|Trần Thị B"></textarea>
-                <div class="d-flex flex-wrap justify-content-between align-items-center mt-2">
-                  <small class="text-muted" id="line-count">0 dòng</small>
+          
+          <!-- Input Form Column -->
+          <div class="col-lg-6 mb-4">
+            <div class="card card-outline card-primary shadow-sm h-100">
+              <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h3 class="card-title font-weight-bold">
+                  <i class="fas fa-edit text-fit-orange mr-1"></i>Dữ liệu danh sách cần nạp
+                </h3>
+                <span class="badge badge-light border text-muted">UTF-8</span>
+              </div>
+              <div class="card-body p-3">
+                <div class="p-3 bg-light rounded border mb-3 small text-muted">
+                  <div class="font-weight-bold text-dark mb-1">
+                    <i class="fas fa-info-circle text-fit-orange mr-1"></i>Quy chuẩn định dạng:
+                  </div>
+                  <div>Mỗi dòng một sinh viên: <code>mã_SV|ddmmyyyy|Họ và tên</code></div>
+                  <div class="text-muted font-italic">Ví dụ: <code>B21DCCN001|01012003|Nguyễn Văn A</code></div>
+                  <div class="mt-1">Dòng trống và dòng bắt đầu bằng <code>#</code> sẽ tự động được bỏ qua. Mật khẩu ban đầu là ngày sinh, tài khoản đã có sẽ không bị ghi đè.</div>
+                </div>
+
+                <div class="form-group mb-2">
+                  <label for="content" class="small font-weight-bold text-muted mb-1">NỘI DUNG DỮ LIỆU</label>
+                  <textarea id="content" class="form-control text-mono" rows="12" spellcheck="false"
+                            placeholder="B21DCCN001|01012003|Nguyễn Văn A&#10;B21DCCN002|15022003|Trần Thị B&#10;B21DCCN003|20112003|Lê Hoàng C"></textarea>
+                </div>
+
+                <div class="d-flex flex-wrap justify-content-between align-items-center mt-3 pt-2 border-top">
+                  <span class="badge badge-light border text-muted font-weight-bold" id="line-count">0 dòng dữ liệu</span>
+                  
                   <div class="custom-file w-auto mt-2 mt-sm-0">
                     <input type="file" class="custom-file-input" id="file" accept=".txt,text/plain">
-                    <label class="custom-file-label" for="file" data-browse="Chọn">Nạp file .txt</label>
+                    <label class="custom-file-label font-weight-bold small text-truncate" for="file" data-browse="Chọn file" style="max-width: 220px;">
+                      Nạp từ file .txt
+                    </label>
                   </div>
                 </div>
               </div>
-              <div class="card-footer text-right">
-                <button type="button" id="btn-clear" class="btn btn-default">Xóa nội dung</button>
-                <button type="button" id="btn-import" class="btn btn-primary">
-                  <i class="fas fa-upload mr-1"></i>Import
+
+              <div class="card-footer bg-light d-flex justify-content-between align-items-center">
+                <button type="button" id="btn-clear" class="btn btn-default btn-sm">
+                  <i class="fas fa-eraser mr-1"></i>Xóa nội dung
+                </button>
+                <button type="button" id="btn-import" class="btn btn-primary btn-sm shadow-sm">
+                  <i class="fas fa-upload mr-1"></i>Bắt đầu Import vào hệ thống
                 </button>
               </div>
             </div>
           </div>
 
-          <div class="col-lg-6">
-            <div class="card card-outline card-secondary" id="result-card">
-              <div class="card-header"><h3 class="card-title">Kết quả</h3></div>
-              <div class="card-body" id="result-empty">
-                <div class="empty-state"><i class="fas fa-clipboard-check"></i>Chưa có kết quả import</div>
+          <!-- Result Column -->
+          <div class="col-lg-6 mb-4">
+            <div class="card card-outline card-secondary shadow-sm h-100" id="result-card">
+              <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h3 class="card-title font-weight-bold">
+                  <i class="fas fa-clipboard-check text-fit-orange mr-1"></i>Kết quả xử lý
+                </h3>
+                <span class="badge badge-light border text-muted">Báo cáo chi tiết</span>
               </div>
+              
+              <!-- Empty State Placeholder -->
+              <div class="card-body p-4" id="result-empty">
+                <div class="empty-state py-5">
+                  <i class="fas fa-tasks text-muted"></i>
+                  <div class="font-weight-bold text-dark mt-2">Chưa có kết quả import</div>
+                  <small class="text-muted">Nhập dữ liệu ở khung bên trái và bấm <b>Bắt đầu Import</b> để xem phân loại kết quả.</small>
+                </div>
+              </div>
+
+              <!-- Result Details Tabs (Hidden by default) -->
               <div class="card-body p-0 d-none" id="result-body">
-                <ul class="nav nav-tabs px-2 pt-2" role="tablist">
+                <ul class="nav nav-tabs px-3 pt-2 bg-light border-bottom" role="tablist">
                   <li class="nav-item">
-                    <a class="nav-link active" data-toggle="tab" href="#tab-created" role="tab">
-                      Đã tạo <span class="badge badge-success" id="n-created">0</span></a>
+                    <a class="nav-link active font-weight-bold" data-toggle="tab" href="#tab-created" role="tab">
+                      Đã tạo mới <span class="badge badge-success ml-1" id="n-created">0</span>
+                    </a>
                   </li>
                   <li class="nav-item">
-                    <a class="nav-link" data-toggle="tab" href="#tab-dup" role="tab">
-                      Trùng <span class="badge badge-warning" id="n-dup">0</span></a>
+                    <a class="nav-link font-weight-bold" data-toggle="tab" href="#tab-dup" role="tab">
+                      Trùng lặp <span class="badge badge-warning ml-1" id="n-dup">0</span>
+                    </a>
                   </li>
                   <li class="nav-item">
-                    <a class="nav-link" data-toggle="tab" href="#tab-err" role="tab">
-                      Lỗi <span class="badge badge-danger" id="n-err">0</span></a>
+                    <a class="nav-link font-weight-bold" data-toggle="tab" href="#tab-err" role="tab">
+                      Dòng bị lỗi <span class="badge badge-danger ml-1" id="n-err">0</span>
+                    </a>
                   </li>
                 </ul>
-                <div class="tab-content">
+                <div class="tab-content p-3">
                   <div class="tab-pane fade show active table-responsive" id="tab-created" role="tabpanel"></div>
                   <div class="tab-pane fade table-responsive" id="tab-dup" role="tabpanel"></div>
                   <div class="tab-pane fade table-responsive" id="tab-err" role="tabpanel"></div>
@@ -81,12 +135,20 @@
               </div>
             </div>
           </div>
+
         </div>
       </div>
     </section>
   </div>
 
-  <footer class="main-footer small">LAN LMS · beta</footer>
+  <!-- University Footer -->
+  <footer class="main-footer small">
+    <div class="d-flex justify-content-between flex-wrap">
+      <span>&copy; 2026 Faculty of Information Technology - Hanoi University. All rights reserved.</span>
+      <span>FIT LMS · LAN Edition</span>
+    </div>
+  </footer>
+
 </div>
 
 <script src="/vendor/jquery/jquery.min.js"></script>

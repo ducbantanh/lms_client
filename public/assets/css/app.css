@@ -1,120 +1,941 @@
-/* CSS dùng chung cho mọi trang (nạp sau adminlte.min.css). */
+/* ==========================================================================
+   FIT LMS HANU DESIGN SYSTEM — LAN LMS Client
+   Phát triển dựa trên giao diện Khoa CNTT - Trường Đại học Hà Nội (FIT HANU)
+   Website tham chiếu: https://lms.fit.hanu.vn/
+   ========================================================================== */
 
-body {
-  font-family: 'Source Sans Pro', -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+:root {
+  /* Màu chủ đạo FIT HANU (Cam hổ phách) */
+  --fit-orange: #F47800;
+  --fit-orange-hover: #D96600;
+  --fit-orange-active: #B35400;
+  --fit-orange-subtle: #FFF5EB;
+  --fit-orange-border: rgba(244, 120, 0, 0.25);
+
+  /* Màu xanh than đậm (Dark Slate của Navigation & Header FIT LMS) */
+  --fit-slate: #3A454B;
+  --fit-slate-dark: #323A45;
+  --fit-slate-light: #4A565D;
+  --fit-slate-hover: #2C353A;
+
+  /* Màu xanh học thuật (Academic Blue) */
+  --fit-blue: #0070A8;
+  --fit-blue-hover: #005682;
+  --fit-blue-subtle: #EBF5FB;
+
+  /* Màu xám nền & khung trang */
+  --fit-bg: #F4F6F9;
+  --fit-white: #FFFFFF;
+  --fit-border: #E2E8F0;
+  --fit-border-light: #EDF2F7;
+  --fit-border-dark: #CBD5E1;
+
+  /* Màu chữ */
+  --fit-text: #2D3748;
+  --fit-text-muted: #64748B;
+  --fit-text-dark: #1A202C;
+
+  /* Màu trạng thái nghiệp vụ */
+  --fit-success: #28A745;
+  --fit-teal: #29A294;
+  --fit-warning: #F89406;
+  --fit-danger: #DC3545;
+
+  /* Phông chữ */
+  --fit-font: 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --fit-font-mono: SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
 }
 
-/* Ẩn nội dung cho tới khi kiểm tra đăng nhập xong, tránh nháy giao diện */
+/* ==========================================================================
+   1. CẤU TRÚC CHUNG & TYPOGRAPHY
+   ========================================================================== */
+
+body {
+  font-family: var(--fit-font);
+  background-color: var(--fit-bg);
+  color: var(--fit-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.55;
+}
+
+/* Ẩn nội dung khi đang kiểm tra phiên làm việc */
 body.app-loading .wrapper,
 body.app-loading .app-content {
   visibility: hidden;
 }
 
-.session-revoked-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 2000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-  background: rgba(0, 0, 0, 0.6);
+a {
+  color: var(--fit-blue);
+  transition: color 0.15s ease-in-out, text-decoration 0.15s ease-in-out;
 }
 
-.session-revoked-box {
-  max-width: 420px;
-  width: 100%;
-  padding: 24px;
-  border-radius: 8px;
-  background: #fff;
-  text-align: center;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-}
-
-.session-revoked-box h4 {
-  margin-bottom: 12px;
-  color: #dc3545;
-}
-
-.table td,
-.table th {
-  vertical-align: middle;
+a:hover {
+  color: var(--fit-orange);
+  text-decoration: underline;
 }
 
 .text-mono {
-  font-family: SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+  font-family: var(--fit-font-mono) !important;
+  font-size: 0.9em;
 }
 
-.empty-state {
-  padding: 32px 16px;
+.text-fit-orange,
+.text-primary {
+  color: var(--fit-orange) !important;
+}
+
+.text-fit-blue,
+.text-info {
+  color: var(--fit-blue) !important;
+}
+
+.text-fit-slate {
+  color: var(--fit-slate) !important;
+}
+
+.badge-primary {
+  background-color: var(--fit-orange) !important;
+  color: #fff !important;
+}
+
+.border-primary {
+  border-color: var(--fit-orange) !important;
+}
+
+.bg-fit-orange {
+  background-color: var(--fit-orange) !important;
+  color: #fff !important;
+}
+
+.bg-fit-slate {
+  background-color: var(--fit-slate) !important;
+  color: #fff !important;
+}
+
+.bg-fit-dark {
+  background-color: var(--fit-slate-dark) !important;
+  color: #fff !important;
+}
+
+/* ==========================================================================
+   2. KHU VỰC NHẬN DIỆN KHOA CNTT - ĐH HÀ NỘI (TOP BANNER)
+   ========================================================================== */
+
+.fit-university-header {
+  background: #ffffff;
+  border-bottom: 1px solid var(--fit-border);
+  padding: 12px 0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.fit-brand-group {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.fit-emblem-badge {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, var(--fit-orange) 0%, var(--fit-orange-hover) 100%);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  box-shadow: 0 3px 8px rgba(244, 120, 0, 0.3);
+  flex-shrink: 0;
+}
+
+.fit-brand-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.fit-sub-title {
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--fit-text-muted);
+  letter-spacing: 0.5px;
+  line-height: 1.2;
+}
+
+.fit-main-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--fit-slate-dark);
+  line-height: 1.25;
+  margin-top: 1px;
+}
+
+.fit-main-title span {
+  color: var(--fit-orange);
+}
+
+.fit-badge-tag {
+  background: var(--fit-orange-subtle);
+  color: var(--fit-orange-active);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+  border: 1px solid var(--fit-orange-border);
+  display: inline-block;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+/* ==========================================================================
+   3. THANH ĐIỀU HƯỚNG CHÍNH (FIT NAVBAR - DARK SLATE #3A454B)
+   ========================================================================== */
+
+.navbar-fit {
+  background-color: var(--fit-slate) !important;
+  border-bottom: 2px solid var(--fit-orange) !important;
+  padding: 0 1rem;
+  min-height: 50px;
+}
+
+.navbar-fit .navbar-nav .nav-link {
+  color: #ECEFF1 !important;
+  font-weight: 600;
+  font-size: 0.93rem;
+  padding: 0.75rem 1rem;
+  transition: all 0.15s ease-in-out;
+  display: flex;
+  align-items: center;
+}
+
+.navbar-fit .navbar-nav .nav-link:hover,
+.navbar-fit .navbar-nav .nav-link:focus {
+  color: #FFFFFF !important;
+  background-color: var(--fit-slate-hover);
+}
+
+.navbar-fit .navbar-nav .nav-item.active > .nav-link,
+.navbar-fit .navbar-nav .nav-link.active {
+  color: #FFFFFF !important;
+  background-color: rgba(0, 0, 0, 0.15);
+  box-shadow: inset 0 -3px 0 var(--fit-orange);
+}
+
+.navbar-fit .navbar-brand {
+  color: #FFFFFF !important;
+  font-weight: 700;
+  font-size: 1.15rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.navbar-fit .navbar-brand .brand-badge {
+  background-color: var(--fit-orange);
+  color: #ffffff;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 800;
+  font-size: 0.88rem;
+  letter-spacing: 0.5px;
+}
+
+/* Override AdminLTE navbar default */
+.main-header.navbar {
+  border-bottom: 2px solid var(--fit-orange);
+  background-color: #ffffff;
+}
+
+/* ==========================================================================
+   4. SIDEBAR CHO ADMIN & GIẢNG VIÊN (FIT SLATE DARK)
+   ========================================================================== */
+
+.main-sidebar {
+  background-color: var(--fit-slate-dark) !important;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.08);
+}
+
+.brand-link {
+  background-color: #272E37 !important;
+  border-bottom: 2px solid var(--fit-orange) !important;
+  color: #FFFFFF !important;
+  display: flex;
+  align-items: center;
+  padding: 0.85rem 1rem !important;
+  gap: 10px;
+}
+
+.brand-link .brand-logo-fit {
+  background: var(--fit-orange);
+  color: #fff;
+  width: 34px;
+  height: 34px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.brand-link .brand-text {
+  font-weight: 700 !important;
+  font-size: 1.1rem;
+  letter-spacing: 0.5px;
+  color: #ffffff;
+}
+
+.brand-link .brand-sub {
+  font-size: 0.72rem;
+  color: #A0AEC0;
+  display: block;
+  font-weight: 400;
+}
+
+.sidebar .user-panel {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  padding: 0.85rem 0.5rem;
+}
+
+.sidebar .user-panel .user-avatar-circle {
+  width: 38px;
+  height: 38px;
+  background: var(--fit-slate-light);
+  border: 2px solid var(--fit-orange);
+  color: #ffffff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.nav-sidebar .nav-item > .nav-link {
+  color: #CBD5E1 !important;
+  font-weight: 500;
+  border-radius: 4px;
+  margin-bottom: 3px;
+  transition: all 0.15s ease-in-out;
+}
+
+.nav-sidebar .nav-item > .nav-link:hover {
+  color: #FFFFFF !important;
+  background-color: var(--fit-slate-light) !important;
+}
+
+.nav-sidebar .nav-item > .nav-link.active {
+  background-color: var(--fit-orange) !important;
+  color: #FFFFFF !important;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(244, 120, 0, 0.35);
+}
+
+.nav-sidebar .nav-item > .nav-link.active .nav-icon {
+  color: #FFFFFF !important;
+}
+
+/* ==========================================================================
+   5. NÚT BẤM (BUTTONS) THEO PHONG CÁCH FIT HANU
+   ========================================================================== */
+
+.btn {
+  font-weight: 600;
+  border-radius: 4px;
+  padding: 0.375rem 0.85rem;
+  transition: all 0.15s ease-in-out;
+}
+
+.btn-primary {
+  background-color: var(--fit-orange) !important;
+  border-color: var(--fit-orange) !important;
+  color: #FFFFFF !important;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+  background-color: var(--fit-orange-hover) !important;
+  border-color: var(--fit-orange-hover) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 2px 6px rgba(244, 120, 0, 0.35);
+}
+
+.btn-primary:active,
+.btn-primary.active {
+  background-color: var(--fit-orange-active) !important;
+  border-color: var(--fit-orange-active) !important;
+}
+
+.btn-outline-primary {
+  color: var(--fit-orange) !important;
+  border-color: var(--fit-orange) !important;
+  background-color: transparent;
+}
+
+.btn-outline-primary:hover,
+.btn-outline-primary:focus {
+  background-color: var(--fit-orange) !important;
+  border-color: var(--fit-orange) !important;
+  color: #FFFFFF !important;
+}
+
+.btn-default {
+  background-color: #F8FAFC;
+  border-color: var(--fit-border);
+  color: var(--fit-text);
+}
+
+.btn-default:hover {
+  background-color: #EDF2F7;
+  border-color: var(--fit-border-dark);
+}
+
+.btn:focus,
+.form-control:focus {
+  box-shadow: 0 0 0 0.2rem var(--fit-orange-border) !important;
+  border-color: var(--fit-orange) !important;
+}
+
+/* ==========================================================================
+   6. CARDS, BLOCKS & TIÊU ĐỀ HỌC THUẬT
+   ========================================================================== */
+
+.card {
+  background-color: #FFFFFF;
+  border: 1px solid var(--fit-border);
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  margin-bottom: 1.25rem;
+  transition: box-shadow 0.2s ease-in-out;
+}
+
+.card:hover {
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.07);
+}
+
+.card-outline.card-primary {
+  border-top: 3px solid var(--fit-orange) !important;
+}
+
+.card-outline.card-info {
+  border-top: 3px solid var(--fit-blue) !important;
+}
+
+.card-outline.card-danger {
+  border-top: 3px solid var(--fit-danger) !important;
+}
+
+.card-outline.card-success {
+  border-top: 3px solid var(--fit-success) !important;
+}
+
+.card-outline.card-secondary {
+  border-top: 3px solid var(--fit-slate) !important;
+}
+
+.card-header {
+  background-color: #FFFFFF;
+  border-bottom: 1px solid var(--fit-border);
+  padding: 0.85rem 1.25rem;
+  display: flex;
+  align-items: center;
+}
+
+.card-title {
+  font-size: 1.08rem;
+  font-weight: 700;
+  color: var(--fit-slate-dark);
+  margin: 0;
+  display: flex;
+  align-items: center;
+}
+
+.card-title i {
+  color: var(--fit-orange);
+  margin-right: 8px;
+}
+
+/* Tabs chuẩn FIT LMS */
+.nav-tabs .nav-link {
+  font-weight: 600;
+  color: var(--fit-text-muted);
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 0.65rem 1.15rem;
+}
+
+.nav-tabs .nav-link:hover {
+  color: var(--fit-orange);
+  border-color: transparent;
+}
+
+.nav-tabs .nav-link.active {
+  color: var(--fit-orange) !important;
+  border: none !important;
+  border-bottom: 3px solid var(--fit-orange) !important;
+  background-color: transparent !important;
+}
+
+/* ==========================================================================
+   7. BẢNG DỮ LIỆU & PHÂN TRANG
+   ========================================================================== */
+
+.table {
+  color: var(--fit-text);
+  margin-bottom: 0;
+}
+
+.table thead th {
+  background-color: #F8FAFC;
+  color: var(--fit-text-muted);
+  font-weight: 700;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  border-top: none;
+  border-bottom: 2px solid var(--fit-border);
+  padding: 0.75rem 1rem;
+}
+
+.table td {
+  padding: 0.75rem 1rem;
+  vertical-align: middle;
+  border-top: 1px solid var(--fit-border-light);
+}
+
+.table-hover tbody tr:hover {
+  background-color: rgba(244, 120, 0, 0.035);
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+  background-color: #FAFCFF;
+}
+
+.pagination .page-item .page-link {
+  color: var(--fit-text);
+  border-color: var(--fit-border);
+  font-weight: 600;
+  padding: 0.35rem 0.75rem;
+}
+
+.pagination .page-item.active .page-link {
+  background-color: var(--fit-orange) !important;
+  border-color: var(--fit-orange) !important;
+  color: #FFFFFF !important;
+}
+
+.pagination .page-item:not(.active) .page-link:hover {
+  color: var(--fit-orange);
+  background-color: var(--fit-orange-subtle);
+  border-color: var(--fit-orange);
+}
+
+/* ==========================================================================
+   8. THẺ THỐNG KÊ (DASHBOARD STAT BOXES)
+   ========================================================================== */
+
+.small-box {
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 1.25rem;
+  color: #FFFFFF;
+}
+
+.small-box .inner {
+  padding: 1.15rem 1.25rem;
+}
+
+.small-box .inner h3 {
+  font-weight: 800;
+  font-size: 2.1rem;
+  margin: 0 0 4px;
+}
+
+.small-box .inner p {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0;
+  opacity: 0.95;
+}
+
+.small-box .icon {
+  position: absolute;
+  right: 14px;
+  top: 14px;
+  color: rgba(255, 255, 255, 0.25);
+  font-size: 55px;
+  transition: all 0.2s ease-in-out;
+}
+
+.small-box:hover .icon {
+  transform: scale(1.08);
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.small-box .small-box-footer {
+  background-color: rgba(0, 0, 0, 0.12);
+  color: rgba(255, 255, 255, 0.9);
+  padding: 6px 0;
   text-align: center;
-  color: #6c757d;
+  font-weight: 600;
+  font-size: 0.85rem;
+  display: block;
+  text-decoration: none;
+  transition: background-color 0.15s ease-in-out;
+}
+
+.small-box .small-box-footer:hover {
+  background-color: rgba(0, 0, 0, 0.2);
+  color: #FFFFFF;
+  text-decoration: none;
+}
+
+/* Bảng màu chuẩn thẻ thống kê */
+.small-box.bg-info {
+  background-color: var(--fit-blue) !important;
+}
+
+.small-box.bg-primary {
+  background-color: var(--fit-slate) !important;
+}
+
+.small-box.bg-success {
+  background-color: var(--fit-teal) !important;
+}
+
+.small-box.bg-danger {
+  background-color: var(--fit-danger) !important;
+}
+
+/* ==========================================================================
+   9. THẺ KHÓA HỌC (COURSE CARDS)
+   ========================================================================== */
+
+a.course-card {
+  display: block;
+  color: inherit;
+  background: #ffffff;
+  border: 1px solid var(--fit-border);
+  border-top: 3px solid var(--fit-orange) !important;
+  border-radius: 6px;
+  transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  text-decoration: none !important;
+  margin-bottom: 1.25rem;
+}
+
+a.course-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.09);
+  border-color: var(--fit-orange-border);
+  border-top-color: var(--fit-orange) !important;
+}
+
+.course-card .card-body {
+  padding: 1.25rem;
+}
+
+.course-card h5 {
+  font-weight: 700;
+  color: var(--fit-slate-dark);
+  transition: color 0.15s;
+}
+
+a.course-card:hover h5 {
+  color: var(--fit-orange);
+}
+
+.course-card .card-footer {
+  background-color: #F8FAFC;
+  border-top: 1px solid var(--fit-border-light);
+  padding: 0.65rem 1.25rem;
+  font-size: 0.85rem;
+}
+
+/* ==========================================================================
+   10. CHẤM TRẠNG THÁI REALTIME & BADGES
+   ========================================================================== */
+
+.status-dot {
+  font-size: 0.65rem;
+  vertical-align: middle;
+}
+
+/* Hiệu ứng nhấp nháy tín hiệu realtime */
+.pulse-online {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background-color: var(--fit-success);
+  border-radius: 50%;
+  box-shadow: 0 0 0 rgba(40, 167, 69, 0.4);
+  animation: pulse 1.8s infinite;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 7px rgba(40, 167, 69, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+  }
+}
+
+.badge {
+  font-weight: 600;
+  padding: 0.35em 0.65em;
+  border-radius: 4px;
+}
+
+.badge-fit-orange {
+  background-color: var(--fit-orange);
+  color: #ffffff;
+}
+
+.badge-fit-slate {
+  background-color: var(--fit-slate);
+  color: #ffffff;
+}
+
+/* ==========================================================================
+   11. TRANG ĐĂNG NHẬP & ĐỔI MẬT KHẨU (FIT HANU AUTH STYLE)
+   ========================================================================== */
+
+.fit-auth-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--fit-bg);
+}
+
+.fit-auth-header {
+  background: #ffffff;
+  border-bottom: 2px solid var(--fit-orange);
+  padding: 14px 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.fit-auth-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 30px 15px;
+}
+
+.fit-auth-box {
+  width: 100%;
+  max-width: 440px;
+}
+
+.fit-auth-card {
+  background: #ffffff;
+  border: 1px solid var(--fit-border);
+  border-top: 4px solid var(--fit-orange) !important;
+  border-radius: 8px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.07);
+  overflow: hidden;
+}
+
+.fit-auth-card-body {
+  padding: 2rem 2.2rem;
+}
+
+.fit-auth-heading {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--fit-slate-dark);
+  text-align: center;
+  margin-bottom: 0.4rem;
+}
+
+.fit-auth-subheading {
+  font-size: 0.9rem;
+  color: var(--fit-text-muted);
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.fit-auth-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 1.5rem 0 1rem;
+  color: var(--fit-text-muted);
+  font-size: 0.82rem;
+}
+
+.fit-auth-divider::before,
+.fit-auth-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid var(--fit-border);
+}
+
+.fit-auth-divider::before {
+  margin-right: 0.75em;
+}
+
+.fit-auth-divider::after {
+  margin-left: 0.75em;
+}
+
+.fit-auth-info-note {
+  background-color: var(--fit-orange-subtle);
+  border-left: 3px solid var(--fit-orange);
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  color: #7A3E00;
+  border-radius: 0 4px 4px 0;
+  margin-top: 1.25rem;
+}
+
+/* ==========================================================================
+   12. CHÂN TRANG ĐẠI HỌC (FIT UNIVERSITY FOOTER)
+   ========================================================================== */
+
+.fit-footer {
+  background-color: var(--fit-slate-dark);
+  border-top: 3px solid var(--fit-orange);
+  color: #CBD5E1;
+  font-size: 0.88rem;
+  padding: 24px 0 20px;
+  margin-top: auto;
+}
+
+.fit-footer-title {
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fit-footer-title span {
+  color: var(--fit-orange);
+}
+
+.fit-footer p {
+  margin-bottom: 5px;
+  color: #94A3B8;
+  font-size: 0.84rem;
+}
+
+.fit-footer hr {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin: 16px 0 12px;
+}
+
+.fit-footer-copyright {
+  font-size: 0.8rem;
+  color: #64748B;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* Override AdminLTE main-footer */
+.main-footer {
+  background-color: var(--fit-slate-dark) !important;
+  border-top: 3px solid var(--fit-orange) !important;
+  color: #CBD5E1 !important;
+  padding: 1rem 1.5rem !important;
+}
+
+.main-footer a {
+  color: var(--fit-orange) !important;
+}
+
+/* ==========================================================================
+   13. TIỆN ÍCH DÙNG CHUNG KHÁC
+   ========================================================================== */
+
+.empty-state {
+  padding: 36px 16px;
+  text-align: center;
+  color: var(--fit-text-muted);
 }
 
 .empty-state i {
   display: block;
-  margin-bottom: 8px;
-  font-size: 2rem;
-  opacity: 0.5;
-}
-
-/* Chấm trạng thái online. KHÔNG dùng class .small cho icon: .small đặt font-weight 400
-   làm Font Awesome chuyển sang bộ "regular" (hình tròn rỗng). */
-.status-dot {
-  font-size: 0.6rem;
-  vertical-align: middle;
-}
-
-.text-gray {
-  color: #ced4da;
-}
-
-.text-mono {
-  font-size: 0.92em;
-}
-
-/* ---- khóa học */
-a.course-card {
-  display: block;
-  color: inherit;
-  transition: box-shadow 0.15s, transform 0.15s;
-}
-
-a.course-card:hover {
-  text-decoration: none;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  margin-bottom: 10px;
+  font-size: 2.2rem;
+  color: var(--fit-border-dark);
 }
 
 .pick-list {
   max-height: 260px;
   overflow-y: auto;
+  border: 1px solid var(--fit-border);
+  border-radius: 4px;
 }
 
 .pick-item {
   gap: 4px;
-  padding: 6px 10px;
-  border-bottom: 1px solid #f1f1f1;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--fit-border-light);
   cursor: pointer;
-  font-weight: 400;
+  font-weight: 500;
+  transition: background-color 0.15s;
 }
 
 .pick-item:hover {
-  background: #f8f9fa;
+  background: var(--fit-orange-subtle);
+  color: var(--fit-orange-active);
 }
 
 .enroll-key {
-  padding: 12px;
-  border: 2px dashed #ced4da;
+  padding: 14px;
+  border: 2px dashed var(--fit-orange);
+  background-color: var(--fit-orange-subtle);
+  color: var(--fit-orange-active);
   border-radius: 6px;
-  font-family: SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
-  font-size: 1.8rem;
-  font-weight: 700;
-  letter-spacing: 0.2em;
+  font-family: var(--fit-font-mono);
+  font-size: 1.85rem;
+  font-weight: 800;
+  letter-spacing: 0.25em;
 }
 
-.list-group-item .text-truncate {
-  min-width: 0;
+.session-revoked-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(2px);
+}
+
+.session-revoked-box {
+  max-width: 440px;
+  width: 100%;
+  padding: 28px 24px;
+  border-radius: 8px;
+  background: #ffffff;
+  border-top: 4px solid var(--fit-danger);
+  text-align: center;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+}
+
+.session-revoked-box h4 {
+  margin-bottom: 10px;
+  color: var(--fit-danger);
+  font-weight: 700;
 }
 
 .text-uppercase::placeholder {

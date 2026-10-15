@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <title>Người dùng · LAN LMS</title>
+  <title>Quản lý người dùng · FIT LMS (Khoa CNTT - Đại học Hà Nội)</title>
   <link rel="stylesheet" href="/vendor/fonts/source-sans-pro.css">
   <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
   <link rel="stylesheet" href="/vendor/adminlte/adminlte.min.css">
@@ -12,70 +12,88 @@
 </head>
 <body class="hold-transition sidebar-mini layout-fixed app-loading">
 <div class="wrapper">
+  
   <nav class="main-header navbar navbar-expand navbar-white navbar-light" id="app-navbar"></nav>
   <aside class="main-sidebar sidebar-dark-primary elevation-4" id="app-sidebar"></aside>
 
   <div class="content-wrapper">
-    <div class="content-header">
+    <!-- Header Section -->
+    <div class="content-header bg-white border-bottom py-3 mb-4">
       <div class="container-fluid d-flex flex-wrap justify-content-between align-items-center">
-        <h1 class="m-0">Người dùng</h1>
+        <div>
+          <h1 class="m-0 font-weight-bold" style="font-size: 1.55rem; color: var(--fit-slate-dark);">
+            Quản lý tài khoản người dùng
+          </h1>
+          <p class="text-muted small mb-0 mt-1">
+            <i class="fas fa-users-cog mr-1 text-fit-orange"></i>Tìm kiếm, phân quyền, khóa tài khoản và kiểm soát phiên làm việc
+          </p>
+        </div>
         <div class="mt-2 mt-sm-0">
-          <button type="button" class="btn btn-outline-primary btn-sm" data-toggle="modal" data-target="#create-modal">
-            <i class="fas fa-user-plus mr-1"></i>Thêm tài khoản
+          <button type="button" class="btn btn-outline-primary btn-sm mr-2 shadow-sm" data-toggle="modal" data-target="#create-modal">
+            <i class="fas fa-user-plus mr-1"></i>Thêm tài khoản lẻ
           </button>
-          <a href="/admin/import.html" class="btn btn-primary btn-sm">
-            <i class="fas fa-file-import mr-1"></i>Import sinh viên
+          <a href="/admin/import.html" class="btn btn-primary btn-sm shadow-sm">
+            <i class="fas fa-file-import mr-1"></i>Import sinh viên hàng loạt
           </a>
         </div>
       </div>
     </div>
 
+    <!-- Main Content -->
     <section class="content">
       <div class="container-fluid">
-        <div class="card">
-          <div class="card-header">
-            <form id="filter-form" class="form-row w-100" autocomplete="off">
+        <div class="card card-outline card-primary shadow-sm">
+          
+          <!-- Filter Controls Header -->
+          <div class="card-header bg-light border-bottom p-3">
+            <form id="filter-form" class="form-row w-100 align-items-center" autocomplete="off">
               <div class="col-md-5 mb-2 mb-md-0">
                 <div class="input-group input-group-sm">
-                  <div class="input-group-prepend"><span class="input-group-text"><i class="fas fa-search"></i></span></div>
-                  <input type="search" id="q" class="form-control" placeholder="Tìm theo tài khoản hoặc họ tên" maxlength="64">
+                  <div class="input-group-prepend"><span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span></div>
+                  <input type="search" id="q" class="form-control" placeholder="Tìm theo tên đăng nhập, mã sinh viên hoặc họ tên" maxlength="64">
                 </div>
               </div>
               <div class="col-6 col-md-3">
                 <select id="role" class="form-control form-control-sm" aria-label="Vai trò">
                   <option value="">Tất cả vai trò</option>
-                  <option value="0">Quản trị viên</option>
-                  <option value="1">Giảng viên</option>
-                  <option value="2">Sinh viên</option>
-                  <option value="3">Khách (tự luyện)</option>
+                  <option value="0">Quản trị viên (Admin)</option>
+                  <option value="1">Giảng viên (Teacher)</option>
+                  <option value="2">Sinh viên (Student)</option>
+                  <option value="3">Khách vãng lai (Visitor)</option>
                 </select>
               </div>
               <div class="col-6 col-md-3">
                 <select id="status" class="form-control form-control-sm" aria-label="Trạng thái">
                   <option value="">Mọi trạng thái</option>
-                  <option value="1">Đang hoạt động</option>
-                  <option value="0">Bị khóa</option>
+                  <option value="1">Đang hoạt động (Active)</option>
+                  <option value="0">Đã khóa (Locked)</option>
                 </select>
               </div>
             </form>
           </div>
 
+          <!-- Users Table -->
           <div class="card-body p-0 table-responsive">
             <table class="table table-hover table-striped mb-0">
               <thead>
                 <tr class="text-nowrap">
-                  <th>Tài khoản</th><th class="d-none d-md-table-cell">Họ tên</th><th class="d-none d-md-table-cell">Vai trò</th><th>Trạng thái</th>
-                  <th class="d-none d-lg-table-cell">Đăng nhập gần nhất</th><th class="text-right">Thao tác</th>
+                  <th>Tài khoản / MSSV</th>
+                  <th class="d-none d-md-table-cell">Họ và tên</th>
+                  <th class="d-none d-md-table-cell">Vai trò</th>
+                  <th>Trạng thái</th>
+                  <th class="d-none d-lg-table-cell">Đăng nhập gần nhất</th>
+                  <th class="text-right">Thao tác</th>
                 </tr>
               </thead>
               <tbody id="user-body">
-                <tr><td colspan="6" class="empty-state">Đang tải...</td></tr>
+                <tr><td colspan="6" class="empty-state"><i class="fas fa-spinner fa-spin"></i>Đang tải dữ liệu...</td></tr>
               </tbody>
             </table>
           </div>
 
-          <div class="card-footer d-flex flex-wrap justify-content-between align-items-center">
-            <small class="text-muted" id="page-info"></small>
+          <!-- Pagination Footer -->
+          <div class="card-footer bg-white d-flex flex-wrap justify-content-between align-items-center py-2">
+            <small class="text-muted font-weight-bold" id="page-info"></small>
             <ul class="pagination pagination-sm m-0" id="pager"></ul>
           </div>
         </div>
@@ -83,48 +101,64 @@
     </section>
   </div>
 
-  <footer class="main-footer small">LAN LMS · beta</footer>
+  <!-- University Footer -->
+  <footer class="main-footer small">
+    <div class="d-flex justify-content-between flex-wrap">
+      <span>&copy; 2026 Faculty of Information Technology - Hanoi University. All rights reserved.</span>
+      <span>FIT LMS · LAN Edition</span>
+    </div>
+  </footer>
 
+  <!-- Modal Thêm Tài Khoản -->
   <div class="modal fade" id="create-modal" tabindex="-1" role="dialog" aria-labelledby="create-title" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-      <form class="modal-content" id="create-form" novalidate autocomplete="off">
-        <div class="modal-header">
-          <h5 class="modal-title" id="create-title">Thêm tài khoản</h5>
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <form class="modal-content border-0 shadow-lg" id="create-form" novalidate autocomplete="off" style="border-top: 4px solid var(--fit-orange) !important;">
+        <div class="modal-header bg-light">
+          <h5 class="modal-title font-weight-bold" id="create-title" style="color: var(--fit-slate-dark);">
+            <i class="fas fa-user-plus text-fit-orange mr-2"></i>Thêm tài khoản mới
+          </h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Đóng"><span aria-hidden="true">&times;</span></button>
         </div>
-        <div class="modal-body">
+        <div class="modal-body p-4">
           <div id="create-error" class="alert alert-danger d-none"></div>
-          <div class="form-group">
-            <label for="c-role">Vai trò</label>
+          
+          <div class="form-group mb-3">
+            <label for="c-role" class="small font-weight-bold text-muted">VAI TRÒ TRONG HỆ THỐNG</label>
             <select id="c-role" class="form-control">
-              <option value="1">Giảng viên</option>
-              <option value="0">Quản trị viên</option>
-              <option value="2">Sinh viên</option>
-              <option value="3">Khách (tự luyện)</option>
+              <option value="1">Giảng viên (Teacher)</option>
+              <option value="0">Quản trị viên (Admin)</option>
+              <option value="2">Sinh viên (Student)</option>
+              <option value="3">Khách tự luyện (Visitor)</option>
             </select>
-            <small class="form-text text-muted">Sinh viên nên tạo hàng loạt bằng trang Import.</small>
+            <small class="form-text text-muted">Lưu ý: Đối với sinh viên, nên dùng tính năng Import để tạo hàng loạt.</small>
           </div>
-          <div class="form-group">
-            <label for="c-username">Tên đăng nhập</label>
-            <input id="c-username" class="form-control" maxlength="32" required placeholder="vd: gv.nguyenvana">
+
+          <div class="form-group mb-3">
+            <label for="c-username" class="small font-weight-bold text-muted">TÊN ĐĂNG NHẬP / MÃ SỐ</label>
+            <input id="c-username" class="form-control" maxlength="32" required placeholder="vd: gv.nguyenvana hoặc B21DCCN001">
           </div>
-          <div class="form-group">
-            <label for="c-fullname">Họ và tên</label>
-            <input id="c-fullname" class="form-control" maxlength="100" required>
+
+          <div class="form-group mb-3">
+            <label for="c-fullname" class="small font-weight-bold text-muted">HỌ VÀ TÊN ĐẦY ĐỦ</label>
+            <input id="c-fullname" class="form-control" maxlength="100" required placeholder="vd: TS. Nguyễn Văn A">
           </div>
+
           <div class="form-group mb-0">
-            <label for="c-password">Mật khẩu ban đầu</label>
-            <input id="c-password" type="text" class="form-control text-mono" minlength="8" maxlength="128" required>
-            <small class="form-text text-muted">Tối thiểu 8 ký tự. Người dùng phải đổi ở lần đăng nhập đầu.</small>
+            <label for="c-password" class="small font-weight-bold text-muted">MẬT KHẨU BAN ĐẦU</label>
+            <input id="c-password" type="text" class="form-control text-mono" minlength="8" maxlength="128" required placeholder="Tối thiểu 8 ký tự">
+            <small class="form-text text-muted">Người dùng sẽ phải đổi mật khẩu ở lần đăng nhập đầu tiên.</small>
           </div>
         </div>
-        <div class="modal-footer">
+        <div class="modal-footer bg-light">
           <button type="button" class="btn btn-default" data-dismiss="modal">Hủy</button>
-          <button type="submit" class="btn btn-primary" id="btn-create">Tạo tài khoản</button>
+          <button type="submit" class="btn btn-primary" id="btn-create">
+            <i class="fas fa-check mr-1"></i>Xác nhận tạo tài khoản
+          </button>
         </div>
       </form>
     </div>
   </div>
+
 </div>
 
 <script src="/vendor/jquery/jquery.min.js"></script>
