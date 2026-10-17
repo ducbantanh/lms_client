@@ -1,145 +1,120 @@
-# LMS Client — giao diện LAN LMS (beta)
+﻿# LMS Client — Next.js + AdminLTE 3
 
-Giao diện cho admin và sinh viên, viết bằng **HTML + JavaScript thuần** (ES module) trên nền **AdminLTE 3**.
+Frontend chính nằm ngay tại thư mục `lms_client`, không cần vào project con.
+Dùng Next.js App Router, TypeScript, AdminLTE 3.2 (đã bao gồm Bootstrap 4.6.1),
+Font Awesome 5 và font local. Các biến quan trọng, hook và hàm có chú thích tiếng Việt.
 
-- Không có bước build.
-- Không dùng CDN: AdminLTE 3, Bootstrap 4, jQuery, Font Awesome 5 và font Source Sans Pro (có tiếng Việt) đều nằm sẵn trong `public/vendor/`. Phòng máy không có Internet vẫn chạy được.
-- Chỉ những gì nằm trong `public/` mới được đưa ra mạng. README, mock server và `node_modules` nằm ngoài nên không bị lộ.
+## Chạy giao diện
 
-## 1. Chạy
+Cần Node.js 22.13+:
 
-### Cách 1: cùng server thật (chuẩn)
-
-Đặt `lms-client` cạnh `lms-server` rồi chạy server:
-
-```
-lms/
-├── lms-server/   ← mvn spring-boot:run
-└── lms-client/
+```powershell
+cd "D:\STUDY\SCHOOL\Lap Trinh Mang\lms_client"
+npm ci
+npm run dev
 ```
 
-Mở http://localhost:8080/. Server tự phục vụ thư mục `lms-client/public/`, cùng origin với API, nên cookie, CSRF và WebSocket chạy luôn mà không cần cấu hình gì.
+Mở **http://localhost:3000**. Mặc định là bản demo có 12 khóa học; không cần backend.
+Nếu đã cài dependencies, chỉ cần `npm run dev`.
 
-Sửa file HTML, JS hay CSS xong chỉ cần **F5**, không phải khởi động lại server.
+## Cấu trúc gọn
 
-### Cách 2: mock server (khi chưa chạy được Java + MySQL)
-
-Cần Node.js 18 trở lên.
-
-```bash
-npm install
-npm run mock
+```text
+lms_client/
+├── app/
+│   ├── layout.tsx                 Layout chung + thư viện CSS local
+│   ├── globals.css                CSS tùy chỉnh trên AdminLTE/Bootstrap
+│   ├── page.tsx                   Trang chủ
+│   ├── course-overview.tsx        Giao diện/lọc khóa học
+│   ├── course/                   Trang và nội dung chi tiết khóa học
+│   ├── dashboard/                Trang và nội dung dashboard
+│   ├── login/                    Trang đăng nhập
+│   └── change-password/          Trang đổi mật khẩu
+├── components/                   Header, footer, card, icon, modal, form dùng chung
+├── lib/                          API, session, hook, model, dữ liệu demo, tiện ích
+├── public/                       Font, icon, AdminLTE/Bootstrap và giấy phép
+├── scripts/                      Gateway preview, hỗ trợ build Windows
+├── tests/                        Kiểm thử bộ lọc khóa học
+├── docs/                         Kế hoạch và ảnh giao diện
+├── archive/html-client/          Bản HTML cũ, giữ để tham khảo
+├── package.json
+└── next.config.ts
 ```
 
-Mở http://localhost:8090/.
+Bốn thư mục viết giao diện chính là **app, components, lib, public**.
+Không còn các tầng `features/`, `hooks/`, `styles/` riêng. Code riêng của trang đặt cạnh
+`page.tsx`; code dùng chung đặt trong `components/` hoặc `lib/`.
 
-| Tài khoản | Mật khẩu | Ghi chú |
-|---|---|---|
-| `admin` | `admin12345` | quản trị viên |
-| `teacher01` | `teacher12345` | giảng viên |
-| `student01` | `student12345` | sinh viên |
-| `B21DCCN001` … `B21DCCN023` | `01012003` | bị bắt đổi mật khẩu lần đầu |
+`node_modules/`, `.next/`, `out/` và `*.tsbuildinfo` do công cụ tự sinh, đã bỏ qua trong Git.
+`.qa/`, `.browser-test/`, `.npm-cache/` là dữ liệu kiểm tra/cache local, không phải source ứng dụng.
+Các tài liệu kế hoạch cũ trong `docs/` mô tả thời điểm trước khi gom thư mục; dùng cấu trúc
+trong README này để tra đường dẫn hiện tại.
 
-Gửi thử một thông báo realtime: mở `http://localhost:8090/__broadcast?m=Noi+dung`.
+## Đọc source từ đâu?
 
-Mock giữ dữ liệu trong RAM, tắt là mất. Hợp đồng API **chuẩn** nằm trong README của `lms-server` (mục 4–5). Nếu mock và server thật khác nhau thì server thật đúng; cần sửa mock cho khớp.
+- Trang chủ: `app/page.tsx` → `app/course-overview.tsx` → `components/course-card.tsx`.
+- Hook dữ liệu: `lib/use-courses.ts`.
+- Hook yêu thích/ẩn/kiểu hiển thị: `lib/use-course-preferences.ts`.
+- Login, phiên và WebSocket: `components/auth-form.tsx`, `lib/session-provider.tsx`.
+- API/CSRF: `lib/api.ts`. Token chỉ giữ trong RAM; session thật dùng cookie HttpOnly.
+- Dữ liệu minh họa: `lib/demo-data.ts`; không dùng mock thay dữ liệu thật khi API lỗi.
 
-## 2. Các trang
+## Bootstrap và AdminLTE
 
-| URL | Trang | Quyền |
-|---|---|---|
-| `/` | Tự chuyển tới login hoặc trang chủ theo quyền | — |
-| `/login.html` | Đăng nhập | public |
-| `/change-password.html` | Đổi mật khẩu (bắt buộc ở lần đầu với tài khoản import) | login |
-| `/admin/` | Thống kê, danh sách online realtime, ép đăng xuất | `presence.view` |
-| `/admin/users.html` | Tìm kiếm, phân trang, khóa/mở khóa, xóa, ép đăng xuất | `users.manage` |
-| `/admin/import.html` | Import sinh viên từ text hoặc file `.txt` | `users.manage` |
-| `/teacher/` | Danh sách khóa học, tạo khóa học (admin thấy mọi khóa) | `courses.manage` |
-| `/teacher/course.html?id=` | Tài liệu theo mục/tuần, ghi danh 3 cách, bài kiểm tra | `courses.manage` |
-| `/student/` | Profile, khóa học đã tham gia, tham gia bằng mã, thông báo realtime | `courses.view` |
-| `/student/course.html?id=` | Tài liệu, bài kiểm tra, xem đề khi tới giờ | `courses.view` |
+- `app/layout.tsx` import bundle `public/vendor/adminlte/adminlte.min.css` trước `app/globals.css`.
+- Bundle AdminLTE 3.2 đã chứa Bootstrap 4.6.1; không nạp trùng Bootstrap.
+- Layout dùng `layout-top-nav`, `wrapper`, `main-header`, `content-wrapper`, `main-footer`.
+- Khóa học dùng `row/col`, `card/card-body`; form dùng `form-control`, `custom-select`, `btn`.
+- Dashboard dùng `info-box`; tiến độ dùng `progress/progress-bar`.
+- Font Awesome CSS/webfonts trong `public/vendor/fontawesome/`, không CDN.
+- React/native dialog quản lý tương tác; không dùng jQuery để sửa DOM của React.
 
-Sau khi đăng nhập, mỗi role vào trang chủ riêng: **0 Admin → `/admin/`, 1 Teacher → `/teacher/`, 2 Student và 3 Visitor → `/student/`**.
+## Build static và kết nối backend
 
-## 3. Cấu trúc
-
-```
-lms-client/
-├── README.md
-├── package.json              chỉ dùng cho mock server
-├── dev/mock-server.js        mock API + WebSocket (không đưa lên server)
-└── public/                   ← server phục vụ thư mục này
-    ├── index.html            chuyển hướng theo trạng thái đăng nhập
-    ├── login.html
-    ├── change-password.html
-    ├── favicon.svg
-    ├── admin/                index.html, users.html, import.html
-    ├── teacher/              index.html, course.html
-    ├── student/              index.html, course.html
-    ├── vendor/               thư viện ngoài (không sửa tay)
-    └── assets/
-        ├── css/app.css       CSS dùng chung
-        └── js/
-            ├── api.js              MỌI lời gọi API đi qua đây (CSRF, 401, lỗi tiếng Việt)
-            ├── realtime.js         MỌI kết nối WebSocket đi qua đây (reconnect, bị kick)
-            ├── messages-vi.js      bảng dịch mã lỗi / lý do sang tiếng Việt
-            ├── notifications.js    toast
-            ├── ui.js               esc(), định dạng ngày giờ, debounce...
-            ├── admin-layout.js     navbar + sidebar admin (trang mới: thêm vào MENU)
-            ├── auth-pages.js       login + đổi mật khẩu
-            ├── index-redirect.js
-            ├── admin-dashboard.js
-            ├── admin-users.js
-            ├── admin-import.js
-            ├── course-common.js    icon file, nhóm file theo mục, nhãn trạng thái bài kiểm tra
-            ├── teacher-courses.js
-            ├── teacher-course.js
-            ├── student-dashboard.js
-            └── student-course.js
+```powershell
+npm run build
+npm run preview
 ```
 
-## 4. Quy tắc viết trang
+Mở **http://localhost:3100**. Gateway trong `scripts/` phục vụ `out/`, proxy `/api/**` và
+`/ws` tới Spring Boot mặc định `http://127.0.0.1:8080`. Có thể đổi bằng PowerShell:
 
-1. **Mỗi trang một file JS riêng:** `<script type="module" src="/assets/js/<trang>.js">`. Không viết script inline, không dùng `onclick=""`, để sau này bật được Content-Security-Policy.
-2. **Dòng đầu tiên** trong JS của trang là `const user = await requirePage({ permission: '...' })`. Hàm này lo hết việc chưa đăng nhập, bắt đổi mật khẩu và thiếu quyền.
-3. **Gọi API chỉ qua `api.js`:** dùng `api.get / post / patch / del`. Không tự viết `fetch`, vì sẽ thiếu header CSRF.
-4. **Nhận realtime chỉ qua `realtime.js`:** `connectRealtime().on('presence.changed', fn)`. Không tự mở `new WebSocket`.
-5. **Mọi dữ liệu từ server phải qua `esc()`** trước khi chèn vào `innerHTML` (tên sinh viên do admin import, có thể chứa ký tự HTML).
-6. Báo lỗi bằng `notify.error(err.message)`; `err.message` đã là tiếng Việt. Mã lỗi mới thì thêm vào `messages-vi.js`.
-7. `<body>` có class `app-loading` để ẩn nội dung cho tới khi kiểm tra đăng nhập xong.
-8. Icon trạng thái dùng class `status-dot`, **không** dùng `small`. Class `small` làm Font Awesome hiện hình tròn rỗng.
-
-### Khung một trang admin mới
-
-```html
-<body class="hold-transition sidebar-mini layout-fixed app-loading">
-<div class="wrapper">
-  <nav class="main-header navbar navbar-expand navbar-white navbar-light" id="app-navbar"></nav>
-  <aside class="main-sidebar sidebar-dark-primary elevation-4" id="app-sidebar"></aside>
-  <div class="content-wrapper"> ... </div>
-</div>
-<script src="/vendor/jquery/jquery.min.js"></script>
-<script src="/vendor/bootstrap/bootstrap.bundle.min.js"></script>
-<script src="/vendor/adminlte/adminlte.min.js"></script>
-<script type="module" src="/assets/js/admin-xxx.js"></script>
-</body>
+```powershell
+$env:API_TARGET = 'http://127.0.0.1:8080'
+$env:HOST = '0.0.0.0'
+npm run preview
 ```
 
-```js
-import { api, requirePage } from './api.js';
-import { connectRealtime } from './realtime.js';
-import { initAdminLayout } from './admin-layout.js';
+`npm run dev` phục vụ phát triển UI/demo. Login thật cần gateway preview hoặc webserver
+proxy API/WebSocket cùng origin. Spring hiện trả danh sách khóa học rỗng; sau login thật,
+client hiển thị trạng thái rỗng, không ghép dữ liệu demo vào.
 
-const user = await requirePage({ permission: 'users.manage' });
-const layout = initAdminLayout({ active: 'xxx', user });
-connectRealtime().on('status', (s) => layout.setWsStatus(s));
+`postbuild` chuẩn hóa file RSC segment của Next.js trên Windows. Chỉ sửa đầu ra `out/`,
+không sửa `node_modules`. Tham khảo [upstream issue](https://github.com/vercel/next.js/issues/85374).
+Đầu ra `out/` có thể phục vụ bằng webserver static trong LAN; không cần Next server.
+
+## Bản cũ và kiểm thử
+
+Bản HTML/JS, mock, test và package cũ được giữ trong `archive/html-client/`.
+Chạy mock API + giao diện HTML cũ: `npm run mock` (cổng 8090).
+Để thử Next với mock, chạy mock rồi mở terminal khác:
+
+```powershell
+$env:API_TARGET = 'http://127.0.0.1:8090'
+npm run preview
 ```
 
-## 5. Giới hạn của bản beta
+Các lệnh kiểm tra của frontend chính:
 
-- Chưa có các trang audit, gửi thông báo.
-- Chưa có nộp bài / chấm điểm (mới có đề và thời gian mở/đóng).
-- Chưa sửa được tên mục, chưa sắp xếp lại thứ tự file.
-- Chưa có form sửa user và reset mật khẩu (đợi API của P4).
-- Hộp xác nhận đang dùng `window.confirm`; có thể thay bằng modal AdminLTE sau.
-- Trình duyệt cần hỗ trợ ES module và top-level await (Chrome/Edge 89+, Firefox 89+).
+```powershell
+npm run typecheck
+npm test
+npm run build
+npm run format
+```
+
+Đã có UI khóa học, bộ lọc, yêu thích, ẩn/hiện, grid/list, dashboard, chi tiết mẫu và login.
+Nội dung khóa học/nộp bài/chấm điểm thật và portal admin/teacher Next.js chưa triển khai.
+Kiểm tra trình duyệt dùng mock + gateway; chưa xác minh trực tiếp với MySQL/Spring thật.
+
+[Xem desktop](docs/preview-desktop.png) · [Xem mobile](docs/preview-mobile.png).
