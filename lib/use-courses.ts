@@ -1,30 +1,22 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useSession } from '@/lib/session-provider';
 import { ApiError, apiRequest } from '@/lib/api';
-import { DEMO_COURSES } from '@/lib/demo-data';
+import { coverFor } from '@/lib/course-utils';
 import type { Course } from '@/lib/types';
 
-/** Khóa học thật chỉ lấy từ dashboard đã có trong Spring; không tự bù bằng mock khi lỗi. */
+/** Khóa học thật chỉ lấy từ dashboard đã có trong Spring; không tự bù bằng dữ liệu mẫu khi lỗi. */
 export function useCourses() {
-  const { isDemo, user, loading: sessionLoading, error: sessionError } = useSession();
-  const router = useRouter();
+  const { user, loading: sessionLoading, error: sessionError, refresh } = useSession();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
-    if (
-      isDemo ||
-      sessionLoading ||
-      sessionError ||
-      user.id === 'anonymous' ||
-      user.mustChangePassword
-    )
-      return;
+    // SessionProvider đã lo chuyển trang khi chưa đăng nhập hoặc phải đổi mật khẩu.
+    if (sessionLoading || sessionError || !user || user.mustChangePassword) return;
     const controller = new AbortController();
     setLoading(true);
     setError('');
@@ -48,28 +40,32 @@ export function useCourses() {
             status: 'current',
             progress: null,
             lessons: null,
-            cover: 'blue',
+            cover: coverFor(item.code),
             updatedAt: '',
           })),
         );
       })
       .catch((reason) => {
         if (controller.signal.aborted) return;
+        // Phiên hết hạn / bị bắt đổi mật khẩu: hỏi lại server để SessionProvider chuyển trang.
+        if (
+          reason instanceof ApiError &&
+          (reason.code === 'UNAUTHENTICATED' || reason.code === 'PASSWORD_CHANGE_REQUIRED')
+        ) {
+          void refresh();
+          return;
+        }
         setError(reason instanceof Error ? reason.message : 'Không tải được khóa học.');
-        if (reason instanceof ApiError && reason.code === 'UNAUTHENTICATED')
-          router.replace('/login/');
-        if (reason instanceof ApiError && reason.code === 'PASSWORD_CHANGE_REQUIRED')
-          router.replace('/change-password/');
       })
       .finally(() => {
         if (!controller.signal.aborted) setLoading(false);
       });
     return () => controller.abort();
-  }, [isDemo, user.id, user.mustChangePassword, sessionLoading, sessionError, reloadKey, router]);
+  }, [user?.id, user?.mustChangePassword, sessionLoading, sessionError, reloadKey]);
 
   return {
-    courses: isDemo ? DEMO_COURSES : courses,
-    loading: sessionLoading || (!isDemo && loading),
+    courses,
+    loading: sessionLoading || loading,
     error: sessionError || error,
     reload: () => setReloadKey((value) => value + 1),
   };
