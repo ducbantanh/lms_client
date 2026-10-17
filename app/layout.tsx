@@ -1,9 +1,6 @@
 import type { Metadata } from 'next';
 import { SessionProvider } from '@/lib/session-provider';
-import { SiteHeader } from '@/components/site-header';
-import { SiteFooter } from '@/components/site-footer';
-// AdminLTE 3.2 đã bao gồm Bootstrap 4.6.1; nạp trước CSS tùy chỉnh, không nạp trùng Bootstrap.
-import '../public/vendor/adminlte/adminlte.min.css';
+import { DropdownDismiss } from '@/components/dropdown-dismiss';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -21,14 +18,11 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <link rel="stylesheet" href="/fonts/source-sans-pro.css" />
         <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css" />
       </head>
-      <body className="hold-transition layout-top-nav">
+      <body>
         <SessionProvider>
-          {/* Khung top-nav của AdminLTE phù hợp bố cục ngang trong ảnh tham chiếu. */}
-          <div className="wrapper">
-            <SiteHeader />
-            <div className="content-wrapper">{children}</div>
-            <SiteFooter />
-          </div>
+          {/* Khung trang do layout của từng nhóm route quyết định: (auth), (learn), admin. */}
+          <DropdownDismiss />
+          {children}
         </SessionProvider>
       </body>
     </html>

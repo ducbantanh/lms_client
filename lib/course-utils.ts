@@ -1,4 +1,4 @@
-import type { Course, CourseFilter, SortOrder } from './types.ts';
+import type { Course, CourseFilter, CoverStyle, SortOrder } from './types.ts';
 
 /** Chuẩn hóa dấu tiếng Việt để "lap trinh" tìm được "Lập trình". */
 export function normalizeSearch(value: string): string {
@@ -50,4 +50,26 @@ export function initials(name: string): string {
     .map((part) => part[0])
     .join('')
     .toUpperCase();
+}
+
+const COVERS: CoverStyle[] = [
+  'blue',
+  'emerald',
+  'violet',
+  'amber',
+  'rose',
+  'aqua',
+  'slate',
+  'sage',
+  'orange',
+  'pink',
+  'sand',
+  'ink',
+];
+
+/** Màu bìa cố định theo mã học phần: cùng một khóa học luôn cùng màu ở mọi trang. */
+export function coverFor(code: string): CoverStyle {
+  let hash = 0;
+  for (const char of code) hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
+  return COVERS[hash % COVERS.length];
 }
