@@ -1,12 +1,32 @@
 {
   "name": "lms-client",
-  "version": "0.1.0-beta",
+  "version": "0.1.0",
   "private": true,
-  "description": "Giao diện LAN LMS (HTML + JS thuần, AdminLTE 3 offline). Không cần build.",
+  "type": "module",
   "scripts": {
-    "mock": "node dev/mock-server.js"
+    "dev": "next dev --hostname 127.0.0.1",
+    "build": "next build --webpack",
+    "postbuild": "node scripts/fix-static-export.mjs",
+    "format": "prettier --write app components lib scripts tests next.config.ts tsconfig.json",
+    "preview": "node scripts/preview.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "node --experimental-strip-types --test tests/*.test.ts",
+    "mock": "node archive/html-client/dev/mock-server.js"
+  },
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "dependencies": {
+    "next": "16.4.2",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
   },
   "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "prettier": "3.9.10",
+    "typescript": "^5.9.0",
     "ws": "^8.18.0"
   }
 }
