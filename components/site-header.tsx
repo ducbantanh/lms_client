@@ -15,6 +15,8 @@ export function SiteHeader() {
   const [helpOpen, setHelpOpen] = useState(false);
   const [readNotices, setReadNotices] = useState(false);
   const [message, setMessage] = useState('');
+  const isAdminArea = pathname.startsWith('/admin');
+  const isAdminUser = user.permissions.includes('users.manage');
 
   // Đóng dropdown khi click ngoài hoặc Escape, không cần jQuery điều khiển DOM của React.
   useEffect(() => {
@@ -109,7 +111,15 @@ export function SiteHeader() {
               <summary className="profile-trigger">
                 <span className="profile-label">
                   <b>{user.fullName}</b>
-                  <small>{isDemo ? 'Sinh viên · Demo' : 'Tài khoản LMS'}</small>
+                  <small>
+                    {isDemo
+                      ? isAdminArea
+                        ? 'Quản trị viên · Demo'
+                        : 'Sinh viên · Demo'
+                      : user.role === 0
+                        ? 'Quản trị viên'
+                        : 'Tài khoản LMS'}
+                  </small>
                 </span>
                 <span className="avatar">{initials(user.fullName)}</span>
                 <Icon name="down" size={14} />
@@ -117,10 +127,16 @@ export function SiteHeader() {
               <div className="dropdown-menu dropdown-panel profile-panel">
                 <p className="dropdown-note">{user.username}</p>
                 {isDemo ? (
-                  <Link href="/login/">
-                    <Icon name="user" size={17} />
-                    Đăng nhập hệ thống
-                  </Link>
+                  <>
+                    <Link href="/login/">
+                      <Icon name="user" size={17} />
+                      Đăng nhập hệ thống
+                    </Link>
+                    <Link href={isAdminArea ? '/' : '/admin/'}>
+                      <Icon name={isAdminArea ? 'book' : 'shield'} size={17} />
+                      {isAdminArea ? 'Xem giao diện sinh viên' : 'Xem dashboard Admin'}
+                    </Link>
+                  </>
                 ) : (
                   <>
                     <Link href="/change-password/">
@@ -143,7 +159,11 @@ export function SiteHeader() {
         </div>
         <nav className="navbar navbar-expand main-nav" aria-label="Điều hướng chính">
           <div className="nav-inner page-width">
-            <Link href="/" className="nav-home" aria-label="Trang chủ FIT">
+            <Link
+              href={isAdminArea ? '/admin/' : '/'}
+              className="nav-home"
+              aria-label="Trang chủ FIT"
+            >
               <Icon name="home" size={21} />
             </Link>
             <button
@@ -156,31 +176,56 @@ export function SiteHeader() {
               Menu
             </button>
             <div className={`nav-links ${mobileOpen ? 'is-open' : ''}`}>
-              <Link
-                href="/dashboard/"
-                className={pathname === '/dashboard/' || pathname === '/dashboard' ? 'active' : ''}
-                onClick={() => setMobileOpen(false)}
-              >
-                <Icon name="dashboard" size={17} />
-                Bảng điều khiển
-              </Link>
-              <Link
-                href="/"
-                className={pathname === '/' || pathname.startsWith('/course') ? 'active' : ''}
-                onClick={() => setMobileOpen(false)}
-              >
-                <Icon name="book" size={17} />
-                Các khóa học của tôi
-              </Link>
-              <button
-                onClick={() => {
-                  setHelpOpen(true);
-                  setMobileOpen(false);
-                }}
-              >
-                Hướng dẫn học tập
-                <Icon name="down" size={14} />
-              </button>
+              {isAdminArea ? (
+                <>
+                  <Link
+                    href="/admin/"
+                    className={pathname === '/admin/' || pathname === '/admin' ? 'active' : ''}
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    <Icon name="dashboard" size={17} />
+                    Tổng quan hệ thống
+                  </Link>
+                  <a href="#online-users" onClick={() => setMobileOpen(false)}>
+                    <Icon name="users" size={17} />
+                    Người dùng online
+                  </a>
+                  <a href="#audit-log" onClick={() => setMobileOpen(false)}>
+                    <Icon name="audit" size={17} />
+                    Nhật ký gần đây
+                  </a>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/dashboard/"
+                    className={
+                      pathname === '/dashboard/' || pathname === '/dashboard' ? 'active' : ''
+                    }
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    <Icon name="dashboard" size={17} />
+                    Bảng điều khiển
+                  </Link>
+                  <Link
+                    href="/"
+                    className={pathname === '/' || pathname.startsWith('/course') ? 'active' : ''}
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    <Icon name="book" size={17} />
+                    Các khóa học của tôi
+                  </Link>
+                  <button
+                    onClick={() => {
+                      setHelpOpen(true);
+                      setMobileOpen(false);
+                    }}
+                  >
+                    Hướng dẫn học tập
+                    <Icon name="down" size={14} />
+                  </button>
+                </>
+              )}
             </div>
             <div className="nav-right">
               <span>Tiếng Việt</span>
@@ -188,7 +233,8 @@ export function SiteHeader() {
                 aria-label="Tìm khóa học"
                 className="nav-search"
                 onClick={() => {
-                  if (pathname === '/') document.getElementById('course-search')?.focus();
+                  if (isAdminArea) document.getElementById('admin-search')?.focus();
+                  else if (pathname === '/') document.getElementById('course-search')?.focus();
                   else window.location.assign('/#course-search');
                 }}
               >
@@ -199,21 +245,46 @@ export function SiteHeader() {
         </nav>
       </header>
       {helpOpen && (
-        <Modal title="Chào mừng bạn đến với FIT LMS" onClose={() => setHelpOpen(false)}>
-          <p>Tất cả khóa học của bạn được tập hợp trong một không gian học tập.</p>
+        <Modal
+          title={isAdminArea ? 'Hướng dẫn dashboard Admin' : 'Chào mừng bạn đến với FIT LMS'}
+          onClose={() => setHelpOpen(false)}
+        >
+          <p>
+            {isAdminArea
+              ? 'Dashboard tổng hợp tài khoản, trạng thái online và nhật ký hệ thống.'
+              : 'Tất cả khóa học của bạn được tập hợp trong một không gian học tập.'}
+          </p>
           <ol className="help-steps">
-            <li>Tìm khóa học theo tên, mã học phần hoặc tên giảng viên.</li>
-            <li>Lọc học kỳ, đánh dấu yêu thích và chọn bố cục phù hợp.</li>
-            <li>Nhấn vào tên khóa học để xem thông tin và nội dung theo tuần.</li>
+            {isAdminArea ? (
+              <>
+                <li>Theo dõi số người dùng và kết nối WebSocket đang hoạt động.</li>
+                <li>Tìm người dùng online và ép đăng xuất khi cần.</li>
+                <li>Kiểm tra hoạt động realtime và audit log gần nhất.</li>
+              </>
+            ) : (
+              <>
+                <li>Tìm khóa học theo tên, mã học phần hoặc tên giảng viên.</li>
+                <li>Lọc học kỳ, đánh dấu yêu thích và chọn bố cục phù hợp.</li>
+                <li>Nhấn vào tên khóa học để xem thông tin và nội dung theo tuần.</li>
+              </>
+            )}
           </ol>
           <p className="notice">
-            Bản xem trước sử dụng dữ liệu mẫu. Đăng nhập để kết nối dữ liệu từ máy chủ nhà trường.
+            {isDemo
+              ? 'Bản xem trước sử dụng dữ liệu mẫu. Đăng nhập để kết nối dữ liệu từ máy chủ nhà trường.'
+              : 'Các thao tác được kiểm tra lại ở Spring Boot theo permission của tài khoản.'}
           </p>
           <button className="btn btn-primary button primary" onClick={() => setHelpOpen(false)}>
             Bắt đầu khám phá
             <Icon name="arrow" size={17} />
           </button>
         </Modal>
+      )}
+      {!isAdminArea && isAdminUser && (
+        <Link className="admin-shortcut" href="/admin/">
+          <Icon name="shield" size={16} />
+          Mở trang quản trị
+        </Link>
       )}
       {message && (
         <Modal title="Chưa thể hoàn tất" onClose={() => setMessage('')}>

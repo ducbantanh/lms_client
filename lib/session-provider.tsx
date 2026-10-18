@@ -1,10 +1,18 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import { useRouter } from 'next/navigation';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import { ApiError, apiRequest, setApiSession } from '@/lib/api';
-import { DEMO_USER } from '@/lib/demo-data';
-import type { Session, User } from '@/lib/types';
+import { DEMO_ADMIN_USER, DEMO_USER } from '@/lib/demo-data';
+import type { RealtimeEvent, Session, User } from '@/lib/types';
 
 type ConnectionStatus = 'demo' | 'connecting' | 'online' | 'offline';
 interface SessionContextValue {
@@ -17,6 +25,7 @@ interface SessionContextValue {
   logout: () => Promise<void>;
   enterDemo: () => void;
   refresh: () => Promise<boolean>;
+  subscribeRealtime: (listener: (event: RealtimeEvent) => void) => () => void;
 }
 const SessionContext = createContext<SessionContextValue | null>(null);
 /** Chỉ lưu lựa chọn demo/server; không lưu user, mật khẩu hay token. */
@@ -24,11 +33,21 @@ const MODE_KEY = 'lms.connection-mode';
 
 export function SessionProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [session, setSession] = useState<Session | null>(null);
   const [isDemo, setIsDemo] = useState(true);
-  const [loading, setLoading] = useState(false);
+  // Bắt đầu ở trạng thái đang kiểm tra để trang thật không nháy dữ liệu demo khi reload.
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [connection, setConnection] = useState<ConnectionStatus>('demo');
+  // Mọi trang dùng chung socket; listener chỉ nhận event đã parse thành công.
+  const realtimeListeners = useRef(new Set<(event: RealtimeEvent) => void>());
+
+  /** Đăng ký event realtime và trả hàm cleanup để useEffect gọi khi component unmount. */
+  const subscribeRealtime = useCallback((listener: (event: RealtimeEvent) => void) => {
+    realtimeListeners.current.add(listener);
+    return () => realtimeListeners.current.delete(listener);
+  }, []);
 
   /** Đồng bộ React state và CSRF trong API client mỗi khi server cấp phiên. */
   function acceptSession(value: Session) {
@@ -80,6 +99,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     if (live) {
       setIsDemo(false);
       void refresh();
+    } else {
+      setLoading(false);
     }
     // Chỉ khởi tạo một lần; các lần refresh tiếp theo do người dùng chủ động gọi.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -90,11 +111,13 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     if (isDemo || !session) return;
     let socket: WebSocket | null = null;
     let retry: ReturnType<typeof setTimeout> | undefined;
+    let pingTimer: ReturnType<typeof setInterval> | undefined;
     let stopped = false;
     let attempt = 0;
     function endSession() {
       stopped = true;
       clearTimeout(retry);
+      clearInterval(pingTimer);
       socket?.close();
       setApiSession(null);
       setSession(null);
@@ -116,15 +139,28 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       socket.onopen = () => {
         attempt = 0;
         setConnection('online');
+        // Heartbeat ứng dụng giữ kết nối hoạt động khi đi qua reverse proxy.
+        clearInterval(pingTimer);
+        pingTimer = setInterval(() => {
+          if (socket?.readyState === WebSocket.OPEN) {
+            socket.send(JSON.stringify({ type: 'ping' }));
+          }
+        }, 25_000);
       };
       socket.onmessage = (event) => {
         try {
-          if (JSON.parse(event.data)?.type === 'session.revoked') endSession();
+          const realtimeEvent = JSON.parse(event.data) as RealtimeEvent;
+          if (realtimeEvent.type === 'session.revoked') {
+            endSession();
+            return;
+          }
+          realtimeListeners.current.forEach((listener) => listener(realtimeEvent));
         } catch {
           /* Bỏ qua frame không đúng định dạng. */
         }
       };
       socket.onclose = (event) => {
+        clearInterval(pingTimer);
         if (stopped) return;
         if (event.code === 4001) {
           endSession();
@@ -152,6 +188,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     return () => {
       stopped = true;
       clearTimeout(retry);
+      clearInterval(pingTimer);
       socket?.close();
     };
   }, [isDemo, session?.user.id, router]);
@@ -162,7 +199,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       body: { username, password },
     });
     acceptSession(value);
-    router.push(value.user.mustChangePassword ? '/change-password/' : '/');
+    const home = value.user.permissions.includes('users.manage') ? '/admin/' : '/';
+    router.push(value.user.mustChangePassword ? '/change-password/' : home);
   }
 
   function enterDemo() {
@@ -203,7 +241,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         user:
           session?.user ??
           (isDemo
-            ? DEMO_USER
+            ? pathname.startsWith('/admin')
+              ? DEMO_ADMIN_USER
+              : DEMO_USER
             : { ...DEMO_USER, id: 'anonymous', fullName: 'Người dùng', permissions: [] }),
         isDemo,
         loading,
@@ -213,6 +253,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         logout,
         enterDemo,
         refresh,
+        subscribeRealtime,
       }}
     >
       {children}

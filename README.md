@@ -28,6 +28,7 @@ lms_client/
 │   ├── course-overview.tsx        Giao diện/lọc khóa học
 │   ├── course/                   Trang và nội dung chi tiết khóa học
 │   ├── dashboard/                Trang và nội dung dashboard
+│   ├── admin/                    Dashboard quản trị và realtime presence
 │   ├── login/                    Trang đăng nhập
 │   └── change-password/          Trang đổi mật khẩu
 ├── components/                   Header, footer, card, icon, modal, form dùng chung
@@ -58,6 +59,7 @@ trong README này để tra đường dẫn hiện tại.
 - Login, phiên và WebSocket: `components/auth-form.tsx`, `lib/session-provider.tsx`.
 - API/CSRF: `lib/api.ts`. Token chỉ giữ trong RAM; session thật dùng cookie HttpOnly.
 - Dữ liệu minh họa: `lib/demo-data.ts`; không dùng mock thay dữ liệu thật khi API lỗi.
+- Dashboard Admin: `app/admin/admin-dashboard.tsx` và `lib/use-admin-dashboard.ts`.
 
 ## Bootstrap và AdminLTE
 
@@ -113,8 +115,17 @@ npm run build
 npm run format
 ```
 
-Đã có UI khóa học, bộ lọc, yêu thích, ẩn/hiện, grid/list, dashboard, chi tiết mẫu và login.
-Nội dung khóa học/nộp bài/chấm điểm thật và portal admin/teacher Next.js chưa triển khai.
+Đã có UI khóa học, bộ lọc, yêu thích, ẩn/hiện, grid/list, dashboard sinh viên,
+chi tiết mẫu, login và dashboard Admin. Dashboard Admin có thống kê tài khoản,
+presence realtime, số WebSocket, tìm người dùng online, ép đăng xuất và audit log gần đây.
+Mở trực tiếp `/admin/` để xem dữ liệu Admin minh họa; menu tài khoản cho phép chuyển giữa
+giao diện sinh viên/Admin. Sau login Admin thật, frontend tự chuyển tới `/admin/`.
+
+Trang quản lý toàn bộ người dùng, form import, khóa/mở khóa tài khoản và portal giảng viên
+Next.js chưa triển khai. Nội dung khóa học/nộp bài/chấm điểm thật vẫn phụ thuộc API backend.
 Kiểm tra trình duyệt dùng mock + gateway; chưa xác minh trực tiếp với MySQL/Spring thật.
 
 [Xem desktop](docs/preview-desktop.png) · [Xem mobile](docs/preview-mobile.png).
+
+[Xem dashboard Admin](docs/preview-admin-dashboard.png) ·
+[Xem Admin trên mobile](docs/preview-admin-mobile.png).

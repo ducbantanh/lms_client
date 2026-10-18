@@ -49,3 +49,64 @@ export interface Course {
 export type CourseFilter = 'all' | 'current' | 'completed' | 'starred' | 'hidden';
 export type SortOrder = 'name' | 'recent';
 export type ViewMode = 'grid' | 'list';
+
+/** Kết quả phân trang dùng chung với PageResult<T> của Spring Boot. */
+export interface PageResult<T> {
+  items: T[];
+  page: number;
+  size: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface AdminUser {
+  id: string;
+  username: string;
+  fullName: string;
+  role: Role;
+  roleName: string;
+  status: number;
+  mustChangePassword: boolean;
+  createdAt: string;
+  lastLoginAt: string | null;
+}
+
+export interface OnlineUser {
+  id: string;
+  username: string;
+  fullName: string;
+  role: Role;
+  connections: number;
+  since: string;
+}
+
+export interface PresenceSnapshot {
+  onlineUsers: number;
+  users: OnlineUser[];
+}
+
+export interface PresenceChangedEvent {
+  userId: string;
+  username: string;
+  fullName: string;
+  role: Role;
+  online: boolean;
+  connections: number;
+}
+
+export interface AuditEntry {
+  id: number;
+  actorUserId: number | null;
+  action: string;
+  target: string | null;
+  detail: string | null;
+  ip: string | null;
+  createdAt: string;
+}
+
+/** Mọi event realtime giữ cùng envelope với RealtimeEvent của server. */
+export interface RealtimeEvent<T = unknown> {
+  type: string;
+  data: T;
+  ts?: string;
+}

@@ -27,6 +27,13 @@ const icons = {
   lock: 'fas fa-lock',
   cap: 'fas fa-graduation-cap',
   file: 'far fa-file-alt',
+  users: 'fas fa-users',
+  shield: 'fas fa-user-shield',
+  activity: 'fas fa-wave-square',
+  audit: 'fas fa-clipboard-list',
+  sync: 'fas fa-sync-alt',
+  ban: 'fas fa-user-times',
+  server: 'fas fa-server',
 } as const;
 
 export type IconName = keyof typeof icons;

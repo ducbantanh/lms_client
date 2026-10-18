@@ -10,6 +10,16 @@ export const DEMO_USER: User = {
   permissions: ['courses.view'],
 };
 
+/** Tài khoản minh họa riêng cho route /admin; không được gửi tới API Spring Boot. */
+export const DEMO_ADMIN_USER: User = {
+  id: 'demo-admin',
+  username: 'admin.demo',
+  fullName: 'Nguyễn Minh Quản Trị',
+  role: 0,
+  mustChangePassword: false,
+  permissions: ['users.manage', 'sessions.manage', 'presence.view', 'audit.view'],
+};
+
 /** Ảnh bìa được vẽ bằng CSS để hoạt động offline và không phụ thuộc ảnh bên ngoài. */
 export const DEMO_COURSES: Course[] = [
   {
