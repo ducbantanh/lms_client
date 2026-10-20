@@ -30,16 +30,13 @@ export function Modal({
         if (event.target === event.currentTarget) onClose();
       }}
     >
-      {/* Dùng presentation của Bootstrap; native dialog giữ focus thay plugin jQuery. */}
-      <div className="modal-content">
-        <div className="modal-header modal-heading">
-          <h2 id="dialog-title">{title}</h2>
-          <button className="icon-button" aria-label="Đóng hộp thoại" onClick={onClose}>
-            <Icon name="close" />
-          </button>
-        </div>
-        <div className="modal-body">{children}</div>
+      <div className="dialog-header">
+        <h2 id="dialog-title">{title}</h2>
+        <button className="icon-button" aria-label="Đóng hộp thoại" onClick={onClose}>
+          <Icon name="close" size={16} />
+        </button>
       </div>
+      <div className="dialog-body">{children}</div>
     </dialog>
   );
 }
