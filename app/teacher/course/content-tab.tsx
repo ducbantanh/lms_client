@@ -25,7 +25,7 @@ interface LessonDraft {
 
 /** Tab Nội dung: mục/tuần, bài học và tài liệu trong từng mục, tải tài liệu lên. */
 export function ContentTab(props: TabProps) {
-  const { content, base, reload, notify, confirm } = props;
+  const { content, base, reload, notify, confirm, canTeach } = props;
   const format = content.course.format;
   const unit = format === 1 ? 'tuần' : 'mục';
   const [draft, setDraft] = useState<LessonDraft | null>(null);
@@ -167,13 +167,16 @@ export function ContentTab(props: TabProps) {
   const empty =
     format !== 2 && !content.sections.length && !content.lessons.length && !content.files.length;
 
+  // Admin chỉ xem (server trả TEACHER_ONLY cho mọi thao tác sửa): ẩn nút sửa và khung tải lên
   return (
-    <div className="columns">
+    <div className={canTeach ? 'columns' : undefined}>
       <div className="stack">
         {empty ? (
           <section className="panel">
             <p className="empty-cell">
-              Chưa có {unit} nào. Thêm {unit} đầu tiên rồi tạo bài học hoặc tải tài liệu lên.
+              {canTeach
+                ? `Chưa có ${unit} nào. Thêm ${unit} đầu tiên rồi tạo bài học hoặc tải tài liệu lên.`
+                : `Giảng viên phụ trách chưa thêm ${unit} hay tài liệu nào.`}
             </p>
           </section>
         ) : (
@@ -186,7 +189,7 @@ export function ContentTab(props: TabProps) {
               <section className="panel flush" key={section?.id ?? 'loose'}>
                 <div className="panel-title">
                   <h2>{section ? section.title : format === 2 ? 'Tài liệu' : 'Chưa phân mục'}</h2>
-                  {section && (
+                  {section && canTeach && (
                     <span className="file-actions">
                       <MoveButtons
                         label={section.title}
@@ -228,52 +231,54 @@ export function ContentTab(props: TabProps) {
                       <LessonItem
                         key={group.lesson.id}
                         group={group}
-                        fileActions={fileActions}
+                        fileActions={canTeach ? fileActions : undefined}
                         actions={
-                          <>
-                            {lessons.length > 1 && (
-                              <MoveButtons
-                                label={group.lesson.title}
-                                disabled={moving}
-                                first={index === 0}
-                                last={index === lessons.length - 1}
-                                onMove={(delta) =>
-                                  moveLesson(section?.id ?? null, lessonIds, index, delta)
+                          canTeach && (
+                            <>
+                              {lessons.length > 1 && (
+                                <MoveButtons
+                                  label={group.lesson.title}
+                                  disabled={moving}
+                                  first={index === 0}
+                                  last={index === lessons.length - 1}
+                                  onMove={(delta) =>
+                                    moveLesson(section?.id ?? null, lessonIds, index, delta)
+                                  }
+                                />
+                              )}
+                              <button
+                                className="icon-button row-action"
+                                title="Sửa bài học"
+                                aria-label={`Sửa ${group.lesson.title}`}
+                                onClick={() =>
+                                  setDraft({
+                                    lesson: group.lesson,
+                                    sectionId: group.lesson.sectionId,
+                                  })
                                 }
-                              />
-                            )}
-                            <button
-                              className="icon-button row-action"
-                              title="Sửa bài học"
-                              aria-label={`Sửa ${group.lesson.title}`}
-                              onClick={() =>
-                                setDraft({
-                                  lesson: group.lesson,
-                                  sectionId: group.lesson.sectionId,
-                                })
-                              }
-                            >
-                              <Icon name="edit" size={13} />
-                            </button>
-                            <button
-                              className="icon-button row-action"
-                              title={
-                                group.lesson.hidden ? 'Hiện với sinh viên' : 'Ẩn với sinh viên'
-                              }
-                              aria-label={`${group.lesson.hidden ? 'Hiện' : 'Ẩn'} ${group.lesson.title}`}
-                              onClick={() => toggleLesson(group.lesson)}
-                            >
-                              <Icon name={group.lesson.hidden ? 'eye' : 'hidden'} size={14} />
-                            </button>
-                            <button
-                              className="icon-button row-action danger"
-                              title="Xóa bài học"
-                              aria-label={`Xóa ${group.lesson.title}`}
-                              onClick={() => deleteLesson(group.lesson)}
-                            >
-                              <Icon name="trash" size={13} />
-                            </button>
-                          </>
+                              >
+                                <Icon name="edit" size={13} />
+                              </button>
+                              <button
+                                className="icon-button row-action"
+                                title={
+                                  group.lesson.hidden ? 'Hiện với sinh viên' : 'Ẩn với sinh viên'
+                                }
+                                aria-label={`${group.lesson.hidden ? 'Hiện' : 'Ẩn'} ${group.lesson.title}`}
+                                onClick={() => toggleLesson(group.lesson)}
+                              >
+                                <Icon name={group.lesson.hidden ? 'eye' : 'hidden'} size={14} />
+                              </button>
+                              <button
+                                className="icon-button row-action danger"
+                                title="Xóa bài học"
+                                aria-label={`Xóa ${group.lesson.title}`}
+                                onClick={() => deleteLesson(group.lesson)}
+                              >
+                                <Icon name="trash" size={13} />
+                              </button>
+                            </>
+                          )
                         }
                       />
                     ))}
@@ -282,7 +287,11 @@ export function ContentTab(props: TabProps) {
                 {files.length > 0 && (
                   <ul className="file-list">
                     {files.map((file) => (
-                      <FileRow key={file.id} file={file} actions={fileActions(file)} />
+                      <FileRow
+                        key={file.id}
+                        file={file}
+                        actions={canTeach ? fileActions(file) : undefined}
+                      />
                     ))}
                   </ul>
                 )}
@@ -295,9 +304,9 @@ export function ContentTab(props: TabProps) {
             );
           })
         )}
-        {format !== 2 && <AddSection {...props} unit={unit} />}
+        {canTeach && format !== 2 && <AddSection {...props} unit={unit} />}
       </div>
-      <UploadPanel {...props} />
+      {canTeach && <UploadPanel {...props} />}
       {draft && <LessonDialog {...props} draft={draft} onClose={() => setDraft(null)} />}
       {renaming && (
         <RenameSection

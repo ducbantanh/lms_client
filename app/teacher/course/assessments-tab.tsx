@@ -23,7 +23,7 @@ type AssessmentTabProps = TabProps & { type: AssessmentType };
 
 /** Tab Bài tập / Bài thực hành / Bài kiểm tra: danh sách bài đúng loại và form tạo bài loại đó. */
 export function AssessmentsTab(props: AssessmentTabProps) {
-  const { content, base, reload, notify, confirm, type } = props;
+  const { content, base, reload, notify, confirm, type, canTeach } = props;
   const { noun } = ASSESSMENT_GROUPS[type];
   const items = content.assessments.filter((assessment) => assessment.type === type);
   const [editing, setEditing] = useState<Assessment | null>(null);
@@ -52,8 +52,9 @@ export function AssessmentsTab(props: AssessmentTabProps) {
     });
   }
 
+  // Admin chỉ xem: không có form tạo bài, không sửa/xóa, vẫn xem được bài nộp và điểm
   return (
-    <div className="columns">
+    <div className={canTeach ? 'columns' : undefined}>
       <section className="panel">
         {items.length ? (
           <ul className="assessment-list">
@@ -68,9 +69,9 @@ export function AssessmentsTab(props: AssessmentTabProps) {
                       className="button small"
                     >
                       <Icon name="check" size={11} />
-                      Bài nộp & chấm điểm
+                      {canTeach ? 'Bài nộp & chấm điểm' : 'Xem bài nộp'}
                     </Link>
-                    {canEditAssessment(assessment) && (
+                    {canTeach && canEditAssessment(assessment) && (
                       <button
                         className="icon-button row-action"
                         title={`Sửa ${noun}`}
@@ -80,7 +81,7 @@ export function AssessmentsTab(props: AssessmentTabProps) {
                         <Icon name="edit" size={13} />
                       </button>
                     )}
-                    {canDeleteAssessment(assessment) ? (
+                    {!canTeach ? null : canDeleteAssessment(assessment) ? (
                       <button
                         className="icon-button row-action danger"
                         title={`Xóa ${noun}`}
@@ -109,7 +110,7 @@ export function AssessmentsTab(props: AssessmentTabProps) {
         )}
       </section>
       {/* key theo loại: chuyển tab thì form trống lại */}
-      <CreateAssessment key={type} {...props} />
+      {canTeach && <CreateAssessment key={type} {...props} />}
       {editing && (
         <EditAssessment {...props} assessment={editing} onClose={() => setEditing(null)} />
       )}

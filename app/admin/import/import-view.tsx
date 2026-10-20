@@ -1,8 +1,8 @@
 'use client';
 
-import { useCallback, useState, type ChangeEvent } from 'react';
+import { useCallback, useState, type ChangeEvent, type FormEvent } from 'react';
 import { apiRequest } from '@/lib/api';
-import { countImportLines, importReason, type ImportReport } from '@/lib/admin';
+import { countImportLines, importReason, readImportFile, type ImportReport } from '@/lib/admin';
 import {
   AdminHeading,
   ConfirmDialog,
@@ -10,18 +10,59 @@ import {
   type ConfirmRequest,
   type Flash,
 } from '@/components/admin-ui';
+import { Icon, type IconName } from '@/components/icon';
 
 /** Khớp giới hạn app.student-import.max-bytes của server (256 KB). */
 const MAX_FILE_BYTES = 256 * 1024;
-const SAMPLE = '# student_id|ddmmyyyy|Họ tên\nB21DCCN001|01012003|Nguyễn Văn A';
+
+/** Vai trò tạo được bằng import (AccountImportService.importableRole): 5 sinh viên, 1 giảng viên. */
+type ImportRole = 5 | 1;
+const ROLES: Record<
+  ImportRole,
+  { label: string; code: string; icon: IconName; description: string; sample: string[] }
+> = {
+  5: {
+    label: 'Sinh viên',
+    code: 'MSSV',
+    icon: 'cap',
+    description: 'Đăng nhập bằng MSSV, học và nộp bài trong các khóa được ghi danh',
+    sample: ['B21DCCN001,01012003,Nguyễn Văn A', 'B21DCCN002,15/02/2003,Trần Thị B'],
+  },
+  1: {
+    label: 'Giảng viên',
+    code: 'Mã giảng viên',
+    icon: 'teach',
+    description: 'Đăng nhập bằng mã giảng viên, phụ trách các khóa được admin phân công',
+    sample: ['GV001,20051980,Lê Văn Cường', 'GV002,03/09/1985,Phạm Thị Dung'],
+  },
+};
 
 type Tab = 'created' | 'duplicates' | 'errors';
 
+/** File CSV mẫu (UTF-8 có BOM để Excel mở đúng tiếng Việt) tải về ngay trên trình duyệt. */
+function downloadSample(role: ImportRole) {
+  const { code, sample } = ROLES[role];
+  const csv = `﻿${[`${code},Ngày sinh,Họ tên`, ...sample].join('\r\n')}\r\n`;
+  const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = role === 1 ? 'mau-giang-vien.csv' : 'mau-sinh-vien.csv';
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+/** yyyy-mm-dd (ô date) → ddmmyyyy như dòng import. */
+function toDdmmyyyy(value: string) {
+  const [year, month, day] = value.split('-');
+  return `${day}${month}${year}`;
+}
+
 /**
- * Trang /admin/import/: dán text hoặc nạp file .txt, xem kết quả theo 3 nhóm.
- * File được đọc ngay trên trình duyệt và đổ vào ô text để admin xem lại trước khi gửi.
+ * Trang /admin/import/: tạo tài khoản sinh viên hoặc giảng viên. Nhiều tài khoản: dán danh sách hoặc nạp
+ * file .txt/.csv (đọc ngay trên trình duyệt và đổ vào ô text để xem lại trước khi gửi); một tài khoản: form.
  */
 export function ImportView() {
+  const [role, setRole] = useState<ImportRole>(5);
   const [content, setContent] = useState('');
   const [fileName, setFileName] = useState('');
   const [report, setReport] = useState<ImportReport | null>(null);
@@ -30,22 +71,54 @@ export function ImportView() {
   const [confirm, setConfirm] = useState<ConfirmRequest | null>(null);
   const clearFlash = useCallback(() => setFlash(null), []);
   const lines = countImportLines(content);
+  const { label } = ROLES[role];
 
   async function handleFile(event: ChangeEvent<HTMLInputElement>) {
     const input = event.currentTarget;
     const file = input.files?.[0];
     input.value = '';
     if (!file) return;
-    if (!file.name.toLowerCase().endsWith('.txt')) {
-      setFlash({ type: 'error', text: 'Chỉ chấp nhận file .txt' });
+    if (!/\.(txt|csv)$/i.test(file.name)) {
+      setFlash({ type: 'error', text: 'Chỉ chấp nhận file .txt hoặc .csv' });
       return;
     }
     if (file.size > MAX_FILE_BYTES) {
       setFlash({ type: 'error', text: 'File quá lớn (tối đa 256 KB).' });
       return;
     }
-    setContent(await file.text());
+    setContent(await readImportFile(file));
     setFileName(file.name);
+  }
+
+  /** Gửi nội dung (nhiều dòng hoặc một dòng từ form); trả về kết quả để form biết đã tạo được chưa. */
+  async function send(text: string) {
+    try {
+      const result = await apiRequest<ImportReport>('/admin/users/import', {
+        method: 'POST',
+        body: { content: text, role },
+      });
+      setReport(result);
+      // Mở nhóm có vấn đề trước nếu có lỗi.
+      setTab(
+        result.errors.length
+          ? 'errors'
+          : result.duplicates.length && !result.created.length
+            ? 'duplicates'
+            : 'created',
+      );
+      setFlash(
+        result.created.length
+          ? {
+              type: 'success',
+              text: `Đã tạo ${result.created.length} tài khoản ${label.toLowerCase()}.`,
+            }
+          : { type: 'error', text: 'Không tạo được tài khoản nào. Xem phần Kết quả.' },
+      );
+      return result;
+    } catch (reason) {
+      setFlash({ type: 'error', text: reason instanceof Error ? reason.message : 'Lỗi.' });
+      return null;
+    }
   }
 
   function askImport() {
@@ -54,28 +127,11 @@ export function ImportView() {
       return;
     }
     setConfirm({
-      title: 'Tạo tài khoản',
-      message: `Tạo tài khoản cho ${lines} dòng dữ liệu? Tài khoản đã có sẽ không bị ghi đè.`,
-      confirmLabel: 'Import',
+      title: `Tạo tài khoản ${label.toLowerCase()}`,
+      message: `Tạo tài khoản ${label.toLowerCase()} cho ${lines} dòng dữ liệu? Tài khoản đã có sẽ không bị ghi đè.`,
+      confirmLabel: 'Tạo tài khoản',
       run: async () => {
-        try {
-          const result = await apiRequest<ImportReport>('/admin/users/import', {
-            method: 'POST',
-            body: { content },
-          });
-          setReport(result);
-          // Mở nhóm có vấn đề trước nếu có lỗi.
-          setTab(
-            result.errors.length
-              ? 'errors'
-              : result.duplicates.length && !result.created.length
-                ? 'duplicates'
-                : 'created',
-          );
-          setFlash({ type: 'success', text: `Đã tạo ${result.created.length} tài khoản.` });
-        } catch (reason) {
-          setFlash({ type: 'error', text: reason instanceof Error ? reason.message : 'Lỗi.' });
-        }
+        await send(content);
       },
     });
   }
@@ -92,54 +148,88 @@ export function ImportView() {
     <main id="main-content" className="shell-main">
       <AdminHeading
         title="Tạo tài khoản"
-        description="Tạo nhiều tài khoản sinh viên một lần. Mật khẩu ban đầu là ngày sinh (ddmmyyyy), người dùng phải đổi ở lần đăng nhập đầu."
-      />
+        description="Tạo tài khoản sinh viên hoặc giảng viên. Mật khẩu ban đầu là ngày sinh (ddmmyyyy), người dùng phải đổi ở lần đăng nhập đầu."
+      >
+        {/* Nút chuyển loại tài khoản; rê chuột để xem mô tả */}
+        <div className="role-switch" role="radiogroup" aria-label="Loại tài khoản">
+          {([5, 1] as const).map((value) => (
+            <button
+              key={value}
+              type="button"
+              role="radio"
+              aria-checked={role === value}
+              className={role === value ? 'selected' : ''}
+              title={ROLES[value].description}
+              onClick={() => setRole(value)}
+            >
+              <Icon name={ROLES[value].icon} size={14} />
+              {ROLES[value].label}
+            </button>
+          ))}
+        </div>
+      </AdminHeading>
       <FlashMessage flash={flash} onDone={clearFlash} />
       <div className="columns even">
-        <section className="panel">
-          <div className="panel-title">
-            <h2>Danh sách</h2>
-            <span>{lines} dòng</span>
-          </div>
-          <p className="admin-hint">
-            Mỗi dòng: <code>mã_sinh_viên|ddmmyyyy|Họ tên</code>. Dòng trống và dòng bắt đầu bằng{' '}
-            <code>#</code> được bỏ qua.
-          </p>
-          <textarea
-            className="input admin-textarea"
-            value={content}
-            onChange={(event) => setContent(event.target.value)}
-            placeholder={SAMPLE}
-            spellCheck={false}
-            rows={14}
-            aria-label="Danh sách sinh viên"
-          />
-          <div className="admin-import-actions">
-            <label className="button">
-              {fileName || 'Chọn file .txt'}
-              <input type="file" accept=".txt,text/plain" hidden onChange={handleFile} />
-            </label>
-            <button
-              className="button"
-              onClick={() => {
-                setContent('');
-                setFileName('');
-              }}
-            >
-              Xóa
-            </button>
-            <button className="button primary" onClick={askImport}>
-              Import
-            </button>
-          </div>
-        </section>
+        <div className="stack">
+          <section className="panel">
+            <div className="panel-title">
+              <h2>Danh sách {label.toLowerCase()}</h2>
+              <span>{lines} dòng</span>
+            </div>
+            <p className="admin-hint">
+              Mỗi dòng 3 cột: <code>{ROLES[role].code}</code>, <code>ngày sinh</code>,{' '}
+              <code>họ tên</code>. File <b>.txt</b> ngăn bằng <code>|</code>; file <b>.csv</b> ngăn
+              bằng <code>,</code> hoặc <code>;</code> (dòng tiêu đề tự bỏ qua); dán từ Excel cũng
+              được. Ngày sinh dạng <code>ddmmyyyy</code>, <code>dd/mm/yyyy</code> hoặc{' '}
+              <code>yyyy-mm-dd</code>.
+            </p>
+            <textarea
+              className="input admin-textarea"
+              value={content}
+              onChange={(event) => setContent(event.target.value)}
+              placeholder={`${ROLES[role].sample[0].replaceAll(',', '|')}\n${ROLES[role].sample[1]}`}
+              spellCheck={false}
+              rows={12}
+              aria-label={`Danh sách ${label.toLowerCase()}`}
+            />
+            <div className="admin-import-actions">
+              <label className="button">
+                <Icon name="upload" size={13} />
+                {fileName || 'Chọn file .txt / .csv'}
+                <input
+                  type="file"
+                  accept=".txt,.csv,text/plain,text/csv"
+                  hidden
+                  onChange={handleFile}
+                />
+              </label>
+              <button className="button" onClick={() => downloadSample(role)}>
+                <Icon name="download" size={13} />
+                File mẫu
+              </button>
+              <button
+                className="button"
+                onClick={() => {
+                  setContent('');
+                  setFileName('');
+                }}
+              >
+                Xóa
+              </button>
+              <button className="button primary" onClick={askImport}>
+                Tạo tài khoản
+              </button>
+            </div>
+          </section>
+          <SingleAccount key={role} role={role} onSubmit={send} />
+        </div>
         <section className="panel">
           <div className="panel-title">
             <h2>Kết quả</h2>
             {report && <span>{report.totalLines} dòng đã đọc</span>}
           </div>
           {!report ? (
-            <p className="empty-cell">Kết quả import sẽ hiện ở đây.</p>
+            <p className="empty-cell">Kết quả tạo tài khoản sẽ hiện ở đây.</p>
           ) : (
             <>
               <div className="tabs" role="tablist">
@@ -166,13 +256,89 @@ export function ImportView() {
   );
 }
 
+/** Tạo nhanh một tài khoản (ví dụ một giảng viên mới) mà không cần soạn file; dùng chung API import. */
+function SingleAccount({
+  role,
+  onSubmit,
+}: {
+  role: ImportRole;
+  onSubmit: (text: string) => Promise<ImportReport | null>;
+}) {
+  const [form, setForm] = useState({ username: '', fullName: '', birthDate: '' });
+  const [busy, setBusy] = useState(false);
+  const { label, code } = ROLES[role];
+  const set = (patch: Partial<typeof form>) => setForm({ ...form, ...patch });
+
+  async function submit(event: FormEvent) {
+    event.preventDefault();
+    setBusy(true);
+    const result = await onSubmit(
+      `${form.username.trim()}|${toDdmmyyyy(form.birthDate)}|${form.fullName.trim()}`,
+    );
+    setBusy(false);
+    if (result?.created.length) setForm({ username: '', fullName: '', birthDate: '' });
+  }
+
+  return (
+    <section className="panel">
+      <div className="panel-title">
+        <h2>
+          <i className="title-icon green">
+            <Icon name="userPlus" size={12} />
+          </i>
+          Tạo một tài khoản {label.toLowerCase()}
+        </h2>
+      </div>
+      <form onSubmit={submit}>
+        <div className="form-row">
+          <label className="form-field">
+            {code}
+            <input
+              className="input mono"
+              value={form.username}
+              onChange={(event) => set({ username: event.target.value })}
+              maxLength={32}
+              pattern="[A-Za-z0-9][A-Za-z0-9_.\-]{2,31}"
+              title="3–32 ký tự: chữ, số, _ . -"
+              required
+            />
+          </label>
+          <label className="form-field">
+            Ngày sinh
+            <input
+              className="input"
+              type="date"
+              value={form.birthDate}
+              onChange={(event) => set({ birthDate: event.target.value })}
+              required
+            />
+          </label>
+        </div>
+        <label className="form-field">
+          Họ tên
+          <input
+            className="input"
+            value={form.fullName}
+            onChange={(event) => set({ fullName: event.target.value })}
+            maxLength={100}
+            required
+          />
+        </label>
+        <button className="button primary" disabled={busy}>
+          {busy ? 'Đang tạo…' : `Tạo tài khoản ${label.toLowerCase()}`}
+        </button>
+      </form>
+    </section>
+  );
+}
+
 function ReportTable({ report, tab }: { report: ImportReport; tab: Tab }) {
   const rows =
     tab === 'created'
       ? report.created.map((row) => ({ line: row.line, id: row.username, text: row.fullName }))
       : report[tab].map((row) => ({
           line: row.line,
-          id: row.studentId ?? '—',
+          id: row.username ?? '—',
           text: importReason(row.reason),
         }));
   if (rows.length === 0) return <p className="empty-cell">Không có dòng nào.</p>;
@@ -182,7 +348,7 @@ function ReportTable({ report, tab }: { report: ImportReport; tab: Tab }) {
         <thead>
           <tr>
             <th>Dòng</th>
-            <th>{tab === 'created' ? 'Tài khoản' : 'Mã SV'}</th>
+            <th>Mã đăng nhập</th>
             <th>{tab === 'created' ? 'Họ tên' : 'Lý do'}</th>
           </tr>
         </thead>

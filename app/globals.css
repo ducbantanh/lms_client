@@ -895,6 +895,16 @@ a.list-row:hover {
 .course-footer .is-done {
   color: var(--success);
 }
+/* Thẻ khóa học của giảng viên/admin: việc cần làm ngay dưới tên khóa */
+.course-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.course-badges .badge {
+  margin: 0;
+}
 .course-grid.is-list {
   grid-template-columns: 1fr;
   gap: 12px;
@@ -1250,24 +1260,26 @@ a.list-row:hover {
 .shell-backdrop {
   display: none;
 }
-/* Nút thu gọn menu ở đáy sidebar (chỉ trên màn hình rộng; mobile dùng ngăn kéo) */
+/* Nút thu gọn menu: icon ở đầu thanh trên cùng, cùng kiểu nút icon của trang (chỉ màn hình rộng;
+   màn hình hẹp dùng ngăn kéo với .shell-menu-toggle) */
 .shell-collapse {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-top: auto;
-  padding: 9px 12px;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #8591a8;
+  margin-left: -8px;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  color: var(--text-subtle);
+  transition:
+    background-color 0.15s,
+    color 0.15s;
 }
 .shell-collapse:hover {
-  background: rgb(255 255 255 / 0.05);
-  color: #fff;
+  background: var(--surface-muted);
+  color: var(--text);
 }
-.shell-collapse .icon {
-  width: 16px;
+.shell-collapse:focus-visible {
+  outline: 2px solid var(--accent-ring);
+  outline-offset: 1px;
+  color: var(--text);
 }
 @media (min-width: 961px) {
   .shell.is-collapsed {
@@ -1282,8 +1294,7 @@ a.list-row:hover {
     justify-content: center;
     padding: 0;
   }
-  .shell.is-collapsed .shell-nav a,
-  .shell.is-collapsed .shell-collapse {
+  .shell.is-collapsed .shell-nav a {
     position: relative;
     justify-content: center;
     padding: 10px 0;
@@ -2676,6 +2687,88 @@ a.list-row:hover {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+/* Trang chấm điểm khi admin xem: điểm và nhận xét chỉ đọc */
+.grade-readonly {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-muted);
+}
+.grade-readonly > b {
+  font-size: 26px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.grade-readonly > b small {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-subtle);
+}
+.grade-readonly .lesson-text {
+  margin-top: 8px;
+}
+/* Trang Tạo tài khoản: nút chuyển Sinh viên / Giảng viên (dạng viên thuốc, có icon) */
+.role-switch {
+  display: inline-flex;
+  flex-shrink: 0;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-muted);
+}
+.role-switch button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 16px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  transition:
+    background-color 0.15s,
+    color 0.15s,
+    box-shadow 0.15s;
+}
+.role-switch button .icon {
+  color: var(--text-subtle);
+  transition: color 0.15s;
+}
+.role-switch button:hover:not(.selected) {
+  color: var(--text);
+}
+.role-switch button.selected {
+  background: var(--surface);
+  color: var(--accent);
+  box-shadow:
+    0 1px 2px rgb(16 24 40 / 0.08),
+    0 0 0 1px var(--border);
+}
+.role-switch button.selected .icon {
+  color: var(--accent);
+}
+.role-switch button:focus-visible {
+  outline: 2px solid var(--accent-ring);
+  outline-offset: 1px;
+}
+/* Hộp thoại sửa tài khoản: dòng đặt lại mật khẩu, tách khỏi các ô thông tin */
+.reset-password {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  margin: 16px 0 4px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-muted);
+  font-size: 13px;
+  color: var(--text-muted);
 }
 .icon-button:disabled:hover {
   background: none;

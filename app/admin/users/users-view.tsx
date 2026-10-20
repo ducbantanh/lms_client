@@ -1,12 +1,13 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { apiRequest } from '@/lib/api';
 import { hasPermission, ROLE_NAMES, roleName } from '@/lib/auth';
 import { useSession } from '@/lib/session-provider';
 import { formatDateTime, type AdminUser, type PageResult } from '@/lib/admin';
 import type { Role } from '@/lib/types';
 import { Icon, type IconName } from '@/components/icon';
+import { Modal } from '@/components/modal';
 import {
   AdminHeading,
   ConfirmDialog,
@@ -99,6 +100,7 @@ export function UsersView() {
   const [error, setError] = useState('');
   const [flash, setFlash] = useState<Flash | null>(null);
   const [confirm, setConfirm] = useState<ConfirmRequest | null>(null);
+  const [editing, setEditing] = useState<AdminUser | null>(null);
   const clearFlash = useCallback(() => setFlash(null), []);
 
   // Chỉ đọc URL sau khi mount vì trang được export tĩnh (không có window lúc build).
@@ -277,6 +279,14 @@ export function UsersView() {
                       </td>
                       <td className="hide-sm">{formatDateTime(item.lastLoginAt)}</td>
                       <td className="actions">
+                        <button
+                          className="icon-button row-action"
+                          aria-label={`Sửa ${item.username}`}
+                          title="Sửa thông tin"
+                          onClick={() => setEditing(item)}
+                        >
+                          <Icon name="edit" size={14} />
+                        </button>
                         {actions.map((action) => (
                           <button
                             key={action}
@@ -320,6 +330,194 @@ export function UsersView() {
         </div>
       </section>
       {confirm && <ConfirmDialog request={confirm} onClose={() => setConfirm(null)} />}
+      {editing && (
+        <EditUserDialog
+          user={editing}
+          self={editing.id === user?.id}
+          onClose={() => setEditing(null)}
+          onSaved={async (text) => {
+            setEditing(null);
+            setFlash({ type: 'success', text });
+            if (filters) await load(filters);
+          }}
+        />
+      )}
     </main>
+  );
+}
+
+/**
+ * Sửa mã đăng nhập, họ tên, ngày sinh (vai trò, trạng thái, mật khẩu không đổi ở đây);
+ * nút riêng đặt lại mật khẩu về ngày sinh đã lưu.
+ */
+function EditUserDialog({
+  user,
+  self,
+  onClose,
+  onSaved,
+}: {
+  user: AdminUser;
+  self: boolean;
+  onClose: () => void;
+  onSaved: (message: string) => Promise<void>;
+}) {
+  const [form, setForm] = useState({
+    username: user.username,
+    fullName: user.fullName,
+    birthDate: user.birthDate ?? '',
+  });
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  /** Bước xác nhận đặt lại mật khẩu, hiện ngay trong hộp thoại thay vì mở hộp thoại thứ hai. */
+  const [confirmReset, setConfirmReset] = useState(false);
+  const set = (patch: Partial<typeof form>) => setForm({ ...form, ...patch });
+  const id = encodeURIComponent(user.id);
+
+  async function submit(event: FormEvent) {
+    event.preventDefault();
+    setBusy(true);
+    setError('');
+    try {
+      const saved = await apiRequest<AdminUser>(`/admin/users/${id}`, {
+        method: 'PUT',
+        body: {
+          username: form.username.trim(),
+          fullName: form.fullName.trim(),
+          birthDate: form.birthDate || null,
+        },
+      });
+      await onSaved(`Đã lưu thông tin ${saved.username}.`);
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'Không lưu được.');
+      setBusy(false);
+    }
+  }
+
+  async function resetPassword() {
+    setBusy(true);
+    setError('');
+    try {
+      await apiRequest(`/admin/users/${id}/reset-password`, { method: 'POST', body: {} });
+      await onSaved(
+        `Đã đặt lại mật khẩu của ${user.username} về ngày sinh. Người dùng phải đổi mật khẩu khi đăng nhập.`,
+      );
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'Không đặt lại được mật khẩu.');
+      setBusy(false);
+      setConfirmReset(false);
+    }
+  }
+
+  // Đặt lại theo ngày sinh đã lưu trên server: đổi ngày sinh thì phải lưu trước
+  const birthChanged = form.birthDate !== (user.birthDate ?? '');
+
+  return (
+    <Modal
+      title={`Sửa tài khoản ${roleName(user.role).toLowerCase()}`}
+      onClose={() => !busy && onClose()}
+    >
+      <form onSubmit={submit}>
+        {error && (
+          <p className="form-error" role="alert">
+            {error}
+          </p>
+        )}
+        <div className="form-row">
+          <label className="form-field">
+            Mã đăng nhập
+            <input
+              className="input mono"
+              value={form.username}
+              onChange={(event) => set({ username: event.target.value })}
+              maxLength={32}
+              pattern="[A-Za-z0-9][A-Za-z0-9_.\-]{2,31}"
+              title="3–32 ký tự: chữ, số, _ . -"
+              required
+            />
+          </label>
+          <label className="form-field">
+            Ngày sinh
+            <input
+              className="input"
+              type="date"
+              value={form.birthDate}
+              onChange={(event) => set({ birthDate: event.target.value })}
+            />
+          </label>
+        </div>
+        <label className="form-field">
+          Họ tên
+          <input
+            className="input"
+            value={form.fullName}
+            onChange={(event) => set({ fullName: event.target.value })}
+            maxLength={100}
+            required
+            autoFocus
+          />
+        </label>
+        {form.username.trim() !== user.username && (
+          <p className="admin-hint">
+            Người dùng sẽ đăng nhập bằng mã mới; phiên đang mở vẫn giữ nguyên.
+          </p>
+        )}
+        {!self && (
+          <div className="reset-password">
+            {confirmReset ? (
+              <>
+                <span>
+                  Đặt mật khẩu của <b>{user.username}</b> về ngày sinh và đăng xuất khỏi mọi thiết
+                  bị?
+                </span>
+                <div className="button-row">
+                  <button
+                    type="button"
+                    className="button small"
+                    disabled={busy}
+                    onClick={() => setConfirmReset(false)}
+                  >
+                    Không
+                  </button>
+                  <button
+                    type="button"
+                    className="button small danger"
+                    disabled={busy}
+                    onClick={() => void resetPassword()}
+                  >
+                    Đặt lại
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <span>
+                  {user.birthDate
+                    ? 'Quên mật khẩu? Đặt lại về ngày sinh (ddmmyyyy), bắt đổi khi đăng nhập.'
+                    : 'Tài khoản chưa có ngày sinh nên chưa đặt lại mật khẩu được.'}
+                </span>
+                <button
+                  type="button"
+                  className="button small"
+                  disabled={busy || !user.birthDate || birthChanged}
+                  title={birthChanged ? 'Lưu ngày sinh mới trước' : undefined}
+                  onClick={() => setConfirmReset(true)}
+                >
+                  <Icon name="key" size={11} />
+                  Đặt lại mật khẩu
+                </button>
+              </>
+            )}
+          </div>
+        )}
+        <div className="dialog-actions">
+          <button type="button" className="button" disabled={busy} onClick={onClose}>
+            Hủy
+          </button>
+          <button className="button primary" disabled={busy}>
+            {busy ? 'Đang lưu…' : 'Lưu'}
+          </button>
+        </div>
+      </form>
+    </Modal>
   );
 }

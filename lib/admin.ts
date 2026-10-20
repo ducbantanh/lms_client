@@ -10,6 +10,8 @@ export interface AdminUser {
   /** 1 hoạt động, 0 bị khóa. */
   status: 0 | 1;
   mustChangePassword: boolean;
+  /** yyyy-mm-dd; null khi chưa có (không đặt lại mật khẩu về ngày sinh được). */
+  birthDate: string | null;
   createdAt: string;
   lastLoginAt: string | null;
 }
@@ -48,7 +50,7 @@ export interface PresenceChanged {
 
 export interface ImportIssue {
   line: number;
-  studentId: string | null;
+  username: string | null;
   reason: string;
 }
 
@@ -60,9 +62,9 @@ export interface ImportReport {
 }
 
 const IMPORT_REASONS: Record<string, string> = {
-  INVALID_FORMAT: 'Sai định dạng (cần đúng 3 phần ngăn bởi |)',
-  INVALID_STUDENT_ID: 'Mã sinh viên không hợp lệ',
-  INVALID_DATE: 'Ngày sinh không hợp lệ (ddmmyyyy)',
+  INVALID_FORMAT: 'Sai định dạng (cần đúng 3 cột: mã, ngày sinh, họ tên)',
+  INVALID_USERNAME: 'Mã đăng nhập không hợp lệ (3–32 ký tự: chữ, số, _ . -)',
+  INVALID_DATE: 'Ngày sinh không hợp lệ (ddmmyyyy, dd/mm/yyyy hoặc yyyy-mm-dd)',
   INVALID_NAME: 'Họ tên không hợp lệ',
   DUPLICATE_IN_INPUT: 'Trùng với dòng khác trong danh sách',
   ALREADY_EXISTS: 'Tài khoản đã tồn tại',
@@ -109,10 +111,13 @@ const AUDIT_ACTIONS: Record<string, string> = {
   'user.locked': 'Khóa tài khoản',
   'user.unlocked': 'Mở khóa tài khoản',
   'user.deleted': 'Xóa tài khoản',
+  'user.updated': 'Sửa tài khoản',
+  'user.password_reset': 'Đặt lại mật khẩu',
   'user.imported': 'Tạo tài khoản hàng loạt',
   'session.force_logout': 'Ép đăng xuất',
   'course.created': 'Tạo khóa học',
   'course.updated': 'Sửa khóa học',
+  'course.assigned': 'Phân công giảng viên',
   'course.deleted': 'Xóa khóa học',
   'section.created': 'Thêm mục',
   'section.updated': 'Đổi tên mục',
@@ -172,7 +177,28 @@ export function formatTime(date: Date) {
   return TIME.format(date);
 }
 
-/** Đếm dòng dữ liệu import: bỏ dòng trống và dòng bắt đầu bằng #, giống server. */
+/**
+ * Đếm dòng dữ liệu import giống AccountImportParser của server: bỏ dòng trống, dòng bắt đầu bằng #,
+ * và dòng tiêu đề CSV (dòng đầu có cột ngày sinh không chứa chữ số).
+ */
 export function countImportLines(text: string) {
-  return text.split(/\r?\n/).filter((line) => line.trim() && !line.trim().startsWith('#')).length;
+  const lines = text.split(/\r?\n/).filter((line) => line.trim() && !line.trim().startsWith('#'));
+  const first = lines[0]?.split(/[|\t;,]/);
+  const header = first?.length === 3 && !/\d/.test(first[1]);
+  return lines.length - (header ? 1 : 0);
+}
+
+/**
+ * Đọc file .txt/.csv: UTF-8 nếu hợp lệ, ngược lại Windows-1258 (Excel tiếng Việt lưu "CSV" thường),
+ * rồi gộp dấu kết hợp (NFC) để họ tên hiển thị và so sánh đúng.
+ */
+export async function readImportFile(file: File) {
+  const bytes = await file.arrayBuffer();
+  let text: string;
+  try {
+    text = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+  } catch {
+    text = new TextDecoder('windows-1258').decode(bytes);
+  }
+  return text.normalize('NFC');
 }

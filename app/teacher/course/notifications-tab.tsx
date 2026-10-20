@@ -11,7 +11,7 @@ import { errorFlash, type TabProps } from './course-manager';
 
 /** Tab Thông báo: soạn thông báo gửi cả lớp hoặc một số sinh viên, xem thông báo đã gửi và số người đã đọc. */
 export function NotificationsTab(props: TabProps) {
-  const { base, notify } = props;
+  const { base, notify, canTeach } = props;
   const [history, setHistory] = useState<SentNotification[] | null>(null);
 
   const loadHistory = useCallback(async () => {
@@ -27,7 +27,7 @@ export function NotificationsTab(props: TabProps) {
   }, [loadHistory]);
 
   return (
-    <div className="columns">
+    <div className={canTeach ? 'columns' : undefined}>
       <section className="panel flush">
         <div className="panel-title">
           <h2>Đã gửi</h2>
@@ -68,7 +68,7 @@ export function NotificationsTab(props: TabProps) {
           <p className="empty-cell">Chưa có thông báo nào trong khóa học này.</p>
         )}
       </section>
-      <Compose {...props} onSent={loadHistory} />
+      {canTeach && <Compose {...props} onSent={loadHistory} />}
     </div>
   );
 }
