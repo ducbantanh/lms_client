@@ -8,6 +8,10 @@ const icons = {
   starFilled: 'fas fa-star',
   chevron: 'fas fa-chevron-right',
   down: 'fas fa-chevron-down',
+  up: 'fas fa-chevron-up',
+  download: 'fas fa-download',
+  history: 'fas fa-history',
+  settings: 'fas fa-cog',
   more: 'fas fa-ellipsis-h',
   eye: 'far fa-eye',
   hidden: 'far fa-eye-slash',
@@ -30,6 +34,12 @@ const icons = {
   file: 'far fa-file-alt',
   info: 'fas fa-info',
   plus: 'fas fa-plus',
+  minus: 'fas fa-minus',
+  bell: 'far fa-bell',
+  collapse: 'fas fa-angle-double-left',
+  expand: 'fas fa-angle-double-right',
+  send: 'far fa-paper-plane',
+  edit: 'far fa-edit',
   key: 'fas fa-key',
   copy: 'far fa-copy',
   userPlus: 'fas fa-user-plus',
@@ -42,6 +52,7 @@ const icons = {
   filePdf: 'far fa-file-pdf',
   fileWord: 'far fa-file-word',
   filePpt: 'far fa-file-powerpoint',
+  fileZip: 'far fa-file-archive',
 } as const;
 
 export type IconName = keyof typeof icons;

@@ -18,6 +18,8 @@ const CONTENT_TYPES = {
   '.woff2': 'font/woff2',
   '.woff': 'font/woff',
   '.svg': 'image/svg+xml',
+  // pdf.js nạp bộ giải mã ảnh scan bằng WebAssembly.instantiateStreaming, cần đúng MIME này
+  '.wasm': 'application/wasm',
 };
 
 /** Chỉ cho đọc file nằm trong thư mục giao diện, không cho truy cập source/.env bên ngoài. */

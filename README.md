@@ -59,8 +59,10 @@ trong README này để tra đường dẫn hiện tại.
 - Quản trị: `app/admin/` (mỗi trang một file `*-view.tsx`), dùng chung `components/admin-ui.tsx`,
   kiểu dữ liệu API trong `lib/admin.ts`; quyền và chuyển trang theo role trong `lib/auth.ts`.
 - Giảng viên: `app/teacher/teacher-courses.tsx` (danh sách, tạo khóa học) và `app/teacher/course/`
-  (`course-manager.tsx` + 3 tab Nội dung / Sinh viên / Bài kiểm tra). Kiểu dữ liệu và nhãn trong
-  `lib/teaching.ts`; dòng tài liệu và thẻ bài kiểm tra dùng chung với sinh viên ở `components/course-items.tsx`.
+  (`course-manager.tsx` + tab Nội dung / Sinh viên / Bài tập / Bài thực hành / Bài kiểm tra; ba tab bài
+  dùng chung `assessments-tab.tsx`, mỗi tab một loại). Kiểu dữ liệu và nhãn trong
+  `lib/teaching.ts` (`groupContent` gom bài học + tài liệu theo mục); dòng tài liệu, bài học (`LessonItem`)
+  và thẻ bài kiểm tra dùng chung với sinh viên ở `components/course-items.tsx`.
 - Trang chủ theo vai trò: Admin → `/admin/`, Giảng viên → `/teacher/`, còn lại → `/`. Admin và giảng
   viên mở trang học tập của sinh viên sẽ được chuyển về khu của mình (`routeRedirect` trong `lib/auth.ts`).
 
@@ -84,6 +86,9 @@ trong README này để tra đường dẫn hiện tại.
 - Class dùng chung: `button` (`primary`, `danger`, `small`), `input`, `select`, `panel`, `tabs`,
   `toolbar`, `stats/stat-card`, `badge`, `empty-state`.
 - Font Awesome CSS/webfonts trong `public/vendor/fontawesome/`, không CDN.
+- Đề PDF ở trang làm bài vẽ bằng pdf.js (`components/pdf-viewer.tsx`). Worker và dữ liệu font/wasm
+  được `npm install` chép vào `public/vendor/pdfjs/` (`scripts/copy-pdf-worker.mjs`, đã bỏ qua trong Git);
+  nếu thư mục này thiếu, chạy `node scripts/copy-pdf-worker.mjs`.
 - React/native dialog quản lý tương tác; không dùng jQuery để sửa DOM của React.
 
 ## Build static và kết nối backend

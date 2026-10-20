@@ -2,24 +2,69 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { apiRequest } from '@/lib/api';
-import { formatDateTime } from '@/lib/admin';
+import { hasPermission } from '@/lib/auth';
+import { useSession } from '@/lib/session-provider';
+import { formatDateTime, type PresenceChanged, type PresenceSnapshot } from '@/lib/admin';
 import {
   ENROLL_METHODS,
+  type CourseProgressReport,
   type EnrolledStudent,
+  type StudentProgress,
   type EnrollReport,
   type StudentPick,
 } from '@/lib/teaching';
 import { Icon } from '@/components/icon';
 import { errorFlash, type TabProps } from './course-manager';
 
-/** Tab Sinh viên: danh sách ghi danh + 3 cách thêm (dán MSSV, chọn từ danh sách, mã tham gia). */
+/**
+ * Id những người đang online (có WebSocket mở): ảnh chụp từ /admin/presence rồi cập nhật realtime
+ * qua presence.changed. null khi tài khoản không có quyền presence.view (ẩn cột trạng thái).
+ */
+function useOnlineIds() {
+  const { user, subscribe } = useSession();
+  const allowed = hasPermission(user, 'presence.view');
+  const [online, setOnline] = useState<Set<string> | null>(null);
+  useEffect(() => {
+    if (!allowed) return;
+    const controller = new AbortController();
+    apiRequest<PresenceSnapshot>('/admin/presence', { signal: controller.signal })
+      .then((snapshot) => setOnline(new Set(snapshot.users.map((item) => item.id))))
+      .catch(() => undefined);
+    const unsubscribe = subscribe('presence.changed', (data) => {
+      const event = data as PresenceChanged;
+      setOnline((current) => {
+        const next = new Set(current ?? []);
+        if (event.online) next.add(event.userId);
+        else next.delete(event.userId);
+        return next;
+      });
+    });
+    return () => {
+      controller.abort();
+      unsubscribe();
+    };
+  }, [allowed, subscribe]);
+  return online;
+}
+
+/**
+ * Tab Sinh viên: danh sách ghi danh kèm trạng thái online và tiến độ, cùng 3 cách thêm
+ * (dán MSSV, chọn từ danh sách, mã tham gia).
+ */
 export function StudentsTab(props: TabProps) {
   const { base, reload, notify, confirm } = props;
   const [students, setStudents] = useState<EnrolledStudent[] | null>(null);
+  const [progress, setProgress] = useState<CourseProgressReport | null>(null);
+  const online = useOnlineIds();
 
   const loadStudents = useCallback(async () => {
     try {
-      setStudents(await apiRequest<EnrolledStudent[]>(`${base}/students`));
+      const [list, report] = await Promise.all([
+        apiRequest<EnrolledStudent[]>(`${base}/students`),
+        apiRequest<CourseProgressReport>(`${base}/progress`),
+      ]);
+      setStudents(list);
+      setProgress(report);
     } catch (reason) {
       notify(errorFlash(reason));
     }
@@ -54,16 +99,41 @@ export function StudentsTab(props: TabProps) {
   }
 
   const enrolled = new Set(students?.map((student) => student.id));
+  const progressOf = new Map(progress?.students.map((row) => [row.studentId, row]));
+  /** "3/5 bài học · 1/2 bài kiểm tra" cho tooltip của cột Tiến độ. */
+  const progressDetail = (row: StudentProgress) =>
+    [
+      progress?.lessonsTotal && `${row.lessonsDone}/${progress.lessonsTotal} bài học`,
+      progress?.assessmentsTotal &&
+        `${row.assessmentsDone}/${progress.assessmentsTotal} bài kiểm tra`,
+    ]
+      .filter(Boolean)
+      .join(' · ');
+
+  const onlineCount = students && online ? students.filter((s) => online.has(s.id)).length : 0;
 
   return (
     <div className="columns">
       <section className="panel">
+        {students && students.length > 0 && (
+          <p className="table-summary">
+            {students.length} sinh viên
+            {online && (
+              <>
+                {' · '}
+                <span className={`status-dot${onlineCount ? ' online' : ''}`} />
+                {onlineCount} đang online
+              </>
+            )}
+          </p>
+        )}
         <div className="table-responsive">
           <table className="table admin-table">
             <thead>
               <tr>
                 <th>MSSV</th>
                 <th>Họ tên</th>
+                <th>Tiến độ</th>
                 <th className="hide-sm">Cách thêm</th>
                 <th className="hide-sm">Thời gian</th>
                 <th />
@@ -72,35 +142,69 @@ export function StudentsTab(props: TabProps) {
             <tbody>
               {!students ? (
                 <tr>
-                  <td colSpan={5} className="empty-cell">
+                  <td colSpan={6} className="empty-cell">
                     Đang tải…
                   </td>
                 </tr>
               ) : students.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="empty-cell">
+                  <td colSpan={6} className="empty-cell">
                     Chưa có sinh viên. Thêm bằng một trong các cách bên cạnh.
                   </td>
                 </tr>
               ) : (
-                students.map((student) => (
-                  <tr key={student.id}>
-                    <td className="mono">{student.username}</td>
-                    <td>{student.fullName}</td>
-                    <td className="hide-sm">{ENROLL_METHODS[student.method]}</td>
-                    <td className="hide-sm">{formatDateTime(student.enrolledAt)}</td>
-                    <td className="actions">
-                      <button
-                        className="icon-button row-action danger"
-                        title="Xóa khỏi khóa học"
-                        aria-label={`Xóa ${student.username} khỏi khóa học`}
-                        onClick={() => unenroll(student)}
-                      >
-                        <Icon name="userMinus" size={14} />
-                      </button>
-                    </td>
-                  </tr>
-                ))
+                students.map((student) => {
+                  const row = progressOf.get(student.id);
+                  return (
+                    <tr key={student.id}>
+                      <td className="mono">{student.username}</td>
+                      <td>
+                        <span className="name-with-status">
+                          {online && (
+                            <span
+                              className={`status-dot${online.has(student.id) ? ' online' : ''}`}
+                              title={online.has(student.id) ? 'Đang online' : 'Offline'}
+                              aria-label={online.has(student.id) ? 'Đang online' : 'Offline'}
+                              role="img"
+                            />
+                          )}
+                          {student.fullName}
+                        </span>
+                      </td>
+                      <td className="progress-cell">
+                        {row && row.percent !== null ? (
+                          <span title={progressDetail(row)}>
+                            <b>{row.percent}%</b>
+                            <span
+                              className="progress-track"
+                              role="progressbar"
+                              aria-label={`Tiến độ ${student.username}`}
+                              aria-valuenow={row.percent}
+                              aria-valuemin={0}
+                              aria-valuemax={100}
+                            >
+                              <span style={{ width: `${row.percent}%` }} />
+                            </span>
+                          </span>
+                        ) : (
+                          '—'
+                        )}
+                      </td>
+                      <td className="hide-sm">{ENROLL_METHODS[student.method]}</td>
+                      <td className="hide-sm">{formatDateTime(student.enrolledAt)}</td>
+                      <td className="actions">
+                        <button
+                          className="icon-button row-action danger"
+                          title="Xóa khỏi khóa học"
+                          aria-label={`Xóa ${student.username} khỏi khóa học`}
+                          onClick={() => unenroll(student)}
+                        >
+                          <Icon name="userMinus" size={14} />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>

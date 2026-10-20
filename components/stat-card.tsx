@@ -10,7 +10,8 @@ export function StatCard({
   href,
 }: {
   label: string;
-  value: number | undefined;
+  /** Số đếm, hoặc chuỗi đã định dạng (ví dụ điểm "8,5"); undefined = đang tải. */
+  value: number | string | undefined;
   icon: IconName;
   tone: 'blue' | 'green' | 'violet' | 'red';
   href?: string;

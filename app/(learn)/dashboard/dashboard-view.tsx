@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useSession } from '@/lib/session-provider';
 import { useCourses } from '@/lib/use-courses';
 import { initials } from '@/lib/course-utils';
+import { courseHref } from '@/lib/teaching';
 import { Icon } from '@/components/icon';
 import { StatCard } from '@/components/stat-card';
 
@@ -64,13 +65,20 @@ export function StudentDashboard() {
               </div>
               {current.length ? (
                 current.slice(0, 5).map((course) => (
-                  <Link className="list-row" href={`/course/?id=${course.id}`} key={course.id}>
+                  // Có bài tiếp theo thì mở thẳng bài đó
+                  <Link
+                    className="list-row"
+                    href={courseHref(course.id, course.nextLesson?.id)}
+                    key={course.id}
+                  >
                     <span className={`course-swatch cover-${course.cover}`}>
                       {initials(course.title)}
                     </span>
                     <span className="list-row-text">
                       <b>{course.title}</b>
-                      <small>{course.code}</small>
+                      <small>
+                        {course.nextLesson ? `Tiếp theo: ${course.nextLesson.title}` : course.code}
+                      </small>
                     </span>
                     <span className="list-row-meta hide-sm">
                       {course.teacher || 'Chưa có giảng viên'}

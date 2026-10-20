@@ -20,6 +20,11 @@ const MESSAGES: Record<string, string> = {
   PAYLOAD_TOO_LARGE: 'Dữ liệu gửi lên quá lớn.',
   UNSUPPORTED_FILE_TYPE: 'Chỉ nhận file PDF, DOCX hoặc PPTX.',
   INVALID_ENROLL_KEY: 'Mã tham gia không đúng hoặc đã bị tắt.',
+  ASSESSMENT_CLOSED: 'Bài kiểm tra đã kết thúc nên không thể sửa hoặc xóa.',
+  STALE_ORDER: 'Danh sách vừa được thay đổi ở nơi khác. Tải lại trang rồi sắp xếp lại.',
+  ASSESSMENT_NOT_OPEN: 'Bài chưa đến giờ mở.',
+  SUBMISSION_LOCKED: 'Bài đã nộp hoặc đã hết giờ làm bài, không thể thay đổi.',
+  SUBMISSION_NOT_FINAL: 'Sinh viên còn đang làm bài, chưa chấm được.',
   INTERNAL_ERROR: 'Máy chủ gặp lỗi. Vui lòng thử lại sau.',
   NETWORK_ERROR: 'Không kết nối được máy chủ. Kiểm tra mạng LAN và thử lại.',
 };

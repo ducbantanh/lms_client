@@ -130,11 +130,6 @@ export function AuthForm({ changePassword = false }: { changePassword?: boolean 
             {busy ? 'Đang xử lý…' : changePassword ? 'Lưu mật khẩu mới' : 'Đăng nhập'}
           </button>
         </form>
-        {!changePassword && (
-          <p className="auth-help">
-            Mật khẩu lần đầu là ngày sinh dạng <b>ddmmyyyy</b>.
-          </p>
-        )}
       </section>
     </main>
   );
