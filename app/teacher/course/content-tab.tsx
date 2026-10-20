@@ -356,11 +356,14 @@ export function ContentTab(props: TabProps) {
                 onOpen={() => setOpenSection(groupKey(group))}
               />
             ))}
+            {/* Dạng lưới: thêm mục là thẻ cuối lưới, cùng cỡ với thẻ mục */}
+            {canTeach && <AddSection {...props} unit={unit} variant="card" />}
           </div>
         ) : (
           groups.map(renderSection)
         )}
-        {canTeach && format !== 2 && !opened && <AddSection {...props} unit={unit} />}
+        {/* Dạng danh sách (hoặc chưa có mục nào): thanh ngang dưới các mục */}
+        {canTeach && format !== 2 && (!grid || empty) && <AddSection {...props} unit={unit} />}
       </div>
       {canTeach && <UploadPanel {...props} />}
       {draft && <LessonDialog {...props} draft={draft} onClose={() => setDraft(null)} />}
@@ -477,12 +480,28 @@ function RenameSection({
   );
 }
 
-/** Khóa học theo tuần được gợi ý sẵn tên "Tuần N". */
-function AddSection({ content, base, reload, notify, unit }: TabProps & { unit: string }) {
+/**
+ * Thêm mục/tuần; khóa học theo tuần được gợi ý sẵn tên "Tuần N".
+ * bar: thanh ngang dưới danh sách mục. card: thẻ cuối lưới mục (viền đứt), bấm vào thì thẻ thành ô nhập tên.
+ */
+function AddSection({
+  content,
+  base,
+  reload,
+  notify,
+  unit,
+  variant = 'bar',
+}: TabProps & { unit: string; variant?: 'bar' | 'card' }) {
   const suggestion = content.course.format === 1 ? `Tuần ${content.sections.length + 1}` : '';
   const [title, setTitle] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [editing, setEditing] = useState(false);
   const value = title ?? suggestion;
+
+  function cancel() {
+    setEditing(false);
+    setTitle(null);
+  }
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -491,6 +510,7 @@ function AddSection({ content, base, reload, notify, unit }: TabProps & { unit: 
     try {
       await apiRequest(`${base}/sections`, { method: 'POST', body: { title: value.trim() } });
       setTitle(null);
+      setEditing(false);
       await reload();
     } catch (reason) {
       notify(errorFlash(reason));
@@ -498,6 +518,43 @@ function AddSection({ content, base, reload, notify, unit }: TabProps & { unit: 
       setBusy(false);
     }
   }
+
+  if (variant === 'card')
+    return editing ? (
+      <form
+        className="section-card section-add editing"
+        onSubmit={submit}
+        onKeyDown={(event) => event.key === 'Escape' && !busy && cancel()}
+      >
+        <label className="form-field">
+          Tên {unit} mới
+          <input
+            className="input"
+            value={value}
+            onChange={(event) => setTitle(event.target.value)}
+            placeholder={unit === 'tuần' ? 'Ví dụ: Tuần 1' : 'Ví dụ: Chương 1 – Giới thiệu'}
+            maxLength={200}
+            autoFocus
+          />
+        </label>
+        <div className="button-row">
+          <button type="button" className="button small" disabled={busy} onClick={cancel}>
+            Hủy
+          </button>
+          <button className="button small primary" disabled={busy || !value.trim()}>
+            {busy ? 'Đang thêm…' : `Thêm ${unit}`}
+          </button>
+        </div>
+      </form>
+    ) : (
+      <button type="button" className="section-card section-add" onClick={() => setEditing(true)}>
+        <i className="section-add-icon">
+          <Icon name="plus" size={14} />
+        </i>
+        <b>Thêm {unit}</b>
+        <small>{suggestion ? `Gợi ý: ${suggestion}` : 'Đặt tên rồi thêm bài học, tài liệu'}</small>
+      </button>
+    );
 
   return (
     <form className="inline-form" onSubmit={submit}>
