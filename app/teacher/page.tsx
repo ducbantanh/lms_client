@@ -1,5 +1,5 @@
-import { TeacherCourses } from '@/app/teacher/teacher-courses';
-export const metadata = { title: 'Khóa học giảng dạy' };
+import { TeacherOverviewView } from '@/app/teacher/teacher-courses';
+export const metadata = { title: 'Tổng quan' };
 export default function TeacherPage() {
-  return <TeacherCourses />;
+  return <TeacherOverviewView />;
 }

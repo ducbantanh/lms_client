@@ -1,26 +1,42 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import Link from 'next/link';
+import { useRef, useState, type FormEvent } from 'react';
 import { apiRequest } from '@/lib/api';
+import { TEACHER_PATH } from '@/lib/auth';
 import {
-  ASSESSMENT_TYPES,
-  PDF,
+  ASSESSMENT_GROUPS,
+  canDeleteAssessment,
+  canEditAssessment,
+  isoToLocalInput,
   localInputToIso,
+  uploadProblem,
   type Assessment,
   type AssessmentType,
 } from '@/lib/teaching';
 import { AssessmentItem } from '@/components/course-items';
 import { Icon } from '@/components/icon';
+import { Modal } from '@/components/modal';
 import { errorFlash, type TabProps } from './course-manager';
 
-/** Tab Bài kiểm tra: danh sách bài và form tạo bài mới. */
-export function AssessmentsTab(props: TabProps) {
-  const { content, base, reload, notify, confirm } = props;
+type AssessmentTabProps = TabProps & { type: AssessmentType };
+
+/** Tab Bài tập / Bài thực hành / Bài kiểm tra: danh sách bài đúng loại và form tạo bài loại đó. */
+export function AssessmentsTab(props: AssessmentTabProps) {
+  const { content, base, reload, notify, confirm, type } = props;
+  const { noun } = ASSESSMENT_GROUPS[type];
+  const items = content.assessments.filter((assessment) => assessment.type === type);
+  const [editing, setEditing] = useState<Assessment | null>(null);
 
   function remove(assessment: Assessment) {
     confirm({
-      title: 'Xóa bài kiểm tra',
-      message: `Xóa "${assessment.title}"? File đề (nếu có) vẫn được giữ trong tài liệu.`,
+      title: `Xóa ${noun}`,
+      // Đề không có trong danh sách tài liệu là đề tải lên riêng cho bài: server xóa theo bài
+      message: !assessment.paperFileId
+        ? `Xóa "${assessment.title}"?`
+        : content.files.some((file) => file.id === assessment.paperFileId)
+          ? `Xóa "${assessment.title}"? File đề vẫn được giữ trong tài liệu.`
+          : `Xóa "${assessment.title}"? File đề tải lên cho bài này cũng bị xóa.`,
       confirmLabel: 'Xóa',
       danger: true,
       run: async () => {
@@ -39,49 +55,87 @@ export function AssessmentsTab(props: TabProps) {
   return (
     <div className="columns">
       <section className="panel">
-        {content.assessments.length ? (
+        {items.length ? (
           <ul className="assessment-list">
-            {content.assessments.map((assessment) => (
+            {items.map((assessment) => (
               <AssessmentItem
                 key={assessment.id}
                 assessment={assessment}
                 actions={
-                  <button
-                    className="icon-button row-action danger"
-                    title="Xóa bài"
-                    aria-label={`Xóa ${assessment.title}`}
-                    onClick={() => remove(assessment)}
-                  >
-                    <Icon name="trash" size={13} />
-                  </button>
+                  <span className="file-actions">
+                    <Link
+                      href={`${TEACHER_PATH}/course/submissions/?course=${encodeURIComponent(content.course.id)}&id=${encodeURIComponent(assessment.id)}`}
+                      className="button small"
+                    >
+                      <Icon name="check" size={11} />
+                      Bài nộp & chấm điểm
+                    </Link>
+                    {canEditAssessment(assessment) && (
+                      <button
+                        className="icon-button row-action"
+                        title={`Sửa ${noun}`}
+                        aria-label={`Sửa ${assessment.title}`}
+                        onClick={() => setEditing(assessment)}
+                      >
+                        <Icon name="edit" size={13} />
+                      </button>
+                    )}
+                    {canDeleteAssessment(assessment) ? (
+                      <button
+                        className="icon-button row-action danger"
+                        title={`Xóa ${noun}`}
+                        aria-label={`Xóa ${assessment.title}`}
+                        onClick={() => remove(assessment)}
+                      >
+                        <Icon name="trash" size={13} />
+                      </button>
+                    ) : (
+                      <button
+                        className="icon-button row-action"
+                        title="Bài kiểm tra đã kết thúc, không thể sửa hoặc xóa"
+                        aria-label={`${assessment.title} đã kết thúc, không thể sửa hoặc xóa`}
+                        disabled
+                      >
+                        <Icon name="lock" size={13} />
+                      </button>
+                    )}
+                  </span>
                 }
               />
             ))}
           </ul>
         ) : (
-          <p className="empty-cell">Chưa có bài kiểm tra nào.</p>
+          <p className="empty-cell">Chưa có {noun} nào.</p>
         )}
       </section>
-      <CreateAssessment {...props} />
+      {/* key theo loại: chuyển tab thì form trống lại */}
+      <CreateAssessment key={type} {...props} />
+      {editing && (
+        <EditAssessment {...props} assessment={editing} onClose={() => setEditing(null)} />
+      )}
     </div>
   );
 }
 
-const EMPTY = {
-  type: 0 as AssessmentType,
-  title: '',
-  description: '',
-  paper: '',
-  opens: '',
-  closes: '',
-};
-
-function CreateAssessment({ content, base, reload, notify }: TabProps) {
-  const [form, setForm] = useState(EMPTY);
+/** Sửa tiêu đề, mô tả, giờ mở/đóng; loại bài và đề không đổi được (đổi đề: xóa và tạo bài mới). */
+function EditAssessment({
+  base,
+  reload,
+  notify,
+  type,
+  assessment,
+  onClose,
+}: AssessmentTabProps & { assessment: Assessment; onClose: () => void }) {
+  const [form, setForm] = useState({
+    title: assessment.title,
+    description: assessment.description ?? '',
+    opens: isoToLocalInput(assessment.opensAt),
+    closes: isoToLocalInput(assessment.closesAt),
+  });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
-  const pdfs = content.files.filter((file) => file.contentType === PDF);
-  const set = (patch: Partial<typeof EMPTY>) => setForm({ ...form, ...patch });
+  const { noun } = ASSESSMENT_GROUPS[type];
+  const set = (patch: Partial<typeof form>) => setForm({ ...form, ...patch });
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -91,26 +145,161 @@ function CreateAssessment({ content, base, reload, notify }: TabProps) {
       setError('Giờ đóng phải sau giờ mở.');
       return;
     }
-    if (form.type === 2 && !form.paper) {
-      setError('Bài thi cần chọn file đề (PDF).');
-      return;
-    }
     setBusy(true);
     setError('');
     try {
-      await apiRequest(`${base}/assessments`, {
-        method: 'POST',
+      await apiRequest(`${base}/assessments/${encodeURIComponent(assessment.id)}`, {
+        method: 'PUT',
         body: {
-          type: form.type,
           title: form.title.trim(),
           description: form.description.trim(),
-          paperFileId: form.paper || null,
           opensAt,
           closesAt,
         },
       });
+      notify({ type: 'success', text: `Đã lưu ${form.title.trim()}.` });
+      onClose();
+      await reload();
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'Không lưu được.');
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Modal title={`Sửa ${noun}`} onClose={() => !busy && onClose()}>
+      <form onSubmit={submit}>
+        {error && (
+          <p className="form-error" role="alert">
+            {error}
+          </p>
+        )}
+        <label className="form-field">
+          Tiêu đề
+          <input
+            className="input"
+            value={form.title}
+            onChange={(event) => set({ title: event.target.value })}
+            maxLength={200}
+            required
+            autoFocus
+          />
+        </label>
+        <label className="form-field">
+          <span>
+            Mô tả <span className="optional">(không bắt buộc)</span>
+          </span>
+          <textarea
+            className="input"
+            rows={3}
+            value={form.description}
+            onChange={(event) => set({ description: event.target.value })}
+            maxLength={2000}
+          />
+        </label>
+        <div className="form-row">
+          <label className="form-field">
+            Mở lúc
+            <input
+              className="input"
+              type="datetime-local"
+              value={form.opens}
+              onChange={(event) => set({ opens: event.target.value })}
+            />
+          </label>
+          <label className="form-field">
+            Đóng lúc
+            <input
+              className="input"
+              type="datetime-local"
+              value={form.closes}
+              onChange={(event) => set({ closes: event.target.value })}
+            />
+          </label>
+        </div>
+        <p className="admin-hint">
+          Để trống giờ mở là mở ngay; để trống giờ đóng là không giới hạn. Muốn đổi đề thì xóa bài
+          và tạo bài mới.
+        </p>
+        <div className="dialog-actions">
+          <button type="button" className="button" disabled={busy} onClick={onClose}>
+            Hủy
+          </button>
+          <button className="button primary" disabled={busy || !form.title.trim()}>
+            {busy ? 'Đang lưu…' : 'Lưu'}
+          </button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+const EMPTY = {
+  title: '',
+  description: '',
+  opens: '',
+  closes: '',
+  /** Chỉ bài tập mới hỏi; bài kiểm tra và bài thực hành server luôn thông báo. */
+  notify: false,
+};
+
+function CreateAssessment({ base, reload, notify, type }: AssessmentTabProps) {
+  const [form, setForm] = useState(EMPTY);
+  const [paperFile, setPaperFile] = useState<File | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const paperInput = useRef<HTMLInputElement>(null);
+  const { noun } = ASSESSMENT_GROUPS[type];
+  const exam = type === 2;
+  const set = (patch: Partial<typeof EMPTY>) => setForm({ ...form, ...patch });
+
+  function pickPaper(file: File | null) {
+    const problem =
+      file &&
+      (uploadProblem(file) ??
+        (file.name.toLowerCase().endsWith('.pdf') ? null : 'File đề phải là PDF.'));
+    setError(problem ?? '');
+    setPaperFile(problem ? null : file);
+    if (problem && paperInput.current) paperInput.current.value = '';
+  }
+
+  async function submit(event: FormEvent) {
+    event.preventDefault();
+    const opensAt = localInputToIso(form.opens);
+    const closesAt = localInputToIso(form.closes);
+    if (opensAt && closesAt && closesAt <= opensAt) {
+      setError('Giờ đóng phải sau giờ mở.');
+      return;
+    }
+    if (exam && !paperFile) {
+      setError('Bài kiểm tra cần có file đề (PDF).');
+      return;
+    }
+    setBusy(true);
+    setError('');
+    const data = {
+      type,
+      title: form.title.trim(),
+      description: form.description.trim(),
+      opensAt,
+      closesAt,
+      notifyStudents: form.notify,
+    };
+    // Đề gửi cùng request tạo bài: server lưu file và bài trong một lần,
+    // file chỉ thuộc bài này (không vào tài liệu khóa học), xóa bài thì xóa luôn file.
+    let body: unknown = data;
+    if (paperFile) {
+      const multipart = new FormData();
+      multipart.append('data', new Blob([JSON.stringify(data)], { type: 'application/json' }));
+      multipart.append('paper', paperFile);
+      body = multipart;
+    }
+    try {
+      await apiRequest(`${base}/assessments`, { method: 'POST', body });
       notify({ type: 'success', text: `Đã tạo ${form.title.trim()}.` });
       setForm(EMPTY);
+      setPaperFile(null);
+      if (paperInput.current) paperInput.current.value = '';
       await reload();
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'Không tạo được bài.');
@@ -126,7 +315,7 @@ function CreateAssessment({ content, base, reload, notify }: TabProps) {
           <i className="title-icon red">
             <Icon name="exam" size={12} />
           </i>
-          Tạo bài mới
+          Tạo {noun}
         </h2>
       </div>
       <form onSubmit={submit}>
@@ -135,20 +324,6 @@ function CreateAssessment({ content, base, reload, notify }: TabProps) {
             {error}
           </p>
         )}
-        <label className="form-field">
-          Loại bài
-          <select
-            className="select"
-            value={form.type}
-            onChange={(event) => set({ type: Number(event.target.value) as AssessmentType })}
-          >
-            {Object.entries(ASSESSMENT_TYPES).map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </select>
-        </label>
         <label className="form-field">
           Tiêu đề
           <input
@@ -172,26 +347,18 @@ function CreateAssessment({ content, base, reload, notify }: TabProps) {
           />
         </label>
         <label className="form-field">
-          File đề (PDF trong tài liệu)
-          <select
-            className="select"
-            value={form.paper}
-            onChange={(event) => set({ paper: event.target.value })}
-          >
-            <option value="">Không có đề</option>
-            {pdfs.map((file) => (
-              <option key={file.id} value={file.id}>
-                {file.name}
-                {file.hidden ? ' (đang ẩn)' : ''}
-              </option>
-            ))}
-          </select>
+          <span>
+            File đề{' '}
+            <span className="optional">{exam ? '(PDF, bắt buộc)' : '(PDF, không bắt buộc)'}</span>
+          </span>
+          <input
+            ref={paperInput}
+            className="input file-input"
+            type="file"
+            accept=".pdf,application/pdf"
+            onChange={(event) => pickPaper(event.target.files?.[0] ?? null)}
+          />
         </label>
-        {form.type === 2 && (
-          <p className="admin-hint">
-            File đề của bài thi được ẩn khỏi danh sách tài liệu; sinh viên chỉ thấy đề khi bài mở.
-          </p>
-        )}
         <div className="form-row">
           <label className="form-field">
             Mở lúc
@@ -215,8 +382,18 @@ function CreateAssessment({ content, base, reload, notify }: TabProps) {
         <p className="admin-hint">
           Để trống giờ mở là mở ngay; để trống giờ đóng là không giới hạn.
         </p>
+        {type === 0 && (
+          <label className="check-field">
+            <input
+              type="checkbox"
+              checked={form.notify}
+              onChange={(event) => set({ notify: event.target.checked })}
+            />
+            Gửi thông báo cho sinh viên
+          </label>
+        )}
         <button className="button primary full-width" disabled={busy || !form.title.trim()}>
-          {busy ? 'Đang tạo…' : 'Tạo bài'}
+          {busy ? 'Đang tạo…' : `Tạo ${noun}`}
         </button>
       </form>
     </aside>

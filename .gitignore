@@ -4,6 +4,8 @@ node_modules/
 .qa/
 .next/
 out/
+# Chép từ node_modules khi npm install (scripts/copy-pdf-worker.mjs)
+public/vendor/pdfjs/
 *.tsbuildinfo
 .DS_Store
 .idea/

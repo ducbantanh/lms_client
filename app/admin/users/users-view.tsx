@@ -5,6 +5,7 @@ import { apiRequest } from '@/lib/api';
 import { hasPermission, ROLE_NAMES, roleName } from '@/lib/auth';
 import { useSession } from '@/lib/session-provider';
 import { formatDateTime, type AdminUser, type PageResult } from '@/lib/admin';
+import type { Role } from '@/lib/types';
 import { Icon, type IconName } from '@/components/icon';
 import {
   AdminHeading,
@@ -13,6 +14,9 @@ import {
   type ConfirmRequest,
   type Flash,
 } from '@/components/admin-ui';
+
+/** Vai trò hiển thị trong bộ lọc: Quản trị viên, Giảng viên, Sinh viên. */
+const FILTER_ROLES: Role[] = [0, 1, 5];
 
 const PAGE_SIZE = 20;
 
@@ -193,9 +197,9 @@ export function UsersView() {
               }
             >
               <option value="">Mọi vai trò</option>
-              {Object.entries(ROLE_NAMES).map(([code, name]) => (
+              {FILTER_ROLES.map((code) => (
                 <option key={code} value={code}>
-                  {name}
+                  {ROLE_NAMES[code]}
                 </option>
               ))}
             </select>

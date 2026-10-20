@@ -30,7 +30,7 @@ export type CoverStyle =
   | 'sage'
   | 'orange';
 
-/** Model hiển thị cho một thẻ khóa học. null nghĩa là server chưa cung cấp tiến độ. */
+/** Model hiển thị cho một thẻ khóa học. progress null: khóa học chưa có bài học/bài kiểm tra để tính. */
 export interface Course {
   id: string;
   code: string;
@@ -41,6 +41,8 @@ export interface Course {
   semesterLabel: string;
   status: 'current' | 'completed';
   progress: number | null;
+  /** Bài học đầu tiên chưa học; null khi đã học hết hoặc khóa học không có bài học. */
+  nextLesson: { id: string; title: string } | null;
   lessons: number | null;
   cover: CoverStyle;
   updatedAt: string;

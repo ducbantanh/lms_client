@@ -5,6 +5,7 @@ import { Icon } from '@/components/icon';
 import { CourseCard } from '@/components/course-card';
 import { FlashMessage, type Flash } from '@/components/admin-ui';
 import { JoinCourseDialog } from '@/components/join-course-dialog';
+import { ViewToggle } from '@/components/view-toggle';
 import { useCourses } from '@/lib/use-courses';
 import { useCoursePreferences } from '@/lib/use-course-preferences';
 import { useSession } from '@/lib/session-provider';
@@ -146,24 +147,7 @@ export function CourseOverview() {
             <option value="recent">Mới cập nhật</option>
             <option value="name">Tên A–Z</option>
           </select>
-          <div className="view-toggle" aria-label="Kiểu hiển thị">
-            <button
-              className={preferences.view === 'grid' ? 'selected' : ''}
-              aria-label="Hiển thị dạng lưới"
-              aria-pressed={preferences.view === 'grid'}
-              onClick={() => preferences.setView('grid')}
-            >
-              <Icon name="grid" size={14} />
-            </button>
-            <button
-              className={preferences.view === 'list' ? 'selected' : ''}
-              aria-label="Hiển thị dạng danh sách"
-              aria-pressed={preferences.view === 'list'}
-              onClick={() => preferences.setView('list')}
-            >
-              <Icon name="list" size={14} />
-            </button>
-          </div>
+          <ViewToggle value={preferences.view} onChange={preferences.setView} />
         </div>
       </div>
 

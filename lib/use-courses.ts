@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useSession } from '@/lib/session-provider';
 import { ApiError, apiRequest } from '@/lib/api';
 import { coverFor } from '@/lib/course-utils';
+import type { NextLesson } from '@/lib/teaching';
 import type { Course } from '@/lib/types';
 
 /** Khóa học thật chỉ lấy từ dashboard đã có trong Spring; không tự bù bằng dữ liệu mẫu khi lỗi. */
@@ -22,10 +23,16 @@ export function useCourses() {
     setError('');
     setCourses([]);
     // Cleanup hủy request cũ khi chuyển tài khoản hoặc rời trang.
-    apiRequest<{ courses: { id: string; code: string; title: string; teacherName?: string }[] }>(
-      '/student/dashboard',
-      { signal: controller.signal },
-    )
+    apiRequest<{
+      courses: {
+        id: string;
+        code: string;
+        title: string;
+        teacherName?: string;
+        progress: number | null;
+        nextLesson: NextLesson | null;
+      }[];
+    }>('/student/dashboard', { signal: controller.signal })
       .then((dashboard) => {
         if (controller.signal.aborted) return;
         setCourses(
@@ -38,7 +45,8 @@ export function useCourses() {
             semester: 'unscheduled',
             semesterLabel: 'Chưa có lịch học',
             status: 'current',
-            progress: null,
+            progress: item.progress,
+            nextLesson: item.nextLesson && { id: item.nextLesson.id, title: item.nextLesson.title },
             lessons: null,
             cover: coverFor(item.code),
             updatedAt: '',
