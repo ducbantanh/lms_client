@@ -158,6 +158,7 @@ export function SubmissionsView() {
         <Grader
           key={rows[current].studentId}
           row={rows[current]}
+          canGrade={data.canGrade}
           position={`${current + 1} / ${rows.length}`}
           base={base}
           onPrev={current > 0 ? () => setSelected(rows[current - 1].studentId) : undefined}
@@ -242,16 +243,27 @@ export function SubmissionsView() {
                             {row.grade ? formatScore(row.grade.score) : '—'}
                           </td>
                           <td className="actions">
-                            <button
-                              className={`button small${gradable && !row.grade ? ' primary' : ''}`}
-                              disabled={!gradable}
-                              title={
-                                gradable ? undefined : 'Sinh viên chưa chốt bài, chưa chấm được'
-                              }
-                              onClick={() => setSelected(row.studentId)}
-                            >
-                              {row.grade ? 'Sửa điểm' : 'Chấm'}
-                            </button>
+                            {data.canGrade ? (
+                              <button
+                                className={`button small${gradable && !row.grade ? ' primary' : ''}`}
+                                disabled={!gradable}
+                                title={
+                                  gradable ? undefined : 'Sinh viên chưa chốt bài, chưa chấm được'
+                                }
+                                onClick={() => setSelected(row.studentId)}
+                              >
+                                {row.grade ? 'Sửa điểm' : 'Chấm'}
+                              </button>
+                            ) : (
+                              // Admin chỉ xem bài làm và điểm
+                              <button
+                                className="button small"
+                                disabled={!row.files.length && !row.grade}
+                                onClick={() => setSelected(row.studentId)}
+                              >
+                                Xem
+                              </button>
+                            )}
                           </td>
                         </tr>
                       );
@@ -274,6 +286,7 @@ export function SubmissionsView() {
 /** Khung chấm một sinh viên: xem file bài làm (PDF vẽ bằng pdf.js) bên trái, điểm và nhận xét bên phải. */
 function Grader({
   row,
+  canGrade,
   position,
   base,
   onPrev,
@@ -283,6 +296,8 @@ function Grader({
   notify,
 }: {
   row: SubmissionRow;
+  /** false: admin xem bài làm, điểm và nhận xét nhưng không chấm. */
+  canGrade: boolean;
   position: string;
   base: string;
   onPrev?: () => void;
@@ -440,7 +455,22 @@ function Grader({
             {row.grade.gradedBy && ` bởi ${row.grade.gradedBy}`}.
           </p>
         )}
-        {gradable ? (
+        {!canGrade ? (
+          <div className="grade-readonly">
+            {row.grade ? (
+              <>
+                <b>
+                  {formatScore(row.grade.score)}
+                  <small>/{MAX_SCORE}</small>
+                </b>
+                {row.grade.feedback && <p className="lesson-text">{row.grade.feedback}</p>}
+              </>
+            ) : (
+              <p>Chưa chấm.</p>
+            )}
+            <p className="admin-hint">Chỉ giảng viên phụ trách mới chấm điểm bài này.</p>
+          </div>
+        ) : gradable ? (
           <form onSubmit={(event) => submit(event, false)}>
             {error && (
               <p className="form-error" role="alert">

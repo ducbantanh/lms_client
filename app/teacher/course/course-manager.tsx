@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { ApiError, apiRequest } from '@/lib/api';
-import { TEACHER_PATH } from '@/lib/auth';
+import { TEACHER_PATH, hasPermission } from '@/lib/auth';
+import { useSession } from '@/lib/session-provider';
 import {
   ASSESSMENT_GROUPS,
   COURSE_FORMATS,
@@ -12,8 +13,10 @@ import {
   type AssessmentType,
   type CourseContent,
   type CourseFormat,
+  type CourseInfo,
 } from '@/lib/teaching';
 import { Modal } from '@/components/modal';
+import { TeacherSelect } from '@/components/teacher-select';
 import {
   ConfirmDialog,
   FlashMessage,
@@ -43,6 +46,11 @@ export interface TabProps {
   reload: () => Promise<void>;
   notify: (flash: Flash) => void;
   confirm: (request: ConfirmRequest) => void;
+  /**
+   * Người xem là giảng viên phụ trách: được thêm/sửa nội dung, bài, chấm điểm, gửi thông báo.
+   * Admin chỉ xem (server trả TEACHER_ONLY); ghi danh sinh viên thì cả hai đều làm được.
+   */
+  canTeach: boolean;
 }
 
 /** Biến lỗi API thành thông báo đỏ; dùng trong catch của các thao tác. */
@@ -70,6 +78,9 @@ export function CourseManager() {
   const [flash, setFlash] = useState<Flash | null>(null);
   const [confirm, setConfirm] = useState<ConfirmRequest | null>(null);
   const [editing, setEditing] = useState(false);
+  const [assigning, setAssigning] = useState(false);
+  const { user } = useSession();
+  const canAssign = hasPermission(user, 'courses.assign');
   const clearFlash = useCallback(() => setFlash(null), []);
 
   const reload = useCallback(async () => {
@@ -116,7 +127,15 @@ export function CourseManager() {
     );
 
   const { course } = content;
-  const tabProps: TabProps = { content, base, reload, notify: setFlash, confirm: setConfirm };
+  const canTeach = !!course.teacherId && course.teacherId === user?.id;
+  const tabProps: TabProps = {
+    content,
+    base,
+    reload,
+    notify: setFlash,
+    confirm: setConfirm,
+    canTeach,
+  };
   const tabs: { value: Tab; label: string; count?: number }[] = [
     { value: 'content', label: 'Nội dung', count: content.lessons.length + content.files.length },
     { value: 'students', label: 'Sinh viên', count: course.studentCount },
@@ -155,8 +174,8 @@ export function CourseManager() {
       <div className="page-heading">
         <div>
           <p className="detail-code">
-            {course.code} · {COURSE_FORMATS[course.format]}
-            {course.teacherName && ` · ${course.teacherName}`}
+            {course.code} · {COURSE_FORMATS[course.format]} ·{' '}
+            {course.teacherName ?? <span className="badge warn">Chưa phân công giảng viên</span>}
           </p>
           <h1>{course.title}</h1>
           {course.description && <p>{course.description}</p>}
@@ -171,10 +190,19 @@ export function CourseManager() {
             <Icon name="download" size={13} />
             Bảng điểm
           </a>
-          <button className="button" onClick={deleteCourse}>
-            <Icon name="trash" size={13} />
-            Xóa khóa học
-          </button>
+          {/* Phân công và xóa khóa học chỉ dành cho admin (courses.assign) */}
+          {canAssign && (
+            <>
+              <button className="button" onClick={() => setAssigning(true)}>
+                <Icon name="teach" size={13} />
+                Đổi giảng viên
+              </button>
+              <button className="button" onClick={deleteCourse}>
+                <Icon name="trash" size={13} />
+                Xóa khóa học
+              </button>
+            </>
+          )}
         </div>
       </div>
       <FlashMessage flash={flash} onDone={clearFlash} />
@@ -198,7 +226,68 @@ export function CourseManager() {
       {assessmentTab && <AssessmentsTab {...tabProps} type={assessmentTab.type} />}
       {confirm && <ConfirmDialog request={confirm} onClose={() => setConfirm(null)} />}
       {editing && <CourseDialog {...tabProps} onClose={() => setEditing(false)} />}
+      {assigning && <AssignTeacherDialog {...tabProps} onClose={() => setAssigning(false)} />}
     </main>
+  );
+}
+
+/** Chỉ admin: đổi giảng viên phụ trách; giảng viên cũ mất quyền quản lý khóa học ngay. */
+function AssignTeacherDialog({
+  content,
+  base,
+  reload,
+  notify,
+  onClose,
+}: TabProps & { onClose: () => void }) {
+  const { course } = content;
+  const [teacherId, setTeacherId] = useState(course.teacherId ?? '');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+
+  async function submit(event: FormEvent) {
+    event.preventDefault();
+    setBusy(true);
+    setError('');
+    try {
+      const saved = await apiRequest<CourseInfo>(`${base}/teacher`, {
+        method: 'PUT',
+        body: { teacherId },
+      });
+      notify({ type: 'success', text: `Đã phân công ${saved.teacherName} phụ trách khóa học.` });
+      onClose();
+      await reload();
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'Không phân công được.');
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Modal title="Đổi giảng viên phụ trách" onClose={() => !busy && onClose()}>
+      <form onSubmit={submit}>
+        {error && (
+          <p className="form-error" role="alert">
+            {error}
+          </p>
+        )}
+        <TeacherSelect value={teacherId} onChange={setTeacherId} />
+        <p className="admin-hint">
+          Giảng viên mới quản lý toàn bộ nội dung, sinh viên và bài kiểm tra của khóa học; giảng
+          viên cũ không còn thấy khóa học này.
+        </p>
+        <div className="dialog-actions">
+          <button type="button" className="button" disabled={busy} onClick={onClose}>
+            Hủy
+          </button>
+          <button
+            className="button primary"
+            disabled={busy || !teacherId || teacherId === course.teacherId}
+          >
+            {busy ? 'Đang lưu…' : 'Phân công'}
+          </button>
+        </div>
+      </form>
+    </Modal>
   );
 }
 

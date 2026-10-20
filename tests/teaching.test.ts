@@ -5,8 +5,10 @@ import {
   isoToLocalInput,
   localInputToIso,
   moveId,
+  selectTeacherCourses,
   splitLinks,
 } from '../lib/teaching.ts';
+import type { TeacherCourseFilter, TeacherCourseSort } from '../lib/teaching.ts';
 import type { CourseContent, CourseFile, Lesson } from '../lib/teaching.ts';
 
 const lesson = (id: string, sectionId: string | null, position: number): Lesson => ({
@@ -125,4 +127,44 @@ test('isoToLocalInput là nghịch đảo của localInputToIso (theo phút)', (
   assert.equal(isoToLocalInput(null), '');
   const local = '2026-10-20T08:30';
   assert.equal(isoToLocalInput(localInputToIso(local)), local);
+});
+
+test('selectTeacherCourses lọc theo việc cần làm và sắp xếp', () => {
+  const base = {
+    format: 0 as const,
+    teacherName: 'GV',
+    studentCount: 1,
+    averageProgress: null,
+    openAssessments: 0,
+    toGrade: 0,
+  };
+  const list = [
+    { ...base, id: 'a', code: 'INT10', title: 'Mạng', createdAt: '2026-01-01', toGrade: 2 },
+    {
+      ...base,
+      id: 'b',
+      code: 'INT9',
+      title: 'An toàn',
+      createdAt: '2026-03-01',
+      openAssessments: 1,
+    },
+    {
+      ...base,
+      id: 'c',
+      code: 'INT11',
+      title: 'Cơ sở dữ liệu',
+      createdAt: '2026-02-01',
+      teacherName: null,
+    },
+  ];
+  const ids = (filter: TeacherCourseFilter, sort: TeacherCourseSort, search = '') =>
+    selectTeacherCourses(list, { search, filter, sort }).map((course) => course.id);
+  assert.deepEqual(ids('all', 'recent'), ['b', 'c', 'a']);
+  assert.deepEqual(ids('all', 'name'), ['b', 'c', 'a']);
+  assert.deepEqual(ids('all', 'code'), ['b', 'a', 'c']); // INT9 < INT10 < INT11 (so số)
+  assert.deepEqual(ids('all', 'grading'), ['a', 'b', 'c']);
+  assert.deepEqual(ids('grading', 'recent'), ['a']);
+  assert.deepEqual(ids('open', 'recent'), ['b']);
+  assert.deepEqual(ids('unassigned', 'recent'), ['c']);
+  assert.deepEqual(ids('all', 'recent', 'co so'), ['c']); // tìm không dấu
 });

@@ -1,4 +1,5 @@
 import type { IconName } from '@/components/icon';
+import { normalizeSearch } from './course-utils.ts';
 
 /** Kiểu dữ liệu khớp record CourseViews của Spring (lms.course); mọi id là public_id. */
 export interface TeacherCourse {
@@ -20,6 +21,8 @@ export interface CourseInfo {
   /** Luôn null ở góc nhìn sinh viên; null ở góc nhìn giảng viên nghĩa là đang tắt. */
   enrollKey: string | null;
   studentCount: number;
+  /** Public id giảng viên phụ trách; null ở góc nhìn sinh viên hoặc khi chưa phân công. */
+  teacherId: string | null;
   teacherName: string | null;
   createdAt: string;
 }
@@ -334,6 +337,8 @@ export interface AssessmentSubmissions {
   assessment: Assessment;
   summary: { students: number; submitted: number; graded: number; average: number | null };
   rows: SubmissionRow[];
+  /** Người xem là giảng viên phụ trách; admin chỉ xem, không chấm. */
+  canGrade: boolean;
 }
 
 export const MAX_SCORE = 10;
@@ -549,6 +554,34 @@ export interface TeacherOverview {
   scheduleMore: number;
   courses: OverviewCourse[];
   serverTime: string;
+}
+
+/** Tab lọc trang Khóa học của giảng viên/admin; unassigned chỉ admin thấy. */
+export type TeacherCourseFilter = 'all' | 'grading' | 'open' | 'unassigned';
+export type TeacherCourseSort = 'recent' | 'name' | 'code' | 'grading';
+
+/** Hàm thuần như selectCourses của sinh viên: lọc + sắp xếp trên bản sao. */
+export function selectTeacherCourses(
+  courses: OverviewCourse[],
+  query: { search: string; filter: TeacherCourseFilter; sort: TeacherCourseSort },
+): OverviewCourse[] {
+  const needle = normalizeSearch(query.search);
+  const byName = (a: OverviewCourse, b: OverviewCourse) => a.title.localeCompare(b.title, 'vi');
+  return courses
+    .filter((course) => {
+      if (query.filter === 'grading' && !course.toGrade) return false;
+      if (query.filter === 'open' && !course.openAssessments) return false;
+      if (query.filter === 'unassigned' && course.teacherName) return false;
+      return normalizeSearch(`${course.code} ${course.title} ${course.teacherName ?? ''}`).includes(
+        needle,
+      );
+    })
+    .sort((a, b) => {
+      if (query.sort === 'name') return byName(a, b);
+      if (query.sort === 'code') return a.code.localeCompare(b.code, 'vi', { numeric: true });
+      if (query.sort === 'grading') return b.toGrade - a.toGrade || byName(a, b);
+      return b.createdAt.localeCompare(a.createdAt);
+    });
 }
 
 /** Link trang khóa học; có lessonId thì trang mở sẵn bài học đó. */

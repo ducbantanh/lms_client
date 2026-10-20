@@ -227,20 +227,21 @@ function Shell({ area, children }: { area: Area; children: ReactNode }) {
             </div>
           ))}
         </nav>
-        <button
-          className="shell-collapse"
-          aria-label={collapsed ? 'Mở rộng menu' : 'Thu gọn menu'}
-          aria-expanded={!collapsed}
-          title={collapsed ? 'Mở rộng menu' : undefined}
-          onClick={() => setCollapsed(!collapsed)}
-        >
-          <Icon name={collapsed ? 'expand' : 'collapse'} size={14} />
-          <span className="nav-label">Thu gọn menu</span>
-        </button>
       </aside>
       {open && <div className="shell-backdrop" onClick={() => setOpen(false)} />}
       <div className="shell-body">
         <header className="shell-topbar">
+          {/* Màn hình rộng: thu gọn/mở rộng menu trái (chỉ icon, tên hiện khi rê chuột) */}
+          <button
+            className="icon-button shell-collapse"
+            aria-label={collapsed ? 'Mở rộng menu' : 'Thu gọn menu'}
+            aria-expanded={!collapsed}
+            title={collapsed ? 'Mở rộng menu' : 'Thu gọn menu'}
+            onClick={() => setCollapsed(!collapsed)}
+          >
+            <Icon name={collapsed ? 'expand' : 'collapse'} size={15} />
+          </button>
+          {/* Màn hình hẹp: menu là ngăn kéo */}
           <button
             className="icon-button shell-menu-toggle"
             aria-label="Mở menu"
