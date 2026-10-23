@@ -6,6 +6,7 @@ import {
   formatScore,
   parseScore,
   resultSummary,
+  scorePending,
   splitDuration,
   upcomingItems,
 } from '../src/lib/teaching.ts';
@@ -29,6 +30,10 @@ const assessment = (
   opensAt,
   closesAt,
   status,
+  answerMode: 0,
+  timeLimitMinutes: null,
+  questionCount: 0,
+  scoreRelease: 0,
 });
 const result = (
   assessmentId: string,
@@ -62,14 +67,35 @@ test('resultSummary chỉ đếm bài nộp được đã mở, trung bình các
     assessment('e2', 2, 'open', hours(-1), hours(1)),
     assessment('e3', 2, 'upcoming', hours(1), hours(2)),
     assessment('p1', 0, 'open', null, null),
+    // Bài thực hành trắc nghiệm có trang làm bài nên được tính
+    { ...assessment('q1', 1, 'open', null, null), answerMode: 1, questionCount: 10 },
   ];
   const summary = resultSummary(list, [
     result('e1', 'auto_submitted', 8.5),
     result('e2', 'in_progress'),
     result('e3', 'not_started'),
     result('p1', 'in_progress'),
+    result('q1', 'submitted', 7),
   ]);
-  assert.deepEqual(summary, { total: 2, submitted: 1, graded: 1, average: 8.5 });
+  assert.deepEqual(summary, { total: 3, submitted: 2, graded: 2, average: 7.75 });
+});
+
+test('scorePending: công bố sau giờ đóng (chưa tới giờ) hoặc không bao giờ công bố', () => {
+  const later = assessment('a', 2, 'open', null, hours(2));
+  assert.equal(scorePending(later, NOW), null);
+  assert.deepEqual(scorePending({ ...later, scoreRelease: 1 }, NOW), { at: later.closesAt });
+  assert.equal(
+    scorePending({ ...assessment('b', 2, 'closed', null, hours(-1)), scoreRelease: 1 }, NOW),
+    null,
+  );
+  assert.equal(
+    scorePending({ ...assessment('c', 2, 'open', null, null), scoreRelease: 1 }, NOW),
+    null,
+  );
+  assert.deepEqual(
+    scorePending({ ...assessment('d', 2, 'closed', null, hours(-1)), scoreRelease: 2 }, NOW),
+    { at: null },
+  );
 });
 
 test('formatRelative', () => {

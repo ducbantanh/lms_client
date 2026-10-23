@@ -3500,3 +3500,316 @@ a.list-row:hover {
     margin-right: 0;
   }
 }
+
+/* ---------- Tạo bài thi (giảng viên) ---------- */
+/* Cột phải (đề đang soạn) bám theo khi cuộn danh sách câu hỏi; trừ chiều cao thanh trên */
+.exam-summary,
+.quiz-sidebar {
+  position: sticky;
+  top: 72px;
+}
+.random-picker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface-muted);
+  font-size: 14px;
+  color: var(--text-muted);
+}
+.random-picker label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.random-picker .input {
+  width: 64px;
+  height: 32px;
+}
+.exam-builder .search-field {
+  margin-bottom: 12px;
+}
+.bank-questions {
+  max-height: 520px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.bank-questions li + li {
+  border-top: 1px solid var(--border);
+}
+.bank-questions label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.bank-questions label:hover {
+  background: var(--surface-muted);
+}
+.bank-questions label.is-picked {
+  background: var(--accent-soft);
+}
+.bank-questions input {
+  margin-top: 3px;
+  accent-color: var(--accent);
+}
+.bank-questions .badge {
+  flex-shrink: 0;
+  margin: 0;
+}
+/* Nội dung câu hỏi dài: tối đa 3 dòng trong danh sách chọn */
+.bank-question-text {
+  display: -webkit-box;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.exam-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.exam-counts .badge {
+  margin: 0;
+}
+.exam-picked {
+  max-height: 46vh;
+  margin-bottom: 12px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.exam-picked li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 4px 4px 10px;
+  font-size: 13px;
+}
+.exam-picked li + li {
+  border-top: 1px solid var(--border);
+}
+.exam-picked-number {
+  flex-shrink: 0;
+  min-width: 22px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-subtle);
+}
+.exam-picked-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.exam-picked .icon-button {
+  width: 26px;
+  height: 26px;
+}
+.exam-picked .icon-button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+.exam-summary .admin-hint {
+  margin-bottom: 12px;
+}
+
+/* ---------- Làm bài trắc nghiệm (sinh viên) ---------- */
+.quiz-intro .button {
+  margin-top: 4px;
+}
+.quiz-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 28px;
+  margin-bottom: 12px;
+  font-size: 15px;
+  color: var(--text-muted);
+}
+.quiz-facts b {
+  font-size: 20px;
+  color: var(--text);
+}
+.quiz-columns {
+  align-items: start;
+}
+.quiz-questions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.quiz-questions .question-card {
+  scroll-margin-top: 72px;
+}
+.quiz-options {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.quiz-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.quiz-option:hover {
+  background: var(--surface-muted);
+}
+.quiz-option.is-chosen {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.quiz-option input {
+  margin-top: 4px;
+  accent-color: var(--accent);
+}
+.quiz-option > .lesson-text {
+  flex: 1;
+  min-width: 0;
+  line-height: 1.5;
+}
+.quiz-option.is-chosen .option-letter {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+.quiz-save {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--text-subtle);
+}
+.quiz-save.saved {
+  color: var(--success);
+}
+.quiz-save.error {
+  color: var(--danger);
+}
+.quiz-clear {
+  margin-top: 8px;
+}
+.quiz-progress {
+  margin: 10px 0;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+/* Lưới số câu: câu đã trả lời tô màu, bấm để cuộn tới câu */
+.quiz-map {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(34px, 1fr));
+  gap: 6px;
+  max-height: 40vh;
+  margin-bottom: 14px;
+  overflow-y: auto;
+}
+.quiz-map a {
+  display: grid;
+  place-items: center;
+  height: 32px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+.quiz-map a:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.quiz-map a.is-answered {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+.quiz-sidebar .admin-hint {
+  margin-top: 10px;
+}
+.quiz-result .button {
+  margin-top: 12px;
+}
+.question-options li.is-wrong {
+  border-color: #efc4c4;
+  background: var(--danger-soft);
+}
+.question-options li .badge {
+  flex-shrink: 0;
+  margin: 0;
+}
+/* Trang bài nộp: đề và tỷ lệ đúng, mở ra khi cần */
+.quiz-stats {
+  margin-top: 20px;
+}
+.quiz-stats > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.quiz-stats[open] > summary {
+  margin-bottom: 12px;
+}
+@media (max-width: 960px) {
+  .exam-summary,
+  .quiz-sidebar {
+    position: static;
+  }
+  /* Màn hẹp: khung làm bài (đồng hồ, nộp bài) lên trên danh sách câu */
+  .quiz-sidebar {
+    order: -1;
+  }
+}
+/* Trang Tạo bài thi, hình thức tải đề lên: file đề đã chọn */
+.exam-paper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+}
+.exam-paper > span {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.exam-paper b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.exam-paper small {
+  color: var(--text-subtle);
+}
+/* Điểm chưa công bố (công bố sau giờ đóng bài) */
+.score-pending {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--warning-soft);
+  color: var(--warning);
+  font-size: 14px;
+}

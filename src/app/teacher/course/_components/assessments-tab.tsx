@@ -109,8 +109,33 @@ export function AssessmentsTab(props: AssessmentTabProps) {
           <p className="empty-cell">Chưa có {noun} nào.</p>
         )}
       </section>
-      {/* key theo loại: chuyển tab thì form trống lại */}
-      {canTeach && <CreateAssessment key={type} {...props} />}
+      {/* Bài thực hành, bài kiểm tra tạo ở trang Tạo bài thi (trắc nghiệm hoặc tải đề lên); bài tập tạo ngay tại đây */}
+      {canTeach &&
+        (type === 0 ? (
+          <CreateAssessment {...props} />
+        ) : (
+          <aside className="panel">
+            <div className="panel-title">
+              <h2>
+                <i className="title-icon red">
+                  <Icon name="exam" size={12} />
+                </i>
+                Tạo {noun}
+              </h2>
+            </div>
+            <p className="admin-hint">
+              Tạo ở trang Tạo bài thi: trắc nghiệm lấy câu hỏi từ ngân hàng, hoặc tải đề PDF lên để
+              sinh viên nộp file.
+            </p>
+            <Link
+              className="button primary full-width"
+              href={`${TEACHER_PATH}/create-exam/?course=${encodeURIComponent(content.course.id)}&type=${type}`}
+            >
+              <Icon name="plus" size={12} />
+              Tạo {noun}
+            </Link>
+          </aside>
+        ))}
       {editing && (
         <EditAssessment {...props} assessment={editing} onClose={() => setEditing(null)} />
       )}
@@ -244,6 +269,7 @@ const EMPTY = {
   notify: false,
 };
 
+/** Tạo bài tập; bài thực hành và bài kiểm tra tạo ở trang Tạo bài thi (/teacher/create-exam/). */
 function CreateAssessment({ base, reload, notify, type }: AssessmentTabProps) {
   const [form, setForm] = useState(EMPTY);
   const [paperFile, setPaperFile] = useState<File | null>(null);
@@ -251,7 +277,6 @@ function CreateAssessment({ base, reload, notify, type }: AssessmentTabProps) {
   const [error, setError] = useState('');
   const paperInput = useRef<HTMLInputElement>(null);
   const { noun } = ASSESSMENT_GROUPS[type];
-  const exam = type === 2;
   const set = (patch: Partial<typeof EMPTY>) => setForm({ ...form, ...patch });
 
   function pickPaper(file: File | null) {
@@ -270,10 +295,6 @@ function CreateAssessment({ base, reload, notify, type }: AssessmentTabProps) {
     const closesAt = localInputToIso(form.closes);
     if (opensAt && closesAt && closesAt <= opensAt) {
       setError('Giờ đóng phải sau giờ mở.');
-      return;
-    }
-    if (exam && !paperFile) {
-      setError('Bài kiểm tra cần có file đề (PDF).');
       return;
     }
     setBusy(true);
@@ -349,8 +370,7 @@ function CreateAssessment({ base, reload, notify, type }: AssessmentTabProps) {
         </label>
         <label className="form-field">
           <span>
-            File đề{' '}
-            <span className="optional">{exam ? '(PDF, bắt buộc)' : '(PDF, không bắt buộc)'}</span>
+            File đề <span className="optional">(PDF, không bắt buộc)</span>
           </span>
           <input
             ref={paperInput}
@@ -383,16 +403,14 @@ function CreateAssessment({ base, reload, notify, type }: AssessmentTabProps) {
         <p className="admin-hint">
           Để trống giờ mở là mở ngay; để trống giờ đóng là không giới hạn.
         </p>
-        {type === 0 && (
-          <label className="check-field">
-            <input
-              type="checkbox"
-              checked={form.notify}
-              onChange={(event) => set({ notify: event.target.checked })}
-            />
-            Gửi thông báo cho sinh viên
-          </label>
-        )}
+        <label className="check-field">
+          <input
+            type="checkbox"
+            checked={form.notify}
+            onChange={(event) => set({ notify: event.target.checked })}
+          />
+          Gửi thông báo cho sinh viên
+        </label>
         <button className="button primary full-width" disabled={busy || !form.title.trim()}>
           {busy ? 'Đang tạo…' : `Tạo ${noun}`}
         </button>

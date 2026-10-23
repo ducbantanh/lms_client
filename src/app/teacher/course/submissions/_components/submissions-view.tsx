@@ -29,6 +29,8 @@ import { FlashMessage, type Flash } from '@/components/admin-ui';
 import { Icon } from '@/components/ui/icon';
 import { PdfViewer } from '@/components/pdf-viewer';
 import { StatCard } from '@/components/ui/stat-card';
+import { QuizReviewList } from '@/components/quiz-review';
+import type { StudentReview, TeacherQuiz } from '@/lib/quiz';
 
 type Filter = 'all' | 'ungraded' | 'graded' | 'missing';
 
@@ -108,6 +110,8 @@ export function SubmissionsView() {
   const back = `${TEACHER_PATH}/course/?id=${encodeURIComponent(course.id)}&tab=${ASSESSMENT_TAB_PARAM[assessment.type]}`;
   const status = ASSESSMENT_STATUS[assessment.status];
   const visible = rows.filter(FILTERS.find((item) => item.value === filter)!.match);
+  /** Bài trắc nghiệm: không có file, máy chấm sẵn; giảng viên xem bài làm và sửa điểm nếu cần. */
+  const quiz = assessment.answerMode === 1;
   const current = selected ? rows.findIndex((row) => row.studentId === selected) : -1;
 
   return (
@@ -127,6 +131,8 @@ export function SubmissionsView() {
             <Icon name="calendar" size={12} />
             Mở: {assessment.opensAt ? formatDateTime(assessment.opensAt) : 'ngay'} · Đóng:{' '}
             {assessment.closesAt ? formatDateTime(assessment.closesAt) : 'không hạn'}
+            {assessment.scoreRelease === 1 && ' · Sinh viên thấy điểm sau giờ đóng'}
+            {assessment.scoreRelease === 2 && ' · Sinh viên không xem được điểm'}
             {assessment.paperFileId && (
               <>
                 {' · '}
@@ -143,7 +149,7 @@ export function SubmissionsView() {
           </p>
         </div>
         {/* ZIP chỉ gồm bài đã chốt (đã nộp / nộp khi hết giờ), mỗi sinh viên một thư mục */}
-        {summary.submitted > 0 ? (
+        {quiz ? null : summary.submitted > 0 ? (
           <a className="button" href={submissionsZipUrl(course.id, assessment.id)} download>
             <Icon name="download" size={13} />
             Tải bài nộp (ZIP)
@@ -160,6 +166,7 @@ export function SubmissionsView() {
         <Grader
           key={rows[current].studentId}
           row={rows[current]}
+          quiz={assessment.answerMode === 1}
           canGrade={data.canGrade}
           position={`${current + 1} / ${rows.length}`}
           base={base}
@@ -217,7 +224,7 @@ export function SubmissionsView() {
                       <th>Họ tên</th>
                       <th>Trạng thái</th>
                       <th>Nộp lúc</th>
-                      <th>File</th>
+                      {!quiz && <th>File</th>}
                       <th className="numeric">Điểm</th>
                       <th className="actions" aria-label="Thao tác" />
                     </tr>
@@ -240,7 +247,7 @@ export function SubmissionsView() {
                                 ? 'Khi hết giờ'
                                 : '—'}
                           </td>
-                          <td>{row.files.length ? `${row.files.length} file` : '—'}</td>
+                          {!quiz && <td>{row.files.length ? `${row.files.length} file` : '—'}</td>}
                           <td className="numeric score-cell">
                             {row.grade ? formatScore(row.grade.score) : '—'}
                           </td>
@@ -260,7 +267,7 @@ export function SubmissionsView() {
                               // Admin chỉ xem bài làm và điểm
                               <button
                                 className="button small"
-                                disabled={!row.files.length && !row.grade}
+                                disabled={!row.files.length && !row.grade && !(quiz && gradable)}
                                 onClick={() => setSelected(row.studentId)}
                               >
                                 Xem
@@ -279,6 +286,7 @@ export function SubmissionsView() {
               </p>
             )}
           </section>
+          {quiz && <QuizStats courseId={course.id} assessmentId={assessment.id} />}
         </>
       )}
     </main>
@@ -288,6 +296,7 @@ export function SubmissionsView() {
 /** Khung chấm một sinh viên: xem file bài làm (PDF vẽ bằng pdf.js) bên trái, điểm và nhận xét bên phải. */
 function Grader({
   row,
+  quiz,
   canGrade,
   position,
   base,
@@ -298,6 +307,8 @@ function Grader({
   notify,
 }: {
   row: SubmissionRow;
+  /** Bài trắc nghiệm: bên trái là bài làm (đáp án đã chọn) thay cho file. */
+  quiz: boolean;
   /** false: admin xem bài làm, điểm và nhận xét nhưng không chấm. */
   canGrade: boolean;
   position: string;
@@ -356,60 +367,64 @@ function Grader({
 
   return (
     <div className="columns exam-columns">
-      <section className="panel flush">
-        <div className="panel-title">
-          <h2>
-            <i className="title-icon blue">
-              <Icon name="file" size={12} />
-            </i>
-            Bài làm
-          </h2>
-          {file && (
-            <a className="file-link" href={submissionFileUrl(file.id)} download={file.name}>
-              Tải file
-            </a>
+      {quiz ? (
+        <QuizAnswers url={`${base}/${encodeURIComponent(row.studentId)}/quiz`} />
+      ) : (
+        <section className="panel flush">
+          <div className="panel-title">
+            <h2>
+              <i className="title-icon blue">
+                <Icon name="file" size={12} />
+              </i>
+              Bài làm
+            </h2>
+            {file && (
+              <a className="file-link" href={submissionFileUrl(file.id)} download={file.name}>
+                Tải file
+              </a>
+            )}
+          </div>
+          {row.files.length > 1 && (
+            <div className="grader-files" role="tablist" aria-label="File bài làm">
+              {row.files.map((item, index) => (
+                <button
+                  key={item.id}
+                  role="tab"
+                  aria-selected={index === fileIndex}
+                  className={index === fileIndex ? 'selected' : ''}
+                  onClick={() => setFileIndex(index)}
+                >
+                  <Icon name={fileIcon(item.contentType)} size={12} />
+                  {item.name}
+                </button>
+              ))}
+            </div>
           )}
-        </div>
-        {row.files.length > 1 && (
-          <div className="grader-files" role="tablist" aria-label="File bài làm">
-            {row.files.map((item, index) => (
-              <button
-                key={item.id}
-                role="tab"
-                aria-selected={index === fileIndex}
-                className={index === fileIndex ? 'selected' : ''}
-                onClick={() => setFileIndex(index)}
-              >
-                <Icon name={fileIcon(item.contentType)} size={12} />
-                {item.name}
-              </button>
-            ))}
-          </div>
-        )}
-        {!file ? (
-          <p className="empty-cell">Sinh viên không nộp file nào.</p>
-        ) : file.contentType === PDF ? (
-          <PdfViewer
-            key={file.id}
-            url={submissionFileUrl(file.id)}
-            title={`Bài làm: ${file.name}`}
-          />
-        ) : (
-          <div className="grader-download">
-            <Icon name={fileIcon(file.contentType)} size={36} className="file-icon" />
-            <p>
-              <b>{file.name}</b> · {formatSize(file.size)}
-            </p>
-            <p className="admin-hint">
-              File {file.name.split('.').pop()?.toUpperCase()} không xem trực tiếp được.
-            </p>
-            <a className="button" href={submissionFileUrl(file.id)} download={file.name}>
-              <Icon name="upload" size={12} />
-              Tải về để xem
-            </a>
-          </div>
-        )}
-      </section>
+          {!file ? (
+            <p className="empty-cell">Sinh viên không nộp file nào.</p>
+          ) : file.contentType === PDF ? (
+            <PdfViewer
+              key={file.id}
+              url={submissionFileUrl(file.id)}
+              title={`Bài làm: ${file.name}`}
+            />
+          ) : (
+            <div className="grader-download">
+              <Icon name={fileIcon(file.contentType)} size={36} className="file-icon" />
+              <p>
+                <b>{file.name}</b> · {formatSize(file.size)}
+              </p>
+              <p className="admin-hint">
+                File {file.name.split('.').pop()?.toUpperCase()} không xem trực tiếp được.
+              </p>
+              <a className="button" href={submissionFileUrl(file.id)} download={file.name}>
+                <Icon name="upload" size={12} />
+                Tải về để xem
+              </a>
+            </div>
+          )}
+        </section>
+      )}
       <aside className="panel">
         <div className="grader-nav">
           <button className="button small" onClick={onBack}>
@@ -453,8 +468,14 @@ function Grader({
         </p>
         {row.grade && (
           <p className="admin-hint">
-            Đã chấm {formatDateTime(row.grade.gradedAt)}
-            {row.grade.gradedBy && ` bởi ${row.grade.gradedBy}`}.
+            {row.grade.gradedBy
+              ? `Đã chấm ${formatDateTime(row.grade.gradedAt)} bởi ${row.grade.gradedBy}.`
+              : row.grade.autoScore !== null
+                ? `Máy chấm lúc ${formatDateTime(row.grade.gradedAt)}.`
+                : `Đã chấm ${formatDateTime(row.grade.gradedAt)}.`}
+            {row.grade.autoScore !== null &&
+              row.grade.autoScore !== row.grade.score &&
+              ` Điểm máy chấm: ${formatScore(row.grade.autoScore)}.`}
           </p>
         )}
         {!canGrade ? (
@@ -536,5 +557,105 @@ function Grader({
         )}
       </aside>
     </div>
+  );
+}
+
+/** Bài làm trắc nghiệm của một sinh viên: đáp án đã chọn so với đáp án đúng, theo thứ tự gốc của đề. */
+function QuizAnswers({ url }: { url: string }) {
+  const [review, setReview] = useState<StudentReview | null>(null);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const controller = new AbortController();
+    apiRequest<StudentReview>(url, { signal: controller.signal })
+      .then(setReview)
+      .catch((reason) => {
+        if (!controller.signal.aborted)
+          setError(reason instanceof Error ? reason.message : 'Không tải được bài làm.');
+      });
+    return () => controller.abort();
+  }, [url]);
+
+  return (
+    <section className="stack">
+      <div className="panel">
+        <div className="panel-title">
+          <h2>
+            <i className="title-icon blue">
+              <Icon name="check" size={12} />
+            </i>
+            Bài làm trắc nghiệm
+          </h2>
+        </div>
+        {error ? (
+          <p className="form-error" role="alert">
+            {error}
+          </p>
+        ) : !review ? (
+          <p className="empty-cell" role="status">
+            Đang tải bài làm…
+          </p>
+        ) : !review.startedAt ? (
+          <p className="admin-hint">Sinh viên chưa làm bài. Dưới đây là đề và đáp án.</p>
+        ) : (
+          <p className="admin-hint">
+            Bắt đầu {formatDateTime(review.startedAt)}
+            {review.submittedAt && ` · nộp ${formatDateTime(review.submittedAt)}`}
+            {review.result &&
+              ` · đúng ${review.result.correct}/${review.result.total} câu = ${formatScore(review.result.score)} điểm`}
+          </p>
+        )}
+      </div>
+      {review && <QuizReviewList questions={review.questions} />}
+    </section>
+  );
+}
+
+/** Đề của bài (kèm đáp án) và số sinh viên làm đúng từng câu; chỉ tải khi mở. */
+function QuizStats({ courseId, assessmentId }: { courseId: string; assessmentId: string }) {
+  const [data, setData] = useState<TeacherQuiz | null>(null);
+  const [error, setError] = useState('');
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (!open || data) return;
+    const controller = new AbortController();
+    apiRequest<TeacherQuiz>(
+      `/teacher/courses/${encodeURIComponent(courseId)}/assessments/${encodeURIComponent(assessmentId)}/quiz`,
+      { signal: controller.signal },
+    )
+      .then(setData)
+      .catch((reason) => {
+        if (!controller.signal.aborted)
+          setError(reason instanceof Error ? reason.message : 'Không tải được đề.');
+      });
+    return () => controller.abort();
+  }, [open, data, courseId, assessmentId]);
+
+  const stats = new Map(data?.stats.map((stat) => [stat.questionId, stat]));
+  return (
+    <details className="panel quiz-stats" onToggle={(event) => setOpen(event.currentTarget.open)}>
+      <summary>
+        <Icon name="list" size={12} />
+        Đề và tỷ lệ làm đúng từng câu
+      </summary>
+      {error ? (
+        <p className="form-error" role="alert">
+          {error}
+        </p>
+      ) : !data ? (
+        <p className="empty-cell" role="status">
+          Đang tải đề…
+        </p>
+      ) : (
+        <>
+          <p className="admin-hint">
+            Tính trên {data.finished} bài đã nộp. Câu có tỷ lệ đúng thấp có thể là câu khó hoặc đáp
+            án trong ngân hàng bị sai.
+          </p>
+          <QuizReviewList questions={data.questions} stats={stats} />
+        </>
+      )}
+    </details>
   );
 }
