@@ -18,11 +18,11 @@ export function SiteHeader() {
           <Link
             href={user ? homeFor(user) : '/'}
             className="brand"
-            aria-label="FIT LMS — Trang chủ"
+            aria-label="F LMS — Trang chủ"
           >
             <span className="brand-mark">F</span>
             <span className="brand-text">
-              <strong>FIT LMS</strong>
+              <strong>F LMS</strong>
               <small>Khoa Công nghệ Thông tin</small>
             </span>
           </Link>

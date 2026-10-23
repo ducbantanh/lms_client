@@ -193,7 +193,7 @@ function Shell({ area, children }: { area: Area; children: ReactNode }) {
         >
           <span className="brand-mark">F</span>
           <span className="brand-text">
-            <strong>FIT LMS</strong>
+            <strong>F LMS</strong>
             <small>
               {area === 'learn'
                 ? 'Khoa Công nghệ Thông tin'

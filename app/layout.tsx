@@ -4,7 +4,7 @@ import { DropdownDismiss } from '@/components/dropdown-dismiss';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: { default: 'Các khóa học của tôi | FIT LMS', template: '%s | FIT LMS' },
+  title: { default: 'Các khóa học của tôi | F LMS', template: '%s | F LMS' },
   description: 'Không gian học tập trực tuyến của Khoa Công nghệ thông tin.',
   icons: { icon: '/favicon.svg' },
 };
