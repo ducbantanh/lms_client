@@ -95,6 +95,11 @@ trong README này để tra đường dẫn hiện tại.
 - API/CSRF: `src/lib/api.ts`. Token chỉ giữ trong RAM; session thật dùng cookie HttpOnly.
 - Bảo vệ route (giống `requirePage` của client cũ): `src/providers/session-provider.tsx`. Chưa đăng nhập →
   `/login/?next=...`, phải đổi mật khẩu → `/change-password/`, bị thu hồi phiên → về login kèm lý do.
+- Tự đăng xuất khi không hoạt động: server quyết định theo thời gian chờ của vai trò; `session-provider.tsx`
+  gửi `{"type":"activity"}` qua socket (tối đa 1 lần/15 giây) khi người dùng thao tác chuột, phím, cuộn, chạm.
+  Admin chỉnh số phút cho sinh viên / giảng viên ở `/admin/settings/`
+  (`src/app/admin/settings/_components/idle-timeout-panel.tsx`). Sinh viên đang làm bài kiểm tra
+  (bài đang mở, chưa nộp) và còn mở trang thì server giữ phiên, không tự đăng xuất.
 
 ## CSS
 

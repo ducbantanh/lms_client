@@ -40,8 +40,14 @@ const REVOKE_REASONS: Record<string, string> = {
   locked: 'Tài khoản của bạn đã bị khóa.',
   deleted: 'Tài khoản của bạn đã bị xóa.',
   password_changed: 'Mật khẩu đã được đổi ở thiết bị khác.',
+  idle: 'Bạn đã bị đăng xuất do không hoạt động trong thời gian dài.',
   expired: 'Phiên đăng nhập đã hết hạn.',
 };
+
+/** Thao tác của người dùng được tính là đang hoạt động (đọc bài, cuộn trang... không gọi API). */
+const ACTIVITY_EVENTS = ['pointerdown', 'pointermove', 'keydown', 'wheel', 'scroll', 'touchstart'];
+/** Gửi "activity" qua socket tối đa 1 lần mỗi khoảng này; server gia hạn phiên theo thời gian chờ của vai trò. */
+const ACTIVITY_INTERVAL = 15_000;
 
 export function SessionProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
@@ -190,9 +196,38 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       };
     }
     connect();
+
+    // Server tự đăng xuất khi không hoạt động; đọc bài hay cuộn trang không gọi API nên báo qua socket.
+    // Thao tác trong khoảng chờ được gom lại gửi ở nhịp kế tiếp, để lần hoạt động cuối luôn tới server.
+    let lastActivitySent = 0;
+    let activityPending = false;
+    function sendActivity() {
+      if (socket?.readyState !== WebSocket.OPEN) {
+        activityPending = true;
+        return;
+      }
+      socket.send(JSON.stringify({ type: 'activity' }));
+      lastActivitySent = Date.now();
+      activityPending = false;
+    }
+    function onActivity() {
+      if (Date.now() - lastActivitySent >= ACTIVITY_INTERVAL) sendActivity();
+      else activityPending = true;
+    }
+    const flushActivity = setInterval(() => {
+      if (activityPending) sendActivity();
+    }, ACTIVITY_INTERVAL);
+    // capture: bắt cả cuộn bên trong khung (trình xem PDF, bảng) vì scroll không nổi bọt
+    const listenerOptions = { passive: true, capture: true };
+    ACTIVITY_EVENTS.forEach((type) => window.addEventListener(type, onActivity, listenerOptions));
+
     return () => {
       stopped = true;
       clearTimeout(retry);
+      clearInterval(flushActivity);
+      ACTIVITY_EVENTS.forEach((type) =>
+        window.removeEventListener(type, onActivity, listenerOptions),
+      );
       socket?.close();
     };
   }, [sessionUserId, clearSession]);

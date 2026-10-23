@@ -74,6 +74,14 @@ export function importReason(code: string) {
   return IMPORT_REASONS[code] ?? code;
 }
 
+/** IdleTimeoutService.Settings: số phút không hoạt động trước khi tự đăng xuất, theo vai trò. */
+export interface IdleTimeoutSettings {
+  studentMinutes: number;
+  teacherMinutes: number;
+  minMinutes: number;
+  maxMinutes: number;
+}
+
 /** Một dòng audit (AuditController.AuditView); actor null = hệ thống hoặc tài khoản đã bị xóa. */
 export interface AuditEntry {
   actorUsername: string | null;
@@ -115,6 +123,7 @@ const AUDIT_ACTIONS: Record<string, string> = {
   'user.password_reset': 'Đặt lại mật khẩu',
   'user.imported': 'Tạo tài khoản hàng loạt',
   'session.force_logout': 'Ép đăng xuất',
+  'session.idle_timeout_updated': 'Đổi thời gian tự đăng xuất',
   'course.created': 'Tạo khóa học',
   'course.updated': 'Sửa khóa học',
   'course.assigned': 'Phân công giảng viên',
