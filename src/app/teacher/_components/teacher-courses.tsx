@@ -27,6 +27,7 @@ import { Icon } from '@/components/ui/icon';
 import { Modal } from '@/components/ui/modal';
 import { StatCard } from '@/components/ui/stat-card';
 import { TeacherSelect } from '@/components/teacher-select';
+import { GroupField } from '@/components/course-group-field';
 import { TeacherCourseCard } from './teacher-course-card';
 import { ViewToggle } from '@/components/ui/view-toggle';
 
@@ -385,6 +386,7 @@ function SchedulePanel({ items, more, now }: { items: ScheduleItem[]; more: numb
 function CreateCourseDialog({ onClose }: { onClose: () => void }) {
   const router = useRouter();
   const [code, setCode] = useState('');
+  const [group, setGroup] = useState('');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [format, setFormat] = useState<CourseFormat>(1);
@@ -401,6 +403,7 @@ function CreateCourseDialog({ onClose }: { onClose: () => void }) {
         method: 'POST',
         body: {
           code: code.trim(),
+          group: group.trim(),
           title: title.trim(),
           description: description.trim(),
           format,
@@ -435,20 +438,7 @@ function CreateCourseDialog({ onClose }: { onClose: () => void }) {
               autoFocus
             />
           </label>
-          <label className="form-field">
-            Định dạng
-            <select
-              className="select"
-              value={format}
-              onChange={(event) => setFormat(Number(event.target.value) as CourseFormat)}
-            >
-              {Object.entries(COURSE_FORMATS).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </label>
+          <GroupField value={group} onChange={setGroup} />
         </div>
         <label className="form-field">
           Tên khóa học
@@ -460,6 +450,20 @@ function CreateCourseDialog({ onClose }: { onClose: () => void }) {
             maxLength={200}
             required
           />
+        </label>
+        <label className="form-field">
+          Định dạng
+          <select
+            className="select"
+            value={format}
+            onChange={(event) => setFormat(Number(event.target.value) as CourseFormat)}
+          >
+            {Object.entries(COURSE_FORMATS).map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
         </label>
         <label className="form-field">
           <span>

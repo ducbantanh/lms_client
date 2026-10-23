@@ -22,6 +22,7 @@ const MESSAGES: Record<string, string> = {
   INVALID_ENROLL_KEY: 'Mã tham gia không đúng hoặc đã bị tắt.',
   TEACHER_ONLY: 'Chỉ giảng viên phụ trách khóa học mới làm được việc này.',
   INVALID_TEACHER: 'Giảng viên không tồn tại hoặc tài khoản đã bị khóa.',
+  COURSE_GROUP_TAKEN: 'Học phần này đã có khóa học cùng nhóm. Kiểm tra lại mã học phần hoặc nhóm.',
   USERNAME_TAKEN: 'Mã đăng nhập này đã có người dùng.',
   BIRTH_DATE_REQUIRED: 'Tài khoản chưa có ngày sinh. Thêm ngày sinh trước khi đặt lại mật khẩu.',
   ASSESSMENT_CLOSED: 'Bài kiểm tra đã kết thúc nên không thể sửa hoặc xóa.',

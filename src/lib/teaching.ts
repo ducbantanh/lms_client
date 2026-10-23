@@ -1,10 +1,12 @@
 import type { IconName } from '@/components/ui/icon';
-import { normalizeSearch } from './course-utils.ts';
+import { courseLabel, normalizeSearch } from './course-utils.ts';
 
 /** Kiểu dữ liệu khớp record CourseViews của Spring (lms.course); mọi id là public_id. */
 export interface TeacherCourse {
   id: string;
   code: string;
+  /** Nhóm của học phần; null = không chia nhóm. */
+  group: string | null;
   title: string;
   format: CourseFormat;
   studentCount: number;
@@ -15,6 +17,7 @@ export interface TeacherCourse {
 export interface CourseInfo {
   id: string;
   code: string;
+  group: string | null;
   title: string;
   description: string | null;
   format: CourseFormat;
@@ -534,6 +537,7 @@ export interface ScheduleItem {
 export interface OverviewCourse {
   id: string;
   code: string;
+  group: string | null;
   title: string;
   format: CourseFormat;
   teacherName: string | null;
@@ -572,13 +576,16 @@ export function selectTeacherCourses(
       if (query.filter === 'grading' && !course.toGrade) return false;
       if (query.filter === 'open' && !course.openAssessments) return false;
       if (query.filter === 'unassigned' && course.teacherName) return false;
-      return normalizeSearch(`${course.code} ${course.title} ${course.teacherName ?? ''}`).includes(
-        needle,
-      );
+      return normalizeSearch(
+        `${courseLabel(course.code, course.group)} ${course.title} ${course.teacherName ?? ''}`,
+      ).includes(needle);
     })
     .sort((a, b) => {
       if (query.sort === 'name') return byName(a, b);
-      if (query.sort === 'code') return a.code.localeCompare(b.code, 'vi', { numeric: true });
+      if (query.sort === 'code')
+        return courseLabel(a.code, a.group).localeCompare(courseLabel(b.code, b.group), 'vi', {
+          numeric: true,
+        });
       if (query.sort === 'grading') return b.toGrade - a.toGrade || byName(a, b);
       return b.createdAt.localeCompare(a.createdAt);
     });

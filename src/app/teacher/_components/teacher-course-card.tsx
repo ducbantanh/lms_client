@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { TEACHER_PATH } from '@/lib/auth';
-import { coverFor } from '@/lib/course-utils';
+import { courseLabel, coverFor } from '@/lib/course-utils';
 import { COURSE_FORMATS, type OverviewCourse } from '@/lib/teaching';
 
 /**
@@ -28,7 +28,7 @@ export function TeacherCourseCard({
       <div className="course-body">
         <div className="course-meta">
           <span className="course-code">
-            {course.code} · {COURSE_FORMATS[course.format]}
+            {courseLabel(course.code, course.group)} · {COURSE_FORMATS[course.format]}
           </span>
         </div>
         <Link href={href} className="course-title">
