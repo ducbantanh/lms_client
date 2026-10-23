@@ -8,8 +8,8 @@ import {
   resultSummary,
   splitDuration,
   upcomingItems,
-} from '../lib/teaching.ts';
-import type { Assessment, MyResult } from '../lib/teaching.ts';
+} from '../src/lib/teaching.ts';
+import type { Assessment, MyResult } from '../src/lib/teaching.ts';
 
 const NOW = Date.parse('2026-10-20T08:00:00Z');
 const hours = (h: number) => new Date(NOW + h * 3600_000).toISOString();

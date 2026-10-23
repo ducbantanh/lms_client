@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { homeFor, routeRedirect } from '../lib/auth.ts';
-import type { Role, Session } from '../lib/types.ts';
+import { homeFor, routeRedirect } from '../src/lib/auth.ts';
+import type { Role, Session } from '../src/lib/types.ts';
 
 // Quyền giống seed V2 + V4 của Spring cho từng vai trò.
 const PERMISSIONS: Partial<Record<Role, string[]>> = {

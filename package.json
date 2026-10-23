@@ -8,16 +8,17 @@
     "build": "next build --webpack",
     "postbuild": "node scripts/fix-static-export.mjs",
     "postinstall": "node scripts/copy-pdf-worker.mjs",
-    "format": "prettier --write app components lib scripts tests next.config.ts tsconfig.json",
+    "format": "prettier --write src scripts tests next.config.ts eslint.config.mjs tsconfig.json",
     "preview": "node scripts/preview.mjs",
+    "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test": "node --experimental-strip-types --test tests/*.test.ts",
-    "mock": "node archive/html-client/dev/mock-server.js"
+    "test": "node --experimental-strip-types --test tests/*.test.ts"
   },
   "engines": {
     "node": ">=22.13.0"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-free": "5.15.4",
     "next": "16.4.2",
     "pdfjs-dist": "6.3.289",
     "react": "19.3.1",
@@ -27,6 +28,8 @@
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "eslint": "^10.13.0",
+    "eslint-config-next": "^16.4.2",
     "prettier": "3.9.10",
     "typescript": "^5.9.0",
     "ws": "^8.18.0"

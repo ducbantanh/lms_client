@@ -2,7 +2,7 @@
  * FILE 2/4 — SERVER TRUNG GIAN CHO BẢN PREVIEW
  *
  * Browser gọi localhost:3100:
- *   / hoặc /fonts/... → static.js đọc file giao diện.
+ *   / hoặc /_next/... → static.js đọc file giao diện.
  *   /api/...          → chuyển HTTP request tới backend, trả kết quả về browser.
  *   /ws               → nối WebSocket giữa browser và backend.
  *

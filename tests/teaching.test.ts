@@ -7,9 +7,9 @@ import {
   moveId,
   selectTeacherCourses,
   splitLinks,
-} from '../lib/teaching.ts';
-import type { TeacherCourseFilter, TeacherCourseSort } from '../lib/teaching.ts';
-import type { CourseContent, CourseFile, Lesson } from '../lib/teaching.ts';
+} from '../src/lib/teaching.ts';
+import type { TeacherCourseFilter, TeacherCourseSort } from '../src/lib/teaching.ts';
+import type { CourseContent, CourseFile, Lesson } from '../src/lib/teaching.ts';
 
 const lesson = (id: string, sectionId: string | null, position: number): Lesson => ({
   id,

@@ -25,7 +25,7 @@
     ],
     "paths": {
       "@/*": [
-        "./*"
+        "./src/*"
       ]
     }
   },
@@ -38,7 +38,6 @@
   ],
   "exclude": [
     "node_modules",
-    "tests",
-    "archive"
+    "tests"
   ]
 }
