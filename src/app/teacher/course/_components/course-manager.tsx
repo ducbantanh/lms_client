@@ -5,6 +5,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { ApiError, apiRequest } from '@/lib/api';
 import { TEACHER_PATH, hasPermission } from '@/lib/auth';
+import { courseLabel } from '@/lib/course-utils';
 import { useSession } from '@/providers/session-provider';
 import {
   ASSESSMENT_GROUPS,
@@ -17,6 +18,7 @@ import {
 } from '@/lib/teaching';
 import { Modal } from '@/components/ui/modal';
 import { TeacherSelect } from '@/components/teacher-select';
+import { GroupField } from '@/components/course-group-field';
 import {
   ConfirmDialog,
   FlashMessage,
@@ -159,7 +161,7 @@ export function CourseManager() {
   function deleteCourse() {
     setConfirm({
       title: 'Xóa khóa học',
-      message: `Xóa "${course.code} – ${course.title}"? Toàn bộ tài liệu, bài kiểm tra và danh sách sinh viên sẽ bị xóa vĩnh viễn.`,
+      message: `Xóa "${courseLabel(course.code, course.group)} – ${course.title}"? Toàn bộ tài liệu, bài kiểm tra và danh sách sinh viên sẽ bị xóa vĩnh viễn.`,
       confirmLabel: 'Xóa khóa học',
       danger: true,
       run: async () => {
@@ -182,7 +184,7 @@ export function CourseManager() {
       <div className="page-heading">
         <div>
           <p className="detail-code">
-            {course.code} · {COURSE_FORMATS[course.format]} ·{' '}
+            {courseLabel(course.code, course.group)} · {COURSE_FORMATS[course.format]} ·{' '}
             {course.teacherName ?? <span className="badge warn">Chưa phân công giảng viên</span>}
           </p>
           <h1>{course.title}</h1>
@@ -299,7 +301,7 @@ function AssignTeacherDialog({
   );
 }
 
-/** Sửa mã, tên, mô tả; dạng khóa học chỉ đổi được giữa "theo mục" và "theo tuần". */
+/** Sửa mã, nhóm, tên, mô tả; dạng khóa học chỉ đổi được giữa "theo mục" và "theo tuần". */
 function CourseDialog({
   content,
   base,
@@ -310,6 +312,7 @@ function CourseDialog({
   const { course } = content;
   const [form, setForm] = useState({
     code: course.code,
+    group: course.group ?? '',
     title: course.title,
     description: course.description ?? '',
     format: course.format,
@@ -325,7 +328,12 @@ function CourseDialog({
     try {
       await apiRequest(base, {
         method: 'PUT',
-        body: { ...form, code: form.code.trim(), title: form.title.trim() },
+        body: {
+          ...form,
+          code: form.code.trim(),
+          group: form.group.trim(),
+          title: form.title.trim(),
+        },
       });
       notify({ type: 'success', text: 'Đã lưu thông tin khóa học.' });
       onClose();
@@ -355,22 +363,7 @@ function CourseDialog({
               required
             />
           </label>
-          {course.format !== 2 && (
-            <label className="form-field">
-              Dạng
-              <select
-                className="select"
-                value={form.format}
-                onChange={(event) => set({ format: Number(event.target.value) as CourseFormat })}
-              >
-                {([0, 1] as const).map((value) => (
-                  <option key={value} value={value}>
-                    {COURSE_FORMATS[value]}
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
+          <GroupField value={form.group} onChange={(group) => set({ group })} />
         </div>
         <label className="form-field">
           Tên khóa học
@@ -383,6 +376,22 @@ function CourseDialog({
             autoFocus
           />
         </label>
+        {course.format !== 2 && (
+          <label className="form-field">
+            Dạng
+            <select
+              className="select"
+              value={form.format}
+              onChange={(event) => set({ format: Number(event.target.value) as CourseFormat })}
+            >
+              {([0, 1] as const).map((value) => (
+                <option key={value} value={value}>
+                  {COURSE_FORMATS[value]}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         <label className="form-field">
           <span>
             Mô tả <span className="optional">(không bắt buộc)</span>

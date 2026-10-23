@@ -33,6 +33,7 @@ export type CoverStyle =
 /** Model hiển thị cho một thẻ khóa học. progress null: khóa học chưa có bài học/bài kiểm tra để tính. */
 export interface Course {
   id: string;
+  /** Mã học phần kèm nhóm để hiển thị và tìm kiếm (courseLabel), vd. "INT1340 · Nhóm 01". */
   code: string;
   title: string;
   subtitle: string;

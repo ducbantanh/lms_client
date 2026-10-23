@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useSession } from '@/providers/session-provider';
 import { ApiError, apiRequest } from '@/lib/api';
-import { coverFor } from '@/lib/course-utils';
+import { courseLabel, coverFor } from '@/lib/course-utils';
 import type { NextLesson } from '@/lib/teaching';
 import type { Course } from '@/lib/types';
 
@@ -39,6 +39,7 @@ export function useCourses() {
       courses: {
         id: string;
         code: string;
+        group: string | null;
         title: string;
         teacherName?: string;
         progress: number | null;
@@ -50,7 +51,7 @@ export function useCourses() {
         setCourses(
           dashboard.courses.map((item) => ({
             id: item.id,
-            code: item.code,
+            code: courseLabel(item.code, item.group),
             title: item.title,
             subtitle: '',
             teacher: item.teacherName ?? '',

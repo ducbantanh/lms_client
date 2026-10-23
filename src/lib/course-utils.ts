@@ -41,6 +41,14 @@ export function selectCourses(courses: Course[], query: CourseQuery): Course[] {
     );
 }
 
+/**
+ * Mã học phần kèm nhóm: "INT1340 · Nhóm 01"; không chia nhóm thì chỉ mã.
+ * Cùng định dạng với Course.displayCode() của server (thông báo, bài nộp gửi sẵn chuỗi này).
+ */
+export function courseLabel(code: string, group: string | null | undefined): string {
+  return group ? `${code} · Nhóm ${group}` : code;
+}
+
 /** Avatar không cần ảnh cá nhân; lấy chữ đầu của hai từ cuối trong họ tên. */
 export function initials(name: string): string {
   return name

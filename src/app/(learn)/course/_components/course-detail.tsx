@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { ApiError, apiRequest } from '@/lib/api';
 import { hasPermission } from '@/lib/auth';
 import { useSession } from '@/providers/session-provider';
-import { coverFor, initials } from '@/lib/course-utils';
+import { courseLabel, coverFor, initials } from '@/lib/course-utils';
 import {
   ASSESSMENT_GROUPS,
   ASSESSMENT_TAB_PARAM,
@@ -236,7 +236,7 @@ export function CourseDetail() {
           {initials(course.title)}
         </span>
         <div>
-          <p className="detail-code">{course.code}</p>
+          <p className="detail-code">{courseLabel(course.code, course.group)}</p>
           <h1>{course.title}</h1>
           {course.description && <p className="detail-subtitle">{course.description}</p>}
           <p className="detail-teacher">Giảng viên: {course.teacherName || 'Chưa có thông tin'}</p>
