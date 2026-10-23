@@ -34,6 +34,7 @@ const MESSAGES: Record<string, string> = {
     'Mã QR đã hết hạn hoặc không hợp lệ. Quét lại mã đang hiển thị trên màn chiếu.',
   ATTENDANCE_CLOSED: 'Giảng viên đã dừng điểm danh bằng QR cho buổi này.',
   NOT_ENROLLED: 'Bạn không có tên trong danh sách lớp của khóa học này.',
+  QUESTION_LIMIT: 'Mỗi lần nhập tối đa 500 câu, mỗi ngân hàng tối đa 2000 câu hỏi.',
   INTERNAL_ERROR: 'Máy chủ gặp lỗi. Vui lòng thử lại sau.',
   NETWORK_ERROR: 'Không kết nối được máy chủ. Kiểm tra mạng LAN và thử lại.',
 };

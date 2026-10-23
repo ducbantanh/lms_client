@@ -27,7 +27,8 @@ interface NavGroup {
 }
 
 /**
- * Menu theo khu vực, cố ý chỉ vài mục: Tổng quan, Khóa học, Cài đặt (sinh viên và giảng viên).
+ * Menu theo khu vực, cố ý chỉ vài mục: Tổng quan, Khóa học, Cài đặt (sinh viên và giảng viên);
+ * giảng viên có thêm Ngân hàng câu hỏi.
  * Thông báo đã có chuông trên thanh trên; người online của lớp xem ở tab Sinh viên của khóa học.
  * Admin có thêm các trang quản trị; khu quản lý lọc theo permission giống MANAGE_ROUTES trong lib/auth.ts.
  */
@@ -64,6 +65,14 @@ function navFor(area: Area, user: User | null): NavGroup[] {
     icon: 'book',
     active: (path) => path.startsWith(`${TEACHER_PATH}/course`),
   };
+  // /teacher/question-banks (danh sách), /teacher/question-bank (câu hỏi của một ngân hàng)
+  const banks: NavLink = {
+    href: `${TEACHER_PATH}/question-banks/`,
+    label: 'Ngân hàng câu hỏi',
+    icon: 'bank',
+    active: (path) => path.startsWith(`${TEACHER_PATH}/question-bank`),
+  };
+  // Ngân hàng câu hỏi là công cụ soạn đề của giảng viên; admin không soạn đề nên không có
   if (user?.role !== 0)
     return [
       {
@@ -74,7 +83,7 @@ function navFor(area: Area, user: User | null): NavGroup[] {
             icon: 'dashboard',
             active: (path) => path === TEACHER_PATH,
           },
-          ...(hasPermission(user, 'courses.manage') ? [courses] : []),
+          ...(hasPermission(user, 'courses.manage') ? [courses, banks] : []),
           {
             href: `${TEACHER_PATH}/settings/`,
             label: 'Cài đặt',

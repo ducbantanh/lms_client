@@ -3289,3 +3289,214 @@ a.list-row:hover {
     padding: 0 7px;
   }
 }
+
+/* ---------- Ngân hàng câu hỏi (giảng viên) ---------- */
+.bank-link:hover b {
+  color: var(--accent);
+}
+/* Dòng chọn tất cả + thao tác với các câu đã chọn, ngay trên danh sách câu hỏi */
+.selection-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  min-height: 32px;
+  margin-bottom: 12px;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+.selection-bar .check-field {
+  margin: 0;
+}
+.question-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.question-card {
+  padding: 16px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+}
+.question-card.is-selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-ring);
+}
+.question-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.question-head .file-actions {
+  margin-left: auto;
+}
+.question-number {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.question-number input {
+  accent-color: var(--accent);
+}
+.question-body {
+  margin-bottom: 10px;
+}
+.question-options {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.question-options li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.question-options li > .lesson-text {
+  flex: 1;
+  min-width: 0;
+  line-height: 1.5;
+}
+.question-options li.is-correct {
+  border-color: #b7dcc5;
+  background: var(--success-soft);
+}
+.option-letter {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--surface-muted);
+  border: 1px solid var(--border-strong);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+.is-correct .option-letter {
+  border-color: var(--success);
+  background: var(--success);
+  color: #fff;
+}
+.option-check {
+  margin-top: 4px;
+  color: var(--success);
+}
+.question-explanation {
+  margin-top: 10px;
+  padding: 8px 12px;
+  border-left: 3px solid var(--border-strong);
+  background: var(--surface-muted);
+  font-size: 13px;
+  color: var(--text-muted);
+}
+/* Hộp thoại soạn câu hỏi: mỗi đáp án một dòng gồm nút chọn đúng, chữ cái, ô nhập, nút xóa */
+.option-editor {
+  margin: 0 0 16px;
+  padding: 0;
+  border: 0;
+}
+.option-editor > legend {
+  margin-bottom: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+.option-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.option-row > input[type='radio'],
+.option-row > input[type='checkbox'] {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  accent-color: var(--success);
+  cursor: pointer;
+}
+.option-row > .input {
+  flex: 1;
+  min-width: 0;
+  height: 36px;
+}
+.option-row.is-correct > .input {
+  border-color: var(--success);
+  background: var(--success-soft);
+}
+.option-row .icon-button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.option-row .icon-button:disabled:hover {
+  background: none;
+  color: var(--text-muted);
+}
+/* Hộp thoại nhập từ văn bản */
+.import-sample {
+  margin-bottom: 12px;
+  font-size: 13px;
+}
+.import-sample summary {
+  font-weight: 600;
+  color: var(--accent);
+  cursor: pointer;
+}
+.import-sample pre {
+  margin: 8px 0;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-muted);
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  color: var(--text);
+}
+.import-textarea {
+  width: 100%;
+  min-height: 260px;
+  padding: 8px 12px;
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.import-issues {
+  margin-top: 12px;
+  padding: 10px 14px;
+  max-height: 180px;
+  overflow-y: auto;
+  border-radius: var(--radius-sm);
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-size: 13px;
+}
+.import-issues ul {
+  margin-top: 6px;
+  padding-left: 18px;
+  list-style: disc;
+}
+.import-actions > label.button {
+  margin-right: auto;
+  cursor: pointer;
+}
+@media (max-width: 720px) {
+  .question-card {
+    padding: 14px;
+  }
+  .import-actions > label.button {
+    margin-right: 0;
+  }
+}
