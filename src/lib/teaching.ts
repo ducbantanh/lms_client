@@ -74,6 +74,14 @@ export interface Assessment {
   opensAt: string | null;
   closesAt: string | null;
   status: AssessmentStatus;
+  /** 0 nộp file, 1 trắc nghiệm (khớp Assessment.MODE_*). */
+  answerMode: AnswerMode;
+  /** Trắc nghiệm: số phút làm bài từ lúc bắt đầu; null = làm tới giờ đóng. */
+  timeLimitMinutes: number | null;
+  /** Số câu của bài trắc nghiệm (0 với bài nộp file). */
+  questionCount: number;
+  /** 0 sinh viên thấy điểm ngay khi có điểm, 1 sau giờ đóng bài, 2 không bao giờ (khớp Assessment.SCORE_*). */
+  scoreRelease: ScoreRelease;
 }
 
 export interface CourseContent {
@@ -107,6 +115,34 @@ export interface EnrollReport {
 
 export type CourseFormat = 0 | 1 | 2;
 export type AssessmentType = 0 | 1 | 2;
+export type AnswerMode = 0 | 1;
+export type ScoreRelease = 0 | 1 | 2;
+
+export const SCORE_RELEASES: Record<ScoreRelease, string> = {
+  0: 'Ngay khi có điểm',
+  1: 'Sau giờ đóng bài',
+  2: 'Không cho xem điểm',
+};
+
+/** Ghi chú trên thẻ bài cho bài không công bố điểm ngay. */
+export const SCORE_RELEASE_NOTES: Record<ScoreRelease, string | null> = {
+  0: null,
+  1: 'Điểm công bố sau giờ đóng bài',
+  2: 'Không công bố điểm cho sinh viên',
+};
+
+/**
+ * Điểm của bài chưa công bố cho sinh viên: { at } là giờ công bố (sau giờ đóng), { at: null } là không bao
+ * giờ công bố; null = sinh viên thấy được điểm. Giống Assessment.isScoreVisible.
+ */
+export function scorePending(assessment: Assessment, now: number): { at: string | null } | null {
+  if (assessment.scoreRelease === 2) return { at: null };
+  return assessment.scoreRelease === 1 &&
+    assessment.closesAt &&
+    Date.parse(assessment.closesAt) > now
+    ? { at: assessment.closesAt }
+    : null;
+}
 export type EnrollMethod = 0 | 1 | 2;
 
 /** Khớp hằng số FORMAT_* của Course.java. */
@@ -307,8 +343,10 @@ export interface Grade {
   score: number;
   feedback: string | null;
   gradedAt: string;
-  /** Họ tên người chấm; null nếu tài khoản đã bị xóa. */
+  /** Họ tên người chấm; null nếu tài khoản đã bị xóa, hoặc máy chấm bài trắc nghiệm. */
   gradedBy: string | null;
+  /** Điểm máy chấm của bài trắc nghiệm (null với bài nộp file); khác score = giảng viên đã sửa điểm. */
+  autoScore: number | null;
 }
 
 export interface Submission {
@@ -402,8 +440,22 @@ export function submissionFileUrl(fileId: string) {
   return `/api/v1/submission-files/${encodeURIComponent(fileId)}`;
 }
 
-/** Loại bài có trang làm bài + nộp file phía sinh viên (hiện chỉ bài kiểm tra). */
-export const SUBMITTABLE_TYPES: AssessmentType[] = [2];
+/** Bài có trang làm bài phía sinh viên: bài kiểm tra (nộp file hoặc trắc nghiệm) và mọi bài trắc nghiệm. */
+export function isSubmittable(assessment: Pick<Assessment, 'type' | 'answerMode'>) {
+  return assessment.type === 2 || assessment.answerMode === 1;
+}
+
+/** "Trắc nghiệm · 30 câu · 45 phút"; null với bài nộp file. */
+export function quizSummary(assessment: Assessment) {
+  if (assessment.answerMode !== 1) return null;
+  return [
+    'Trắc nghiệm',
+    `${assessment.questionCount} câu`,
+    assessment.timeLimitMinutes ? `${assessment.timeLimitMinutes} phút` : null,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+}
 
 /** Trạng thái và điểm của sinh viên ở một bài (GET /student/assessments?course=...). */
 export interface MyResult {
@@ -447,16 +499,14 @@ export function upcomingItems(
 }
 
 /**
- * Tổng hợp kết quả: số bài đã nộp trên số bài nộp được đã mở (SUBMITTABLE_TYPES),
+ * Tổng hợp kết quả: số bài đã nộp trên số bài nộp được đã mở (isSubmittable),
  * điểm trung bình các bài đã chấm (làm tròn 2 chữ số).
  */
 export function resultSummary(assessments: Assessment[], results: MyResult[]) {
-  const types = new Map(assessments.map((assessment) => [assessment.id, assessment.type]));
+  const byId = new Map(assessments.map((assessment) => [assessment.id, assessment]));
   const counted = results.filter((result) => {
-    const type = types.get(result.assessmentId);
-    return (
-      type !== undefined && SUBMITTABLE_TYPES.includes(type) && result.status !== 'not_started'
-    );
+    const assessment = byId.get(result.assessmentId);
+    return assessment && isSubmittable(assessment) && result.status !== 'not_started';
   });
   const submitted = counted.filter(
     (result) => result.status === 'submitted' || result.status === 'auto_submitted',

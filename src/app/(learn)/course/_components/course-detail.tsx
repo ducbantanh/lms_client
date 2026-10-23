@@ -10,13 +10,13 @@ import { courseLabel, coverFor, initials } from '@/lib/course-utils';
 import {
   ASSESSMENT_GROUPS,
   ASSESSMENT_TAB_PARAM,
-  SUBMITTABLE_TYPES,
   groupContent,
   type AssessmentType,
   type ContentGroup,
   type CourseContent,
   type CourseProgress,
   type MyResult,
+  isSubmittable,
 } from '@/lib/teaching';
 import { AssessmentItem, FileRow, LessonItem, SectionCard } from '@/components/course-items';
 import { ViewToggle } from '@/components/ui/view-toggle';
@@ -264,9 +264,9 @@ export function CourseDetail() {
                 <AssessmentItem
                   key={assessment.id}
                   assessment={assessment}
-                  // Loại bài có trang làm bài + nộp file (SUBMITTABLE_TYPES)
+                  // Bài có trang làm bài (isSubmittable)
                   href={
-                    SUBMITTABLE_TYPES.includes(assessment.type)
+                    isSubmittable(assessment)
                       ? `/course/assessment/?id=${encodeURIComponent(assessment.id)}`
                       : undefined
                   }

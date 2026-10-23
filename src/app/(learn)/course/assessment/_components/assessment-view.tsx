@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useRemaining } from '@/hooks/use-remaining';
 import { ApiError, apiRequest } from '@/lib/api';
 import { formatDateTime } from '@/lib/admin';
 import { useSession } from '@/providers/session-provider';
@@ -19,6 +20,8 @@ import {
   formatDuration,
   formatScore,
   formatSize,
+  quizSummary,
+  scorePending,
   splitDuration,
   submissionFileUrl,
   submissionProblem,
@@ -32,39 +35,13 @@ import {
   type Flash,
 } from '@/components/admin-ui';
 import { Icon } from '@/components/ui/icon';
+import { QuizPanel } from './quiz-panel';
 import { PdfViewer } from '@/components/pdf-viewer';
 
 /**
- * Thời gian còn lại tới `target` theo giờ server (offset = giờ server − giờ máy), cập nhật mỗi giây.
- * Hết giờ thì gọi onDone một lần để tải lại bài (đề hiện ra, hoặc bài làm bị khóa).
+ * Trang /course/assessment/?id=...: đếm ngược khi chưa mở; khi mở thì xem đề và nộp file bài làm,
+ * hoặc làm bài trắc nghiệm (QuizPanel).
  */
-function useRemaining(target: string | null, offset: number, onDone: () => void) {
-  const [now, setNow] = useState(() => Date.now() + offset);
-  const done = useRef(onDone);
-  useEffect(() => {
-    done.current = onDone;
-  });
-  const end = target ? Date.parse(target) : null;
-  useEffect(() => {
-    if (end === null) return;
-    let fired = false;
-    const tick = () => {
-      const current = Date.now() + offset;
-      setNow(current);
-      // Trễ 0,5 giây để server chắc chắn đã qua mốc, tránh tải lại liên tục khi đồng hồ lệch
-      if (!fired && current >= end + 500) {
-        fired = true;
-        done.current();
-      }
-    };
-    tick();
-    const timer = setInterval(tick, 1000);
-    return () => clearInterval(timer);
-  }, [end, offset]);
-  return end === null ? null : Math.max(0, end - now);
-}
-
-/** Trang /course/assessment/?id=...: đếm ngược khi chưa mở; khi mở thì xem đề và nộp file bài làm. */
 export function AssessmentView() {
   const id = useSearchParams().get('id') ?? '';
   const { user, refresh } = useSession();
@@ -168,6 +145,9 @@ function AssessmentPage({
             {assessment.status !== 'upcoming' && (
               <span className={`badge ${work.tone}`}>{work.label}</span>
             )}
+            {quizSummary(assessment) && (
+              <span className="badge muted">{quizSummary(assessment)}</span>
+            )}
           </p>
           <h1>{assessment.title}</h1>
           {assessment.description && <p>{assessment.description}</p>}
@@ -188,6 +168,8 @@ function AssessmentPage({
             </p>
           )}
         </section>
+      ) : assessment.answerMode === 1 ? (
+        <QuizPanel assessment={assessment} back={back} onPhaseChange={reload} />
       ) : (
         <div className="columns exam-columns">
           <section className="panel flush">
@@ -271,6 +253,7 @@ function SubmissionPanel({
   // Hết giờ thì tải lại: server khóa bài làm và tính các file đã tải là bài nộp
   const left = useRemaining(submission.editable ? assessment.closesAt : null, offset, reload);
   const room = MAX_SUBMISSION_FILES - submission.files.length;
+  const pending = scorePending(assessment, Date.parse(data.serverTime));
 
   async function upload(list: FileList | null) {
     const picked = Array.from(list ?? []);
@@ -374,6 +357,14 @@ function SubmissionPanel({
         </div>
       )}
       <SubmissionNote submission={submission} closesAt={assessment.closesAt} />
+      {!submission.editable && !submission.grade && pending && (
+        <p className="score-pending">
+          <Icon name="clock" size={12} />
+          {pending.at
+            ? `Điểm và nhận xét được công bố sau giờ đóng bài (${formatDateTime(pending.at)}).`
+            : 'Giảng viên không công bố điểm và nhận xét của bài này.'}
+        </p>
+      )}
       {submission.files.length > 0 ? (
         <ul className="file-list attach-list">
           {submission.files.map((file) => (

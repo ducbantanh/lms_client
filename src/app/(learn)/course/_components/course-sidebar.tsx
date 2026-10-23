@@ -9,11 +9,12 @@ import {
   ASSESSMENT_TYPES,
   MAX_SCORE,
   SUBMISSION_STATUS,
-  SUBMITTABLE_TYPES,
   formatRelative,
   formatScore,
+  isSubmittable,
   resultSummary,
   upcomingItems,
+  type Assessment,
   type AssessmentType,
   type CourseContent,
   type CourseProgress,
@@ -24,23 +25,21 @@ import { Icon } from '@/components/ui/icon';
 /** Còn dưới 24 giờ tới hạn nộp mà chưa nộp thì tô đỏ. */
 const URGENT_MS = 24 * 3600_000;
 
-/** Link tới trang làm bài với loại bài nộp được; loại khác mở tab của loại đó. */
+/** Link tới trang làm bài với bài nộp được (isSubmittable); bài khác mở tab của loại đó. */
 function AssessmentLink({
-  id,
-  type,
-  title,
+  assessment,
   onOpenTab,
 }: {
-  id: string;
-  type: AssessmentType;
-  title: string;
+  assessment: Assessment;
   onOpenTab: (type: AssessmentType) => void;
 }) {
-  return SUBMITTABLE_TYPES.includes(type) ? (
-    <Link href={`/course/assessment/?id=${encodeURIComponent(id)}`}>{title}</Link>
+  return isSubmittable(assessment) ? (
+    <Link href={`/course/assessment/?id=${encodeURIComponent(assessment.id)}`}>
+      {assessment.title}
+    </Link>
   ) : (
-    <button className="link-button" onClick={() => onOpenTab(type)}>
-      {title}
+    <button className="link-button" onClick={() => onOpenTab(assessment.type)}>
+      {assessment.title}
     </button>
   );
 }
@@ -145,12 +144,7 @@ export function CourseSidebar({
               return (
                 <li key={assessment.id} className={urgent ? 'urgent' : ''}>
                   <span className="upcoming-type">{ASSESSMENT_TYPES[assessment.type]}</span>
-                  <AssessmentLink
-                    id={assessment.id}
-                    type={assessment.type}
-                    title={assessment.title}
-                    onOpenTab={onOpenTab}
-                  />
+                  <AssessmentLink assessment={assessment} onOpenTab={onOpenTab} />
                   <small>
                     {kind === 'due'
                       ? `Hạn nộp còn ${formatRelative(left)}`
@@ -208,12 +202,7 @@ export function CourseSidebar({
             <ul className="score-list">
               {graded.map(({ assessment, score }) => (
                 <li key={assessment.id}>
-                  <AssessmentLink
-                    id={assessment.id}
-                    type={assessment.type}
-                    title={assessment.title}
-                    onOpenTab={onOpenTab}
-                  />
+                  <AssessmentLink assessment={assessment} onOpenTab={onOpenTab} />
                   <b>
                     {formatScore(score)}
                     <small>/{MAX_SCORE}</small>

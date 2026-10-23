@@ -7,9 +7,11 @@ import {
   ASSESSMENT_STATUS,
   ASSESSMENT_TYPES,
   PDF,
+  SCORE_RELEASE_NOTES,
   fileIcon,
   fileUrl,
   formatSize,
+  quizSummary,
   splitLinks,
   type Assessment,
   type CourseFile,
@@ -242,6 +244,18 @@ export function AssessmentItem({
         Mở: {assessment.opensAt ? formatDateTime(assessment.opensAt) : 'ngay'} · Đóng:{' '}
         {assessment.closesAt ? formatDateTime(assessment.closesAt) : 'không hạn'}
       </p>
+      {quizSummary(assessment) && (
+        <p className="assessment-meta">
+          <Icon name="check" size={12} />
+          {quizSummary(assessment)}
+        </p>
+      )}
+      {SCORE_RELEASE_NOTES[assessment.scoreRelease] && (
+        <p className="assessment-meta">
+          <Icon name="clock" size={12} />
+          {SCORE_RELEASE_NOTES[assessment.scoreRelease]}
+        </p>
+      )}
       {assessment.paperFileId && assessment.paperFileName && (
         <p className="assessment-meta">
           <Icon name="filePdf" size={12} />
