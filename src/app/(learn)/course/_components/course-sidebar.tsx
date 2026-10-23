@@ -2,7 +2,9 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { apiRequest } from '@/lib/api';
 import { formatDateTime } from '@/lib/admin';
+import { statusInfo, type MyAttendance } from '@/lib/attendance';
 import {
   ASSESSMENT_TYPES,
   MAX_SCORE,
@@ -124,6 +126,7 @@ export function CourseSidebar({
           )}
         </section>
       )}
+      {progress && <AttendancePanel courseId={course.id} />}
       <section className="panel">
         <div className="panel-title">
           <h2>
@@ -252,5 +255,59 @@ export function CourseSidebar({
         </dl>
       </section>
     </div>
+  );
+}
+
+/** Số buổi điểm danh gần nhất hiện trong cột phải; xem đủ thì hỏi giảng viên hoặc xuất từ phía giảng viên. */
+const RECENT_SESSIONS = 5;
+
+/** Điểm danh của mình: số buổi có mặt và các buổi gần nhất. Ẩn khi khóa học chưa có buổi điểm danh. */
+function AttendancePanel({ courseId }: { courseId: string }) {
+  const [sessions, setSessions] = useState<MyAttendance[] | null>(null);
+  useEffect(() => {
+    const controller = new AbortController();
+    apiRequest<MyAttendance[]>(`/student/courses/${encodeURIComponent(courseId)}/attendance`, {
+      signal: controller.signal,
+    })
+      .then(setSessions)
+      .catch(() => undefined);
+    return () => controller.abort();
+  }, [courseId]);
+
+  if (!sessions?.length) return null;
+  const attended = sessions.filter((item) => item.status === 0 || item.status === 1).length;
+  return (
+    <section className="panel">
+      <div className="panel-title">
+        <h2>
+          <i className="title-icon violet">
+            <Icon name="qrcode" size={11} />
+          </i>
+          Điểm danh
+        </h2>
+      </div>
+      <div className="progress-head">
+        <b>
+          {attended}/{sessions.length}
+        </b>
+        <span>buổi có mặt</span>
+      </div>
+      <ul className="attendance-mine">
+        {sessions
+          .slice(-RECENT_SESSIONS)
+          .reverse()
+          .map((item) => (
+            <li key={item.sessionId}>
+              <span>
+                {item.title}
+                <small>{formatDateTime(item.createdAt)}</small>
+              </span>
+              <span className={`badge ${statusInfo(item.status).tone}`}>
+                {statusInfo(item.status).label}
+              </span>
+            </li>
+          ))}
+      </ul>
+    </section>
   );
 }

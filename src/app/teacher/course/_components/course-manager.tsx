@@ -30,9 +30,18 @@ import { ContentTab } from './content-tab';
 import { StudentsTab } from './students-tab';
 import { AssessmentsTab } from './assessments-tab';
 import { NotificationsTab } from './notifications-tab';
+import { AttendanceTab } from './attendance-tab';
 
-type Tab = 'content' | 'students' | 'practice' | 'lab' | 'exam' | 'notifications';
-const TABS: Tab[] = ['content', 'students', 'practice', 'lab', 'exam', 'notifications'];
+type Tab = 'content' | 'students' | 'attendance' | 'practice' | 'lab' | 'exam' | 'notifications';
+const TABS: Tab[] = [
+  'content',
+  'students',
+  'attendance',
+  'practice',
+  'lab',
+  'exam',
+  'notifications',
+];
 
 /** Tab bài: mỗi loại bài (Assessment.TYPE_*) một tab. */
 const ASSESSMENT_TABS: { value: Tab; type: AssessmentType }[] = [
@@ -149,6 +158,7 @@ export function CourseManager() {
   const tabs: { value: Tab; label: string; count?: number }[] = [
     { value: 'content', label: 'Nội dung', count: content.lessons.length + content.files.length },
     { value: 'students', label: 'Sinh viên', count: course.studentCount },
+    { value: 'attendance', label: 'Điểm danh' },
     ...ASSESSMENT_TABS.map(({ value, type }) => ({
       value,
       label: ASSESSMENT_GROUPS[type].title,
@@ -232,6 +242,7 @@ export function CourseManager() {
       </div>
       {tab === 'content' && <ContentTab {...tabProps} />}
       {tab === 'students' && <StudentsTab {...tabProps} />}
+      {tab === 'attendance' && <AttendanceTab {...tabProps} />}
       {tab === 'notifications' && <NotificationsTab {...tabProps} />}
       {assessmentTab && <AssessmentsTab {...tabProps} type={assessmentTab.type} />}
       {confirm && <ConfirmDialog request={confirm} onClose={() => setConfirm(null)} />}

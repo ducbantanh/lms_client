@@ -30,6 +30,10 @@ const MESSAGES: Record<string, string> = {
   ASSESSMENT_NOT_OPEN: 'Bài chưa đến giờ mở.',
   SUBMISSION_LOCKED: 'Bài đã nộp hoặc đã hết giờ làm bài, không thể thay đổi.',
   SUBMISSION_NOT_FINAL: 'Sinh viên còn đang làm bài, chưa chấm được.',
+  ATTENDANCE_CODE_INVALID:
+    'Mã QR đã hết hạn hoặc không hợp lệ. Quét lại mã đang hiển thị trên màn chiếu.',
+  ATTENDANCE_CLOSED: 'Giảng viên đã dừng điểm danh bằng QR cho buổi này.',
+  NOT_ENROLLED: 'Bạn không có tên trong danh sách lớp của khóa học này.',
   INTERNAL_ERROR: 'Máy chủ gặp lỗi. Vui lòng thử lại sau.',
   NETWORK_ERROR: 'Không kết nối được máy chủ. Kiểm tra mạng LAN và thử lại.',
 };

@@ -2991,3 +2991,301 @@ a.list-row:hover {
     transition: none !important;
   }
 }
+
+/* ---------- Điểm danh ---------- */
+.cell-sub {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--text-subtle);
+}
+.text-danger {
+  color: var(--danger);
+}
+.badge.qr-badge {
+  margin-left: 8px;
+}
+.badge.ip-badge {
+  margin: 0 0 0 6px;
+}
+.attendance-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.attendance-head h2 {
+  display: flex;
+  align-items: center;
+  font-size: 18px;
+}
+.attendance-counts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 14px;
+}
+.attendance-counts .badge {
+  margin: 0;
+  padding: 3px 10px;
+  font-size: 13px;
+}
+.attendance-counts .table-summary {
+  margin: 0;
+}
+.segmented.compact {
+  margin: 0;
+}
+.segmented.compact button {
+  padding: 0 12px;
+}
+/* Bốn nút trạng thái trên mỗi dòng: chọn nhanh khi điểm danh thủ công */
+.status-picker {
+  display: inline-flex;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.status-picker button {
+  height: 28px;
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--surface);
+  white-space: nowrap;
+}
+.status-picker button + button {
+  border-left: 1px solid var(--border-strong);
+}
+.status-picker button:hover:not(:disabled) {
+  background: var(--surface-muted);
+}
+.status-picker button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+.status-picker button.selected.ok {
+  background: var(--success-soft);
+  color: var(--success);
+}
+.status-picker button.selected.warn {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+.status-picker button.selected.muted {
+  background: #eceef1;
+  color: var(--text);
+}
+.status-picker button.selected.locked {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+.attendance-mine {
+  margin-top: 12px;
+  list-style: none;
+}
+.attendance-mine li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 0;
+  border-top: 1px solid var(--border);
+  font-size: 14px;
+}
+.attendance-mine small {
+  display: block;
+  font-size: 12px;
+  color: var(--text-subtle);
+}
+.attendance-mine .badge {
+  margin: 0;
+}
+
+/* Màn chiếu mã QR: phủ toàn bộ khung ứng dụng, nền trắng để camera đọc mã dễ */
+.projector {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  overflow: auto;
+  background: #fff;
+}
+.projector-stage {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding: 24px 32px;
+  background: #fff;
+}
+.projector-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.projector-head h1 {
+  font-size: 28px;
+}
+.projector-body {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 48px;
+}
+.projector-qr {
+  margin: 0;
+  text-align: center;
+}
+.projector-qr svg,
+.projector-offline {
+  display: block;
+  width: min(72vh, 62vw);
+  height: min(72vh, 62vw);
+}
+.projector-offline {
+  display: grid;
+  place-items: center;
+  border: 2px dashed var(--border-strong);
+  border-radius: var(--radius);
+  font-size: 18px;
+  color: var(--text-muted);
+}
+.projector-timer {
+  height: 6px;
+  margin: 12px auto 8px;
+  width: min(72vh, 62vw);
+  border-radius: 3px;
+  background: #eceef1;
+  overflow: hidden;
+}
+.projector-timer > span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.25s linear;
+}
+.projector-qr figcaption {
+  font-size: 16px;
+  color: var(--text-muted);
+}
+.projector-side {
+  min-width: 240px;
+  max-width: 340px;
+}
+.projector-count {
+  font-size: 72px;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.projector-count span {
+  font-size: 36px;
+  color: var(--text-subtle);
+}
+.projector-count-label {
+  margin-top: 4px;
+  font-size: 18px;
+  color: var(--text-muted);
+}
+.projector-steps {
+  margin: 28px 0 0 20px;
+  font-size: 17px;
+  line-height: 1.9;
+}
+.projector-recent {
+  margin-top: 24px;
+  list-style: none;
+  font-size: 16px;
+}
+.projector-recent li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  color: var(--success);
+}
+.projector-message {
+  flex: 1;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 12px;
+  text-align: center;
+  font-size: 18px;
+  color: var(--text-muted);
+}
+.projector-message h2 {
+  font-size: 24px;
+  color: var(--text);
+}
+
+/* Trang /attend/ của sinh viên (mở từ camera điện thoại) */
+.attend-card {
+  max-width: 480px;
+  margin: 24px auto;
+}
+.attend-status {
+  padding: 32px 0;
+  text-align: center;
+  color: var(--text-muted);
+}
+.attend-result {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 16px 4px;
+  text-align: center;
+}
+.attend-result h1 {
+  font-size: 22px;
+}
+.attend-result .badge {
+  margin: 0;
+}
+.attend-icon {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--surface-muted);
+  color: var(--text-muted);
+}
+.attend-icon.ok {
+  background: var(--success-soft);
+  color: var(--success);
+}
+.attend-icon.fail {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+.attend-course {
+  font-size: 15px;
+}
+@media (max-width: 720px) {
+  .projector-stage {
+    padding: 16px;
+  }
+  .projector-body {
+    gap: 24px;
+  }
+  .projector-qr svg,
+  .projector-offline,
+  .projector-timer {
+    width: min(86vw, 60vh);
+  }
+  .projector-qr svg,
+  .projector-offline {
+    height: min(86vw, 60vh);
+  }
+  .status-picker button {
+    padding: 0 7px;
+  }
+}

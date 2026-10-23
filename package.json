@@ -21,6 +21,7 @@
     "@fortawesome/fontawesome-free": "5.15.4",
     "next": "16.4.2",
     "pdfjs-dist": "6.3.289",
+    "qrcode-generator": "2.0.4",
     "react": "19.3.1",
     "react-dom": "19.3.1"
   },
