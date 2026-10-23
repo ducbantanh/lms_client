@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState, type FormEvent } from 'react';
+import { useCallback, useState, type FormEvent, type ReactNode } from 'react';
 import { apiRequest } from '@/lib/api';
 import { roleName } from '@/lib/auth';
 import { useSession } from '@/providers/session-provider';
@@ -13,8 +13,15 @@ const MIN_PASSWORD = 8;
 /**
  * Trang Cài đặt (/settings/, /teacher/settings/, /admin/settings/): thông tin tài khoản và đổi mật khẩu.
  * Đổi mật khẩu giữ phiên hiện tại; server đăng xuất mọi thiết bị khác.
+ * `children`: phần cài đặt riêng của từng khu, hiện bên dưới (vd. admin chỉnh thời gian tự đăng xuất).
  */
-export function SettingsView() {
+export function SettingsView({
+  description = 'Thông tin tài khoản và mật khẩu đăng nhập.',
+  children,
+}: {
+  description?: string;
+  children?: ReactNode;
+}) {
   const { user } = useSession();
   const [flash, setFlash] = useState<Flash | null>(null);
   const [error, setError] = useState('');
@@ -57,7 +64,7 @@ export function SettingsView() {
 
   return (
     <main id="main-content" className="shell-main">
-      <AdminHeading title="Cài đặt" description="Thông tin tài khoản và mật khẩu đăng nhập." />
+      <AdminHeading title="Cài đặt" description={description} />
       <FlashMessage flash={flash} onDone={clearFlash} />
       <div className="columns even">
         <section className="panel">
@@ -139,6 +146,7 @@ export function SettingsView() {
           </form>
         </section>
       </div>
+      {children}
     </main>
   );
 }
