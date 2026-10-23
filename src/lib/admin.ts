@@ -107,6 +107,7 @@ export const AUDIT_CATEGORIES: { value: string; label: string }[] = [
   { value: 'submission', label: 'Bài nộp' },
   { value: 'grade', label: 'Bảng điểm' },
   { value: 'notification', label: 'Thông báo' },
+  { value: 'attendance', label: 'Điểm danh' },
   { value: 'system', label: 'Hệ thống' },
 ];
 
@@ -155,6 +156,14 @@ const AUDIT_ACTIONS: Record<string, string> = {
   'submission.graded': 'Chấm điểm',
   'submission.downloaded': 'Tải bài nộp (ZIP)',
   'grade.exported': 'Xuất bảng điểm',
+  'attendance.session_created': 'Tạo buổi điểm danh',
+  'attendance.session_updated': 'Đổi tên buổi điểm danh',
+  'attendance.session_deleted': 'Xóa buổi điểm danh',
+  'attendance.qr_opened': 'Mở điểm danh QR',
+  'attendance.qr_closed': 'Dừng điểm danh QR',
+  'attendance.checked_in': 'Quét QR điểm danh',
+  'attendance.marked': 'Điểm danh thủ công',
+  'attendance.exported': 'Xuất bảng điểm danh',
   'system.backup': 'Sao lưu',
   'system.restored': 'Khôi phục',
   'system.restore_tested': 'Thử khôi phục',

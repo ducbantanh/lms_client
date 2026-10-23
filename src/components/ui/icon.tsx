@@ -53,6 +53,7 @@ const icons = {
   fileWord: 'far fa-file-word',
   filePpt: 'far fa-file-powerpoint',
   fileZip: 'far fa-file-archive',
+  qrcode: 'fas fa-qrcode',
 } as const;
 
 export type IconName = keyof typeof icons;
