@@ -2,10 +2,9 @@
 
 import { useEffect, useRef, useState } from 'react';
 import type { PDFDocumentProxy, RenderTask } from 'pdfjs-dist';
+import { PDFJS_ASSETS, loadPdfjs } from '@/lib/pdfjs-assets';
 import { Icon } from '@/components/ui/icon';
 
-/** Worker và dữ liệu chép từ node_modules khi npm install (scripts/copy-pdf-worker.mjs), cùng origin, không CDN. */
-const VENDOR = '/vendor/pdfjs/';
 /** Mức phóng so với "vừa chiều ngang khung". */
 const ZOOMS = [0.5, 0.75, 1, 1.25, 1.5, 2];
 /** Lề hai bên vùng xem, khớp padding của .pdf-pages. */
@@ -35,18 +34,8 @@ export function PdfViewer({ url, title }: { url: string; title: string }) {
     let cancelled = false;
     let destroy: (() => void) | null = null;
     (async () => {
-      // Nạp pdf.js lúc chạy trên trình duyệt: thư viện cần DOM, không chạy được lúc export tĩnh
-      const pdfjs = await import('pdfjs-dist');
-      pdfjs.GlobalWorkerOptions.workerSrc = `${VENDOR}pdf.worker.min.js`;
-      const task = pdfjs.getDocument({
-        url,
-        withCredentials: true,
-        cMapUrl: `${VENDOR}cmaps/`,
-        cMapPacked: true,
-        standardFontDataUrl: `${VENDOR}standard_fonts/`,
-        wasmUrl: `${VENDOR}wasm/`,
-        iccUrl: `${VENDOR}iccs/`,
-      });
+      const pdfjs = await loadPdfjs();
+      const task = pdfjs.getDocument({ url, withCredentials: true, ...PDFJS_ASSETS });
       destroy = () => void task.destroy();
       const loaded = await task.promise;
       if (!cancelled) setDoc(loaded);

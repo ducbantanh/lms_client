@@ -54,6 +54,7 @@ const icons = {
   filePpt: 'far fa-file-powerpoint',
   fileZip: 'far fa-file-archive',
   qrcode: 'fas fa-qrcode',
+  bank: 'fas fa-database',
 } as const;
 
 export type IconName = keyof typeof icons;
