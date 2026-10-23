@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { selectCourses, normalizeSearch, initials } from '../lib/course-utils.ts';
-import type { Course } from '../lib/types.ts';
+import { selectCourses, normalizeSearch, initials } from '../src/lib/course-utils.ts';
+import type { Course } from '../src/lib/types.ts';
 
 // Fixture nhỏ để kiểm tra phối hợp bộ lọc, không sao chép thuật toán triển khai.
 const courses: Course[] = [

@@ -1,7 +1,7 @@
 ﻿/**
  * FILE 3/4 — TRẢ FILE GIAO DIỆN CHO TRÌNH DUYỆT
  *
- * Ví dụ: GET /fonts/source-sans-pro.css → đọc file trong thư mục giao diện → trả CSS.
+ * Ví dụ: GET /favicon.svg → đọc file trong thư mục giao diện → trả SVG.
  * Hàm serveStatic() được server.js gọi; file này không tự mở cổng mạng.
  */
 import { readFile, realpath, stat } from 'node:fs/promises';

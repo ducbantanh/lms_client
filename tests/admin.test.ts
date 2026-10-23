@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { countImportLines } from '../lib/admin.ts';
+import { countImportLines } from '../src/lib/admin.ts';
 
 test('countImportLines bỏ dòng trống, chú thích và dòng tiêu đề CSV như server', () => {
   assert.equal(countImportLines('# chú thích\n\nB21|01012003|An\nB22|02012003|Bình'), 2);

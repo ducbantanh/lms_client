@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { notificationHref, timeAgo } from '../lib/notifications.ts';
-import type { AppNotification } from '../lib/notifications.ts';
+import { notificationHref, timeAgo } from '../src/lib/notifications.ts';
+import type { AppNotification } from '../src/lib/notifications.ts';
 
 const base: AppNotification = {
   id: 'n1',

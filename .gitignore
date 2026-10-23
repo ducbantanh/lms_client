@@ -11,3 +11,4 @@ public/vendor/pdfjs/
 .idea/
 .vscode/
 *.log
+next-env.d.ts
