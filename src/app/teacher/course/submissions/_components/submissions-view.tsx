@@ -31,6 +31,7 @@ import { PdfViewer } from '@/components/pdf-viewer';
 import { StatCard } from '@/components/ui/stat-card';
 import { QuizReviewList } from '@/components/quiz-review';
 import type { StudentReview, TeacherQuiz } from '@/lib/quiz';
+import { CodeResultsPage } from './code-review';
 
 type Filter = 'all' | 'ungraded' | 'graded' | 'missing';
 
@@ -110,8 +111,11 @@ export function SubmissionsView() {
   const back = `${TEACHER_PATH}/course/?id=${encodeURIComponent(course.id)}&tab=${ASSESSMENT_TAB_PARAM[assessment.type]}`;
   const status = ASSESSMENT_STATUS[assessment.status];
   const visible = rows.filter(FILTERS.find((item) => item.value === filter)!.match);
-  /** Bài trắc nghiệm: không có file, máy chấm sẵn; giảng viên xem bài làm và sửa điểm nếu cần. */
+  /**
+   * Bài trắc nghiệm / lập trình: không có file, máy chấm sẵn; giảng viên xem bài làm và sửa điểm nếu cần.
+   */
   const quiz = assessment.answerMode === 1;
+  const auto = assessment.answerMode !== 0;
   const current = selected ? rows.findIndex((row) => row.studentId === selected) : -1;
 
   return (
@@ -131,8 +135,10 @@ export function SubmissionsView() {
             <Icon name="calendar" size={12} />
             Mở: {assessment.opensAt ? formatDateTime(assessment.opensAt) : 'ngay'} · Đóng:{' '}
             {assessment.closesAt ? formatDateTime(assessment.closesAt) : 'không hạn'}
-            {assessment.scoreRelease === 1 && ' · Sinh viên thấy điểm sau giờ đóng'}
-            {assessment.scoreRelease === 2 && ' · Sinh viên không xem được điểm'}
+            {assessment.scoreRelease === 1 &&
+              ` · Sinh viên thấy ${auto && !quiz ? 'kết quả' : 'điểm'} sau giờ đóng`}
+            {assessment.scoreRelease === 2 &&
+              ` · Sinh viên không xem được ${auto && !quiz ? 'kết quả' : 'điểm'}`}
             {assessment.paperFileId && (
               <>
                 {' · '}
@@ -149,7 +155,7 @@ export function SubmissionsView() {
           </p>
         </div>
         {/* ZIP chỉ gồm bài đã chốt (đã nộp / nộp khi hết giờ), mỗi sinh viên một thư mục */}
-        {quiz ? null : summary.submitted > 0 ? (
+        {auto ? null : summary.submitted > 0 ? (
           <a className="button" href={submissionsZipUrl(course.id, assessment.id)} download>
             <Icon name="download" size={13} />
             Tải bài nộp (ZIP)
@@ -162,7 +168,15 @@ export function SubmissionsView() {
         )}
       </div>
       <FlashMessage flash={flash} onDone={clearFlash} />
-      {current >= 0 ? (
+      {assessment.answerMode === 2 ? (
+        // Bài lập trình không chấm điểm: bảng kết quả sinh viên × câu thay cho danh sách chấm
+        <CodeResultsPage
+          courseId={course.id}
+          assessmentId={assessment.id}
+          canEdit={data.canGrade}
+          notify={setFlash}
+        />
+      ) : current >= 0 ? (
         <Grader
           key={rows[current].studentId}
           row={rows[current]}
@@ -224,7 +238,7 @@ export function SubmissionsView() {
                       <th>Họ tên</th>
                       <th>Trạng thái</th>
                       <th>Nộp lúc</th>
-                      {!quiz && <th>File</th>}
+                      {!auto && <th>File</th>}
                       <th className="numeric">Điểm</th>
                       <th className="actions" aria-label="Thao tác" />
                     </tr>
@@ -247,7 +261,7 @@ export function SubmissionsView() {
                                 ? 'Khi hết giờ'
                                 : '—'}
                           </td>
-                          {!quiz && <td>{row.files.length ? `${row.files.length} file` : '—'}</td>}
+                          {!auto && <td>{row.files.length ? `${row.files.length} file` : '—'}</td>}
                           <td className="numeric score-cell">
                             {row.grade ? formatScore(row.grade.score) : '—'}
                           </td>
@@ -267,7 +281,7 @@ export function SubmissionsView() {
                               // Admin chỉ xem bài làm và điểm
                               <button
                                 className="button small"
-                                disabled={!row.files.length && !row.grade && !(quiz && gradable)}
+                                disabled={!row.files.length && !row.grade && !(auto && gradable)}
                                 onClick={() => setSelected(row.studentId)}
                               >
                                 Xem

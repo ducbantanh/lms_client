@@ -137,12 +137,16 @@ export function pickRandom<T extends { difficulty: Difficulty }>(
   return { picked, missing };
 }
 
-/** Hình thức bài tạo ở trang Tạo bài thi: trắc nghiệm từ ngân hàng, hoặc tải đề PDF lên để sinh viên nộp file. */
-export type ExamMode = 'quiz' | 'file';
+/**
+ * Hình thức bài tạo ở trang Tạo bài thi: trắc nghiệm từ ngân hàng, tải đề PDF lên để sinh viên nộp file,
+ * hoặc bài lập trình chấm tự động bằng bộ test (lib/code.ts).
+ */
+export type ExamMode = 'quiz' | 'file' | 'code';
 
 export const EXAM_MODES: { value: ExamMode; label: string }[] = [
   { value: 'quiz', label: 'Trắc nghiệm từ ngân hàng' },
   { value: 'file', label: 'Tải đề lên, sinh viên nộp file' },
+  { value: 'code', label: 'Lập trình, chấm tự động' },
 ];
 
 export interface ExamForm {
@@ -171,6 +175,8 @@ export function examProblem(form: ExamForm): string | null {
   // Giống CourseContentService.requireScoreRelease: không có giờ đóng thì không có lúc công bố
   if (form.scoreRelease === 1 && !form.closesAt)
     return 'Công bố điểm sau giờ đóng bài thì cần chọn giờ đóng.';
+  // Đề và bộ test của bài lập trình kiểm tra riêng bằng problemDraftProblem (lib/code.ts)
+  if (form.mode === 'code') return null;
   // Giống CourseContentService: bài kiểm tra nộp file bắt buộc có đề PDF
   if (form.mode === 'file')
     return form.type === 2 && !form.hasPaper ? 'Bài kiểm tra cần có file đề (PDF).' : null;

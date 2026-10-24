@@ -35,6 +35,8 @@ const MESSAGES: Record<string, string> = {
   ATTENDANCE_CLOSED: 'Giảng viên đã dừng điểm danh bằng QR cho buổi này.',
   NOT_ENROLLED: 'Bạn không có tên trong danh sách lớp của khóa học này.',
   QUESTION_LIMIT: 'Mỗi lần nhập tối đa 500 câu, mỗi ngân hàng tối đa 2000 câu hỏi.',
+  JUDGE_BUSY: 'Lần chạy trước vẫn đang được chấm. Đợi có kết quả rồi chạy hoặc nộp tiếp.',
+  ATTEMPT_LIMIT: 'Bạn đã dùng hết số lần nộp bài giảng viên cho phép.',
   INTERNAL_ERROR: 'Máy chủ gặp lỗi. Vui lòng thử lại sau.',
   NETWORK_ERROR: 'Không kết nối được máy chủ. Kiểm tra mạng LAN và thử lại.',
 };

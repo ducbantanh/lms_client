@@ -46,7 +46,16 @@ import {
   type ScoreRelease,
   type TeacherCourse,
 } from '@/lib/teaching';
+import {
+  codeBody,
+  codeDraftProblem,
+  codeRequest,
+  emptyCode,
+  testCount,
+  type CodeDraft,
+} from '@/lib/code';
 import { AdminHeading, FlashMessage, type Flash } from '@/components/admin-ui';
+import { CodeFields } from '@/components/code-problem-editor';
 import { Icon } from '@/components/ui/icon';
 
 /** Câu đã chọn vào đề (giữ lại khi chuyển sang ngân hàng khác). */
@@ -62,10 +71,11 @@ const LEVELS: Difficulty[] = [0, 1, 2];
 
 /**
  * Trang /teacher/create-exam/?course=...&type=...&mode=...: tạo bài thực hành hoặc bài kiểm tra cho một
- * khóa học mình phụ trách, theo một trong hai hình thức:
+ * khóa học mình phụ trách, theo một trong ba hình thức:
  * - trắc nghiệm: chọn câu hỏi (chọn tay hoặc bốc ngẫu nhiên theo mức độ) từ ngân hàng câu hỏi; câu hỏi được
  *   chép sang bài, sửa ngân hàng sau đó không làm đổi bài đã tạo;
- * - tải đề lên: đề PDF (bắt buộc với bài kiểm tra), sinh viên nộp file bài làm, giảng viên chấm tay.
+ * - tải đề lên: đề PDF (bắt buộc với bài kiểm tra), sinh viên nộp file bài làm, giảng viên chấm tay;
+ * - lập trình: đề và bộ test, sinh viên nộp mã nguồn, máy chấm chạy test và cho điểm.
  */
 export function ExamBuilder() {
   const router = useRouter();
@@ -74,7 +84,11 @@ export function ExamBuilder() {
   const [courses, setCourses] = useState<TeacherCourse[] | null>(null);
   const [banks, setBanks] = useState<QuestionBankSummary[] | null>(null);
   const [loadError, setLoadError] = useState('');
-  const [mode, setMode] = useState<ExamMode>(params.get('mode') === 'file' ? 'file' : 'quiz');
+  const [mode, setMode] = useState<ExamMode>(() => {
+    const value = params.get('mode');
+    return value === 'file' || value === 'code' ? value : 'quiz';
+  });
+  const [code, setCode] = useState<CodeDraft>(emptyCode);
   const [paper, setPaper] = useState<File | null>(null);
   const paperInput = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState({
@@ -249,8 +263,9 @@ export function ExamBuilder() {
       hasPaper: !!paper,
       scoreRelease: form.scoreRelease,
     });
-    if (problem) {
-      setError(problem);
+    const invalid = problem ?? (mode === 'code' ? codeDraftProblem(code) : null);
+    if (invalid) {
+      setError(invalid);
       return;
     }
     setBusy(true);
@@ -275,6 +290,13 @@ export function ExamBuilder() {
             revealMode: form.reveal,
             questionIds: selected.map((item) => item.id),
           },
+        });
+      } else if (mode === 'code') {
+        // Mỗi câu có file ZIP bộ test thì gửi multipart, mỗi file một part
+        const request = codeRequest(code);
+        await apiRequest(`/teacher/courses/${course}/code-assessments`, {
+          method: 'POST',
+          body: codeBody({ ...common, notifyStudents: true, code: request.code }, request.files),
         });
       } else {
         // Như form tạo bài trong khóa học: đề gửi cùng request, chỉ thuộc bài này (không vào tài liệu);
@@ -322,7 +344,7 @@ export function ExamBuilder() {
     <main id="main-content" className="shell-main">
       <AdminHeading
         title="Tạo bài thi"
-        description="Bài thực hành hoặc bài kiểm tra cho khóa học bạn phụ trách: trắc nghiệm lấy câu hỏi từ ngân hàng (server chấm điểm ngay khi nộp), hoặc tải đề PDF lên để sinh viên nộp file bài làm."
+        description="Bài thực hành hoặc bài kiểm tra cho khóa học bạn phụ trách: trắc nghiệm lấy câu hỏi từ ngân hàng (server chấm điểm ngay khi nộp), tải đề PDF lên để sinh viên nộp file bài làm, hoặc bài lập trình chấm tự động bằng bộ test."
       />
       {!courses.length && (
         <div className="notice" role="status">
@@ -439,7 +461,7 @@ export function ExamBuilder() {
               </label>
             </div>
             <label className="form-field">
-              Sinh viên xem điểm
+              {mode === 'code' ? 'Sinh viên xem kết quả nộp bài' : 'Sinh viên xem điểm'}
               <select
                 className="select"
                 value={form.scoreRelease}
@@ -459,12 +481,21 @@ export function ExamBuilder() {
               >
                 {([0, 1, 2] as ScoreRelease[]).map((value) => (
                   <option key={value} value={value}>
-                    {SCORE_RELEASES[value]}
+                    {mode === 'code' && value === 0 ? 'Ngay khi chấm xong' : SCORE_RELEASES[value]}
                   </option>
                 ))}
               </select>
             </label>
-            {form.scoreRelease !== 0 && (
+            {form.scoreRelease !== 0 && mode === 'code' && (
+              <p className="admin-hint">
+                Sinh viên nộp xong chỉ thấy &quot;đã nộp&quot;, chưa biết đúng hay sai;
+                {form.scoreRelease === 1
+                  ? ' kết quả hiện sau giờ đóng bài'
+                  : ' kết quả không bao giờ hiện với sinh viên'}
+                . Chạy thử với test mẫu vẫn xem được kết quả. Bạn luôn xem được kết quả.
+              </p>
+            )}
+            {form.scoreRelease !== 0 && mode !== 'code' && (
               <p className="admin-hint">
                 Sinh viên nộp xong chỉ thấy &quot;đã nộp&quot;; điểm, nhận xét
                 {mode === 'quiz' ? ' và đáp án' : ''}{' '}
@@ -529,6 +560,12 @@ export function ExamBuilder() {
                   Xáo trộn thứ tự câu hỏi và đáp án cho từng sinh viên
                 </label>
               </>
+            ) : mode === 'code' ? (
+              <p className="admin-hint">
+                Để trống giờ mở là mở ngay; để trống giờ đóng là không giới hạn. Trong giờ làm bài
+                sinh viên chạy thử với test mẫu và nộp nhiều lần; máy chấm chạy mọi test và lấy lần
+                nộp cao nhất. Sửa bộ test sau khi tạo thì mọi lần nộp được chấm lại.
+              </p>
             ) : (
               <>
                 <label className="form-field">
@@ -555,6 +592,19 @@ export function ExamBuilder() {
             )}
           </section>
 
+          {mode === 'code' && (
+            <section className="panel">
+              <div className="panel-title">
+                <h2>
+                  <i className="title-icon violet">
+                    <Icon name="file" size={12} />
+                  </i>
+                  Các câu
+                </h2>
+              </div>
+              <CodeFields draft={code} onChange={setCode} courseId={form.courseId} />
+            </section>
+          )}
           {mode === 'quiz' && (
             <section className="panel">
               <div className="panel-title">
@@ -812,6 +862,52 @@ export function ExamBuilder() {
               className="button primary full-width"
               disabled={busy || !courses.length || !selected.length}
             >
+              {busy
+                ? 'Đang tạo…'
+                : `Tạo ${QUIZ_TYPES.find((item) => item.value === form.type)!.label.toLowerCase()}`}
+            </button>
+          </aside>
+        ) : mode === 'code' ? (
+          <aside className="panel exam-summary">
+            <div className="panel-title">
+              <h2>
+                <i className="title-icon red">
+                  <Icon name="list" size={12} />
+                </i>
+                Bài lập trình
+              </h2>
+            </div>
+            <ul className="quiz-facts code-facts">
+              <li>
+                <b>{code.problems.length}</b> câu
+              </li>
+              <li>
+                <b>{code.problems.reduce((sum, problem) => sum + testCount(problem), 0)}</b> test
+              </li>
+            </ul>
+            {code.problems.length > 0 && (
+              <ol className="exam-picked" aria-label="Các câu">
+                {code.problems.map((problem, index) => (
+                  <li key={problem.key}>
+                    <span className="exam-picked-number">{index + 1}</span>
+                    <span className="exam-picked-text">
+                      {problem.title.trim() || '(chưa có tiêu đề)'} · {testCount(problem)} test
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            )}
+            <p className="admin-hint">
+              Không có điểm: mỗi câu hiện số test đúng (vd. AC 5/5). Sinh viên làm từng câu, nộp
+              nhiều lần; test mẫu hiện cho sinh viên và dùng khi chạy thử. Bài kiểm tra đã kết thúc
+              không sửa được bộ test.
+            </p>
+            {error && (
+              <p className="form-error" role="alert">
+                {error}
+              </p>
+            )}
+            <button className="button primary full-width" disabled={busy || !courses.length}>
               {busy
                 ? 'Đang tạo…'
                 : `Tạo ${QUIZ_TYPES.find((item) => item.value === form.type)!.label.toLowerCase()}`}
