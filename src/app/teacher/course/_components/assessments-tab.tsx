@@ -124,8 +124,8 @@ export function AssessmentsTab(props: AssessmentTabProps) {
               </h2>
             </div>
             <p className="admin-hint">
-              Tạo ở trang Tạo bài thi: trắc nghiệm lấy câu hỏi từ ngân hàng, hoặc tải đề PDF lên để
-              sinh viên nộp file.
+              Tạo ở trang Tạo bài thi: trắc nghiệm lấy câu hỏi từ ngân hàng, tải đề PDF lên để sinh
+              viên nộp file, hoặc bài lập trình chấm tự động bằng bộ test.
             </p>
             <Link
               className="button primary full-width"

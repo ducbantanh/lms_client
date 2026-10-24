@@ -74,11 +74,11 @@ export interface Assessment {
   opensAt: string | null;
   closesAt: string | null;
   status: AssessmentStatus;
-  /** 0 nộp file, 1 trắc nghiệm (khớp Assessment.MODE_*). */
+  /** 0 nộp file, 1 trắc nghiệm, 2 lập trình chấm tự động (khớp Assessment.MODE_*). */
   answerMode: AnswerMode;
   /** Trắc nghiệm: số phút làm bài từ lúc bắt đầu; null = làm tới giờ đóng. */
   timeLimitMinutes: number | null;
-  /** Số câu của bài trắc nghiệm (0 với bài nộp file). */
+  /** Số câu hỏi của bài trắc nghiệm, số câu (đề) của bài lập trình; 0 với bài nộp file. */
   questionCount: number;
   /** 0 sinh viên thấy điểm ngay khi có điểm, 1 sau giờ đóng bài, 2 không bao giờ (khớp Assessment.SCORE_*). */
   scoreRelease: ScoreRelease;
@@ -115,7 +115,7 @@ export interface EnrollReport {
 
 export type CourseFormat = 0 | 1 | 2;
 export type AssessmentType = 0 | 1 | 2;
-export type AnswerMode = 0 | 1;
+export type AnswerMode = 0 | 1 | 2;
 export type ScoreRelease = 0 | 1 | 2;
 
 export const SCORE_RELEASES: Record<ScoreRelease, string> = {
@@ -440,13 +440,17 @@ export function submissionFileUrl(fileId: string) {
   return `/api/v1/submission-files/${encodeURIComponent(fileId)}`;
 }
 
-/** Bài có trang làm bài phía sinh viên: bài kiểm tra (nộp file hoặc trắc nghiệm) và mọi bài trắc nghiệm. */
+/**
+ * Bài có trang làm bài phía sinh viên: bài kiểm tra (nộp file hoặc trắc nghiệm), mọi bài trắc nghiệm và mọi
+ * bài lập trình.
+ */
 export function isSubmittable(assessment: Pick<Assessment, 'type' | 'answerMode'>) {
-  return assessment.type === 2 || assessment.answerMode === 1;
+  return assessment.type === 2 || assessment.answerMode !== 0;
 }
 
-/** "Trắc nghiệm · 30 câu · 45 phút"; null với bài nộp file. */
+/** "Trắc nghiệm · 30 câu · 45 phút", "Lập trình · 3 câu"; null với bài nộp file. */
 export function quizSummary(assessment: Assessment) {
+  if (assessment.answerMode === 2) return `Lập trình · ${assessment.questionCount} câu`;
   if (assessment.answerMode !== 1) return null;
   return [
     'Trắc nghiệm',

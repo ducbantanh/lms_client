@@ -35,12 +35,13 @@ import {
   type Flash,
 } from '@/components/admin-ui';
 import { Icon } from '@/components/ui/icon';
+import { CodePanel } from './code-panel';
 import { QuizPanel } from './quiz-panel';
 import { PdfViewer } from '@/components/pdf-viewer';
 
 /**
  * Trang /course/assessment/?id=...: đếm ngược khi chưa mở; khi mở thì xem đề và nộp file bài làm,
- * hoặc làm bài trắc nghiệm (QuizPanel).
+ * làm bài trắc nghiệm (QuizPanel) hoặc bài lập trình (CodePanel).
  */
 export function AssessmentView() {
   const id = useSearchParams().get('id') ?? '';
@@ -170,6 +171,8 @@ function AssessmentPage({
         </section>
       ) : assessment.answerMode === 1 ? (
         <QuizPanel assessment={assessment} back={back} onPhaseChange={reload} />
+      ) : assessment.answerMode === 2 ? (
+        <CodePanel assessment={assessment} back={back} onSubmitted={reload} />
       ) : (
         <div className="columns exam-columns">
           <section className="panel flush">

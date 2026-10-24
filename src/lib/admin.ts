@@ -173,6 +173,7 @@ const AUDIT_ACTIONS: Record<string, string> = {
   'question.imported': 'Nhập câu hỏi từ văn bản',
   'submission.quiz_started': 'Bắt đầu làm bài trắc nghiệm',
   'submission.quiz_timed_out': 'Hết giờ làm bài trắc nghiệm (tự nộp)',
+  'submission.code_rejudged': 'Chấm lại bài lập trình',
   'system.backup': 'Sao lưu',
   'system.restored': 'Khôi phục',
   'system.restore_tested': 'Thử khôi phục',
