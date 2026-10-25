@@ -108,6 +108,7 @@ export const AUDIT_CATEGORIES: { value: string; label: string }[] = [
   { value: 'grade', label: 'Bảng điểm' },
   { value: 'notification', label: 'Thông báo' },
   { value: 'attendance', label: 'Điểm danh' },
+  { value: 'code_problem', label: 'Kho bài lập trình' },
   { value: 'system', label: 'Hệ thống' },
 ];
 
@@ -121,6 +122,7 @@ const AUDIT_ACTIONS: Record<string, string> = {
   'user.unlocked': 'Mở khóa tài khoản',
   'user.deleted': 'Xóa tài khoản',
   'user.updated': 'Sửa tài khoản',
+  'user.profile_updated': 'Sửa hồ sơ cá nhân',
   'user.password_reset': 'Đặt lại mật khẩu',
   'user.imported': 'Tạo tài khoản hàng loạt',
   'session.force_logout': 'Ép đăng xuất',
@@ -171,6 +173,9 @@ const AUDIT_ACTIONS: Record<string, string> = {
   'question.updated': 'Sửa câu hỏi',
   'question.deleted': 'Xóa câu hỏi',
   'question.imported': 'Nhập câu hỏi từ văn bản',
+  'code_problem.added': 'Thêm câu vào kho bài lập trình',
+  'code_problem.updated': 'Sửa câu trong kho bài lập trình',
+  'code_problem.deleted': 'Xóa câu khỏi kho bài lập trình',
   'submission.quiz_started': 'Bắt đầu làm bài trắc nghiệm',
   'submission.quiz_timed_out': 'Hết giờ làm bài trắc nghiệm (tự nộp)',
   'submission.code_rejudged': 'Chấm lại bài lập trình',

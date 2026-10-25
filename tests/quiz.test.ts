@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   answeredCount,
   examProblem,
+  modeAllowed,
   parseTimeLimit,
   pickRandom,
   toggleChoice,
@@ -85,4 +86,15 @@ test('examProblem: công bố điểm sau giờ đóng thì cần giờ đóng',
 test('parseTimeLimit: ô trống là không giới hạn', () => {
   assert.equal(parseTimeLimit(''), null);
   assert.equal(parseTimeLimit(' 45 '), 45);
+});
+
+test('bài tập: tạo được dạng tải đề lên và lập trình, không có trắc nghiệm', () => {
+  assert.equal(modeAllowed('quiz', 0), false);
+  assert.equal(modeAllowed('code', 0), true);
+  assert.equal(modeAllowed('file', 0), true);
+  assert.equal(modeAllowed('quiz', 1), true);
+  assert.match(examProblem(form({ type: 0 })) ?? '', /Bài tập chỉ tạo được/);
+  assert.equal(examProblem(form({ type: 0, mode: 'code', questionCount: 0 })), null);
+  // Bài tập nộp file không bắt buộc đề PDF như bài kiểm tra
+  assert.equal(examProblem(form({ type: 0, mode: 'file', questionCount: 0 })), null);
 });

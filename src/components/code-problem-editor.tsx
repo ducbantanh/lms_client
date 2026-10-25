@@ -24,7 +24,11 @@ import {
   type ProblemDraft,
   type TestDraft,
 } from '@/lib/code';
+import { isBlankProblem, type ImportResult } from '@/lib/code-import';
 import { formatSize, moveId } from '@/lib/teaching';
+import { CodeImportBox } from '@/components/code-import';
+import { LibraryPicker } from '@/components/code-library-picker';
+import { DropZone } from '@/components/ui/drop-zone';
 import { Icon } from '@/components/ui/icon';
 
 /**
@@ -37,17 +41,30 @@ export function CodeFields({
   onChange,
   courseId,
   disabled,
+  onImportMany,
+  onImportTitle,
+  subjectCode,
 }: {
   draft: CodeDraft;
   onChange: (draft: CodeDraft) => void;
   /** Khóa học để gọi API đọc thử ZIP; trống = chưa chọn khóa học. */
   courseId: string;
   disabled?: boolean;
+  /** Mã học phần của khóa học: hộp chọn câu từ kho lọc sẵn theo môn này. */
+  subjectCode?: string;
+  /** Nhập nhanh ra nhiều bài (trang Tạo bài thi tạo cùng lúc); không truyền thì gộp mọi câu vào bài này. */
+  onImportMany?: (result: ImportResult) => void;
+  /** Nhập nhanh đúng một bài có thư mục bọc ngoài: tên thư mục gợi ý làm tiêu đề bài. */
+  onImportTitle?: (title: string) => void;
 }) {
   /** Câu đang mở; câu mới mở sẵn, sửa bài có sẵn thì mở câu đầu. */
   const [open, setOpen] = useState<Set<string>>(
     () => new Set(draft.problems.slice(0, 1).map((problem) => problem.key)),
   );
+  const [picking, setPicking] = useState(false);
+  const archiveUrl = courseId
+    ? `/teacher/courses/${encodeURIComponent(courseId)}/code-test-archive`
+    : null;
   // Đọc thử ZIP xong mới gộp vào draft mới nhất (người dùng có thể vẫn đang sửa trong lúc chờ)
   const latest = useRef(draft);
   useEffect(() => {
@@ -89,6 +106,23 @@ export function CodeFields({
     setOpen((current) => new Set(current).add(problem.key));
   }
 
+  /** Câu nhập được thêm sau các câu đang có (câu trống của form mới thì bị thay); mở câu đầu để xem lại. */
+  function applyImport(result: ImportResult) {
+    if (result.assessments.length > 1 && onImportMany) {
+      onImportMany(result);
+      return;
+    }
+    const imported = result.assessments.flatMap((item) => item.problems);
+    const current = latest.current;
+    onChange({
+      ...current,
+      problems: [...current.problems.filter((problem) => !isBlankProblem(problem)), ...imported],
+    });
+    setOpen(new Set(imported.slice(0, 1).map((problem) => problem.key)));
+    const title = result.assessments.length === 1 ? result.assessments[0].title : null;
+    if (title) onImportTitle?.(title);
+  }
+
   return (
     <div className="code-fields">
       <div className="form-field">
@@ -121,6 +155,7 @@ export function CodeFields({
         <code>public class Main</code>. Bài lập trình không có điểm: mỗi câu hiện số test đúng (vd.
         AC 5/5); sinh viên chỉ thấy kết quả chung, không thấy từng test.
       </p>
+      <CodeImportBox onImport={applyImport} many={!!onImportMany} disabled={disabled} />
 
       <ol className="code-problem-list">
         {problems.map((problem, index) => {
@@ -186,7 +221,7 @@ export function CodeFields({
                   <TestsEditor
                     problem={problem}
                     update={(change) => updateProblem(problem.key, change)}
-                    courseId={courseId}
+                    archiveUrl={archiveUrl}
                     disabled={disabled}
                   />
                 </div>
@@ -195,21 +230,51 @@ export function CodeFields({
           );
         })}
       </ol>
-      <button
-        type="button"
-        className="button small"
-        disabled={disabled || problems.length >= MAX_PROBLEMS}
-        onClick={add}
-      >
-        <Icon name="plus" size={11} />
-        Thêm câu
-      </button>
+      <div className="button-row code-fields-actions">
+        <button
+          type="button"
+          className="button small"
+          disabled={disabled || problems.length >= MAX_PROBLEMS}
+          onClick={add}
+        >
+          <Icon name="plus" size={11} />
+          Thêm câu
+        </button>
+        <button
+          type="button"
+          className="button small"
+          disabled={disabled || problems.length >= MAX_PROBLEMS}
+          onClick={() => setPicking(true)}
+        >
+          <Icon name="layers" size={11} />
+          Chọn từ kho bài lập trình
+        </button>
+      </div>
+      {picking && (
+        <LibraryPicker
+          subjectCode={subjectCode}
+          room={MAX_PROBLEMS - problems.filter((problem) => !isBlankProblem(problem)).length}
+          onClose={() => setPicking(false)}
+          onPick={(picked) => {
+            setPicking(false);
+            const current = latest.current;
+            onChange({
+              ...current,
+              problems: [
+                ...current.problems.filter((problem) => !isBlankProblem(problem)),
+                ...picked,
+              ],
+            });
+            setOpen(new Set());
+          }}
+        />
+      )}
     </div>
   );
 }
 
 /** Tiêu đề, đề, giới hạn mỗi test và số lần nộp của một câu. */
-function ProblemFields({
+export function ProblemFields({
   problem,
   onChange,
   disabled,
@@ -296,16 +361,17 @@ function ProblemFields({
  * (tải từ ZIP) chỉ có bản xem trước, không sửa tại chỗ. Thêm nhiều test một lần bằng file ZIP: server đọc thử ngay
  * khi chọn file để báo số test và lỗi; test trong ZIP được lưu khi bấm tạo/lưu, là test ẩn.
  */
-function TestsEditor({
+export function TestsEditor({
   problem,
   update,
-  courseId,
+  archiveUrl,
   disabled,
 }: {
   problem: ProblemDraft;
   /** Sửa câu từ bản mới nhất (đọc thử ZIP xong có thể sau khi người dùng đã sửa chỗ khác). */
   update: (change: (problem: ProblemDraft) => ProblemDraft) => void;
-  courseId: string;
+  /** API đọc thử file ZIP bộ test; null = chưa chọn khóa học. */
+  archiveUrl: string | null;
   disabled?: boolean;
 }) {
   const { tests } = problem;
@@ -359,7 +425,7 @@ function TestsEditor({
       setArchiveError('File ZIP quá lớn (tối đa 20 MB).');
       return;
     }
-    if (!courseId) {
+    if (!archiveUrl) {
       setArchiveError('Chọn khóa học trước khi tải bộ test.');
       return;
     }
@@ -368,10 +434,7 @@ function TestsEditor({
     const form = new FormData();
     form.append('tests', file);
     try {
-      const check = await apiRequest<ArchiveCheck>(
-        `/teacher/courses/${encodeURIComponent(courseId)}/code-test-archive`,
-        { method: 'POST', body: form },
-      );
+      const check = await apiRequest<ArchiveCheck>(archiveUrl, { method: 'POST', body: form });
       // Test ẩn thêm sẵn mà chưa nhập gì thì bỏ: bộ test lấy từ ZIP
       update((current) => ({
         ...current,
@@ -388,6 +451,19 @@ function TestsEditor({
       setChecking(false);
     }
   }
+
+  // Câu chọn từ kho: bộ test chép từ kho khi tạo bài, không sửa ở đây
+  if (problem.source)
+    return (
+      <div className="code-tests">
+        <h4 className="code-tests-title">Bộ test</h4>
+        <p className="code-source-note">
+          <Icon name="layers" size={12} />
+          Lấy từ kho bài lập trình: {problem.source.tests} test ({problem.source.samples} test mẫu),
+          được chép sang bài khi tạo. Muốn sửa bộ test, sửa câu trong kho rồi chọn lại.
+        </p>
+      </div>
+    );
 
   return (
     <div className="code-tests">
@@ -613,15 +689,17 @@ function TestsEditor({
               )}
           </div>
         ) : (
-          <input
-            ref={fileInput}
-            className="input file-input"
-            type="file"
-            accept=".zip,application/zip"
-            disabled={disabled}
-            aria-label="Chọn file ZIP bộ test"
-            onChange={(event) => void pickArchive(event.target.files?.[0] ?? null)}
-          />
+          <DropZone className="drop-box" hint="Hoặc kéo thả file ZIP vào đây">
+            <input
+              ref={fileInput}
+              className="input file-input"
+              type="file"
+              accept=".zip,application/zip"
+              disabled={disabled}
+              aria-label="Chọn file ZIP bộ test"
+              onChange={(event) => void pickArchive(event.target.files?.[0] ?? null)}
+            />
+          </DropZone>
         )}
         {archiveError && (
           <p className="form-error" role="alert">

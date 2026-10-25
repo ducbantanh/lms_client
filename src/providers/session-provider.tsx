@@ -12,7 +12,9 @@ import {
 import { usePathname, useRouter } from 'next/navigation';
 import { ApiError, apiRequest, setApiSession } from '@/lib/api';
 import { routeRedirect } from '@/lib/auth';
+import { unreadBannerKey } from '@/lib/notifications';
 import type { Session, User } from '@/lib/types';
+import { removeLocalStorage } from '@/hooks/use-local-storage';
 
 type ConnectionStatus = 'connecting' | 'online' | 'offline';
 /** Nhận data của một sự kiện WebSocket ({ type, data, ts }) từ server. */
@@ -234,12 +236,13 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   /** Chuyển trang sau login do effect bảo vệ route xử lý (next / đổi mật khẩu / trang chủ). */
   async function login(username: string, password: string) {
-    acceptSession(
-      await apiRequest<Session>('/auth/login', {
-        method: 'POST',
-        body: { username, password },
-      }),
-    );
+    const value = await apiRequest<Session>('/auth/login', {
+      method: 'POST',
+      body: { username, password },
+    });
+    // Mỗi lần đăng nhập, khung thông báo chưa đọc ở đầu trang hiện lại dù lần trước đã bấm ẩn.
+    removeLocalStorage(unreadBannerKey(value.user.id));
+    acceptSession(value);
   }
 
   async function logout() {

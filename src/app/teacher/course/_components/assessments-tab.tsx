@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useRef, useState, type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import { apiRequest } from '@/lib/api';
 import { TEACHER_PATH } from '@/lib/auth';
 import {
@@ -10,7 +10,6 @@ import {
   canEditAssessment,
   isoToLocalInput,
   localInputToIso,
-  uploadProblem,
   type Assessment,
   type AssessmentType,
 } from '@/lib/teaching';
@@ -21,7 +20,7 @@ import { errorFlash, type TabProps } from './course-manager';
 
 type AssessmentTabProps = TabProps & { type: AssessmentType };
 
-/** Tab Bài tập / Bài thực hành / Bài kiểm tra: danh sách bài đúng loại và form tạo bài loại đó. */
+/** Tab Bài tập / Bài thực hành / Bài kiểm tra: danh sách bài đúng loại, nút tạo bài loại đó ở trang Tạo bài thi. */
 export function AssessmentsTab(props: AssessmentTabProps) {
   const { content, base, reload, notify, confirm, type, canTeach } = props;
   const { noun } = ASSESSMENT_GROUPS[type];
@@ -109,33 +108,31 @@ export function AssessmentsTab(props: AssessmentTabProps) {
           <p className="empty-cell">Chưa có {noun} nào.</p>
         )}
       </section>
-      {/* Bài thực hành, bài kiểm tra tạo ở trang Tạo bài thi (trắc nghiệm hoặc tải đề lên); bài tập tạo ngay tại đây */}
-      {canTeach &&
-        (type === 0 ? (
-          <CreateAssessment {...props} />
-        ) : (
-          <aside className="panel">
-            <div className="panel-title">
-              <h2>
-                <i className="title-icon red">
-                  <Icon name="exam" size={12} />
-                </i>
-                Tạo {noun}
-              </h2>
-            </div>
-            <p className="admin-hint">
-              Tạo ở trang Tạo bài thi: trắc nghiệm lấy câu hỏi từ ngân hàng, tải đề PDF lên để sinh
-              viên nộp file, hoặc bài lập trình chấm tự động bằng bộ test.
-            </p>
-            <Link
-              className="button primary full-width"
-              href={`${TEACHER_PATH}/create-exam/?course=${encodeURIComponent(content.course.id)}&type=${type}`}
-            >
-              <Icon name="plus" size={12} />
+      {/* Mọi loại bài tạo ở trang Tạo bài thi, chọn sẵn khóa học và loại bài của tab */}
+      {canTeach && (
+        <aside className="panel">
+          <div className="panel-title">
+            <h2>
+              <i className="title-icon red">
+                <Icon name="exam" size={12} />
+              </i>
               Tạo {noun}
-            </Link>
-          </aside>
-        ))}
+            </h2>
+          </div>
+          <p className="admin-hint">
+            {type === 0
+              ? 'Tạo ở trang Tạo bài thi: tải đề PDF lên để sinh viên nộp file, hoặc bài lập trình chấm tự động bằng bộ test.'
+              : 'Tạo ở trang Tạo bài thi: trắc nghiệm lấy câu hỏi từ ngân hàng, tải đề PDF lên để sinh viên nộp file, hoặc bài lập trình chấm tự động bằng bộ test.'}
+          </p>
+          <Link
+            className="button primary full-width"
+            href={`${TEACHER_PATH}/create-exam/?course=${encodeURIComponent(content.course.id)}&type=${type}`}
+          >
+            <Icon name="plus" size={12} />
+            Tạo {noun}
+          </Link>
+        </aside>
+      )}
       {editing && (
         <EditAssessment {...props} assessment={editing} onClose={() => setEditing(null)} />
       )}
@@ -257,164 +254,5 @@ function EditAssessment({
         </div>
       </form>
     </Modal>
-  );
-}
-
-const EMPTY = {
-  title: '',
-  description: '',
-  opens: '',
-  closes: '',
-  /** Chỉ bài tập mới hỏi; bài kiểm tra và bài thực hành server luôn thông báo. */
-  notify: false,
-};
-
-/** Tạo bài tập; bài thực hành và bài kiểm tra tạo ở trang Tạo bài thi (/teacher/create-exam/). */
-function CreateAssessment({ base, reload, notify, type }: AssessmentTabProps) {
-  const [form, setForm] = useState(EMPTY);
-  const [paperFile, setPaperFile] = useState<File | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState('');
-  const paperInput = useRef<HTMLInputElement>(null);
-  const { noun } = ASSESSMENT_GROUPS[type];
-  const set = (patch: Partial<typeof EMPTY>) => setForm({ ...form, ...patch });
-
-  function pickPaper(file: File | null) {
-    const problem =
-      file &&
-      (uploadProblem(file) ??
-        (file.name.toLowerCase().endsWith('.pdf') ? null : 'File đề phải là PDF.'));
-    setError(problem ?? '');
-    setPaperFile(problem ? null : file);
-    if (problem && paperInput.current) paperInput.current.value = '';
-  }
-
-  async function submit(event: FormEvent) {
-    event.preventDefault();
-    const opensAt = localInputToIso(form.opens);
-    const closesAt = localInputToIso(form.closes);
-    if (opensAt && closesAt && closesAt <= opensAt) {
-      setError('Giờ đóng phải sau giờ mở.');
-      return;
-    }
-    setBusy(true);
-    setError('');
-    const data = {
-      type,
-      title: form.title.trim(),
-      description: form.description.trim(),
-      opensAt,
-      closesAt,
-      notifyStudents: form.notify,
-    };
-    // Đề gửi cùng request tạo bài: server lưu file và bài trong một lần,
-    // file chỉ thuộc bài này (không vào tài liệu khóa học), xóa bài thì xóa luôn file.
-    let body: unknown = data;
-    if (paperFile) {
-      const multipart = new FormData();
-      multipart.append('data', new Blob([JSON.stringify(data)], { type: 'application/json' }));
-      multipart.append('paper', paperFile);
-      body = multipart;
-    }
-    try {
-      await apiRequest(`${base}/assessments`, { method: 'POST', body });
-      notify({ type: 'success', text: `Đã tạo ${form.title.trim()}.` });
-      setForm(EMPTY);
-      setPaperFile(null);
-      if (paperInput.current) paperInput.current.value = '';
-      await reload();
-    } catch (reason) {
-      setError(reason instanceof Error ? reason.message : 'Không tạo được bài.');
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  return (
-    <aside className="panel">
-      <div className="panel-title">
-        <h2>
-          <i className="title-icon red">
-            <Icon name="exam" size={12} />
-          </i>
-          Tạo {noun}
-        </h2>
-      </div>
-      <form onSubmit={submit}>
-        {error && (
-          <p className="form-error" role="alert">
-            {error}
-          </p>
-        )}
-        <label className="form-field">
-          Tiêu đề
-          <input
-            className="input"
-            value={form.title}
-            onChange={(event) => set({ title: event.target.value })}
-            maxLength={200}
-            required
-          />
-        </label>
-        <label className="form-field">
-          <span>
-            Mô tả <span className="optional">(không bắt buộc)</span>
-          </span>
-          <textarea
-            className="input"
-            rows={2}
-            value={form.description}
-            onChange={(event) => set({ description: event.target.value })}
-            maxLength={2000}
-          />
-        </label>
-        <label className="form-field">
-          <span>
-            File đề <span className="optional">(PDF, không bắt buộc)</span>
-          </span>
-          <input
-            ref={paperInput}
-            className="input file-input"
-            type="file"
-            accept=".pdf,application/pdf"
-            onChange={(event) => pickPaper(event.target.files?.[0] ?? null)}
-          />
-        </label>
-        <div className="form-row">
-          <label className="form-field">
-            Mở lúc
-            <input
-              className="input"
-              type="datetime-local"
-              value={form.opens}
-              onChange={(event) => set({ opens: event.target.value })}
-            />
-          </label>
-          <label className="form-field">
-            Đóng lúc
-            <input
-              className="input"
-              type="datetime-local"
-              value={form.closes}
-              onChange={(event) => set({ closes: event.target.value })}
-            />
-          </label>
-        </div>
-        <p className="admin-hint">
-          Để trống giờ mở là mở ngay; để trống giờ đóng là không giới hạn.
-        </p>
-        <label className="check-field">
-          <input
-            type="checkbox"
-            checked={form.notify}
-            onChange={(event) => set({ notify: event.target.checked })}
-          />
-          Gửi thông báo cho sinh viên
-        </label>
-        <button className="button primary full-width" disabled={busy || !form.title.trim()}>
-          {busy ? 'Đang tạo…' : `Tạo ${noun}`}
-        </button>
-      </form>
-    </aside>
   );
 }

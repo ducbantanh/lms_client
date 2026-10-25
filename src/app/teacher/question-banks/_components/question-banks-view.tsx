@@ -1,11 +1,19 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useDeferredValue, useEffect, useMemo, useState, type FormEvent } from 'react';
+import {
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useState,
+  type FormEvent,
+  type MouseEvent,
+} from 'react';
 import { apiRequest } from '@/lib/api';
 import { TEACHER_PATH } from '@/lib/auth';
 import { formatDateTime } from '@/lib/admin';
-import { normalizeSearch } from '@/lib/course-utils';
+import { coverFor, normalizeSearch } from '@/lib/course-utils';
 import {
   groupBySubject,
   subjectLabel,
@@ -19,8 +27,11 @@ import {
   type ConfirmRequest,
   type Flash,
 } from '@/components/admin-ui';
+import { useViewMode } from '@/hooks/use-view-mode';
+import { useSession } from '@/providers/session-provider';
 import { Icon } from '@/components/ui/icon';
 import { Modal } from '@/components/ui/modal';
+import { ViewToggle } from '@/components/ui/view-toggle';
 
 export const bankHref = (bankId: string) =>
   `${TEACHER_PATH}/question-bank/?id=${encodeURIComponent(bankId)}`;
@@ -42,6 +53,9 @@ export function QuestionBanksView() {
   const [flash, setFlash] = useState<Flash | null>(null);
   const clearFlash = useCallback(() => setFlash(null), []);
   const deferredSearch = useDeferredValue(search);
+  const { user } = useSession();
+  // Lưới/danh sách nhớ theo tài khoản, mặc định lưới như trang Khóa học
+  const [view, setView] = useViewMode(`lms.ui.question-banks.${user?.id ?? 'guest'}`, 'grid');
 
   const load = useCallback(
     () =>
@@ -137,6 +151,9 @@ export function QuestionBanksView() {
               </option>
             ))}
           </select>
+          <div className="toolbar-right">
+            <ViewToggle value={view} onChange={setView} />
+          </div>
         </div>
       )}
       {error ? (
@@ -167,58 +184,40 @@ export function QuestionBanksView() {
         </div>
       ) : (
         <div className="stack">
-          {groups.map((group) => (
-            <section key={group.subject?.code ?? ''} className="panel flush">
-              <div className="panel-title">
-                <h2>
-                  <i className="title-icon blue">
-                    <Icon name={group.subject ? 'book' : 'bank'} size={12} />
-                  </i>
-                  {group.subject
-                    ? subjectLabel(group.subject.code, group.subject.name)
-                    : 'Chưa gắn môn học'}
-                </h2>
-                <button
-                  className="link-button"
-                  onClick={() => setEditing({ newIn: group.subject?.code ?? '' })}
-                >
-                  + Thêm ngân hàng
-                </button>
-              </div>
-              <ul aria-label="Danh sách ngân hàng câu hỏi">
-                {group.banks.map((bank) => (
-                  <li key={bank.id} className="list-row">
-                    <Link href={bankHref(bank.id)} className="list-row-text bank-link">
-                      <b>{bank.name}</b>
-                      {bank.description && <small>{bank.description}</small>}
-                    </Link>
-                    <span className="list-row-end">
-                      {bank.questionCount} câu hỏi
-                      <span className="table-sub">Sửa {formatDateTime(bank.updatedAt)}</span>
-                    </span>
-                    <span className="file-actions">
-                      <button
-                        className="icon-button row-action"
-                        title="Sửa tên, môn học, mô tả"
-                        aria-label={`Sửa ${bank.name}`}
-                        onClick={() => setEditing({ bank })}
-                      >
-                        <Icon name="edit" size={13} />
-                      </button>
-                      <button
-                        className="icon-button row-action danger"
-                        title="Xóa ngân hàng"
-                        aria-label={`Xóa ${bank.name}`}
-                        onClick={() => remove(bank)}
-                      >
-                        <Icon name="trash" size={13} />
-                      </button>
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ))}
+          {groups.map((group) => {
+            const title = group.subject
+              ? subjectLabel(group.subject.code, group.subject.name)
+              : 'Chưa gắn môn học';
+            return (
+              <section key={group.subject?.code ?? ''} aria-label={title}>
+                <div className="bank-group-head">
+                  <h2>
+                    <i className="title-icon blue">
+                      <Icon name={group.subject ? 'book' : 'bank'} size={12} />
+                    </i>
+                    {title}
+                    <span className="count">{group.banks.length}</span>
+                  </h2>
+                  <button
+                    className="link-button"
+                    onClick={() => setEditing({ newIn: group.subject?.code ?? '' })}
+                  >
+                    + Thêm ngân hàng
+                  </button>
+                </div>
+                <div className={`course-grid ${view === 'list' ? 'is-list' : ''}`}>
+                  {group.banks.map((bank) => (
+                    <BankCard
+                      key={bank.id}
+                      bank={bank}
+                      onEdit={() => setEditing({ bank })}
+                      onDelete={() => remove(bank)}
+                    />
+                  ))}
+                </div>
+              </section>
+            );
+          })}
         </div>
       )}
       {editing && (
@@ -238,6 +237,61 @@ export function QuestionBanksView() {
       )}
       {confirm && <ConfirmDialog request={confirm} onClose={() => setConfirm(null)} />}
     </main>
+  );
+}
+
+/**
+ * Thẻ ngân hàng cùng khung với thẻ khóa học (lưới hoặc danh sách do .course-grid/.is-list bố trí):
+ * màu theo mã môn như khóa học cùng môn, số câu hỏi, lần sửa gần nhất, menu Sửa/Xóa.
+ */
+function BankCard({
+  bank,
+  onEdit,
+  onDelete,
+}: {
+  bank: QuestionBankSummary;
+  onEdit: () => void;
+  onDelete: () => void;
+}) {
+  const href = bankHref(bank.id);
+  /** Đóng menu <details> trước khi mở hộp thoại. */
+  const run = (action: () => void) => (event: MouseEvent<HTMLButtonElement>) => {
+    event.currentTarget.closest('details')?.removeAttribute('open');
+    action();
+  };
+  return (
+    <article className="course-card">
+      <Link
+        href={href}
+        className={`course-cover cover-${coverFor(bank.subjectCode ?? bank.name)}`}
+        tabIndex={-1}
+        aria-hidden="true"
+      />
+      <div className="course-body">
+        <div className="course-meta">
+          <span className="course-code">{bank.subjectCode ?? 'Chưa gắn môn'}</span>
+          <details className="dropdown course-options">
+            <summary className="icon-button" aria-label={`Tùy chọn ${bank.name}`}>
+              <Icon name="more" size={15} />
+            </summary>
+            <div className="dropdown-panel">
+              <button onClick={run(onEdit)}>Sửa tên, môn học, mô tả</button>
+              <button className="danger" onClick={run(onDelete)}>
+                Xóa ngân hàng
+              </button>
+            </div>
+          </details>
+        </div>
+        <Link href={href} className="course-title">
+          <h2>{bank.name}</h2>
+        </Link>
+        {bank.description && <p className="course-subtitle">{bank.description}</p>}
+        <div className="course-footer">
+          <span>Sửa {formatDateTime(bank.updatedAt)}</span>
+          <b>{bank.questionCount} câu hỏi</b>
+        </div>
+      </div>
+    </article>
   );
 }
 

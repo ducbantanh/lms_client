@@ -47,3 +47,11 @@ test('management routes follow permissions', () => {
   assert.equal(routeRedirect(session(5), '/teacher/'), '/');
   assert.equal(routeRedirect(session(5), '/admin/'), '/');
 });
+
+test('each role opens the profile page of its own area', () => {
+  assert.equal(routeRedirect(session(5), '/profile/'), null);
+  assert.equal(routeRedirect(session(1), '/teacher/profile/'), null);
+  // Giảng viên dùng hồ sơ trong khu giảng dạy; sinh viên không vào được khu giảng dạy
+  assert.equal(routeRedirect(session(1), '/profile/'), '/teacher/');
+  assert.equal(routeRedirect(session(5), '/teacher/profile/'), '/');
+});

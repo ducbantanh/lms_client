@@ -1,4 +1,5 @@
 import type { Difficulty } from './question-bank.ts';
+import type { AssessmentType } from './teaching.ts';
 
 /** Kiểu dữ liệu khớp QuizViews của Spring (lms.quiz); mọi id là public_id. */
 
@@ -89,7 +90,9 @@ export const REVEAL_MODES: Record<RevealMode, string> = {
 };
 
 /** Loại bài tạo được ở trang Tạo bài thi (Assessment.TYPE_LAB, TYPE_EXAM). */
-export const QUIZ_TYPES: { value: 1 | 2; label: string }[] = [
+/** Loại bài chọn ở trang Tạo bài; bài tập không có hình thức trắc nghiệm (xem modeAllowed). */
+export const EXAM_TYPES: { value: AssessmentType; label: string }[] = [
+  { value: 0, label: 'Bài tập' },
   { value: 1, label: 'Bài thực hành' },
   { value: 2, label: 'Bài kiểm tra' },
 ];
@@ -149,9 +152,14 @@ export const EXAM_MODES: { value: ExamMode; label: string }[] = [
   { value: 'code', label: 'Lập trình, chấm tự động' },
 ];
 
+/** Giống QuizViews.CreateQuizRequest (type 1..2): bài trắc nghiệm chỉ là bài thực hành hoặc bài kiểm tra. */
+export function modeAllowed(mode: ExamMode, type: AssessmentType) {
+  return mode !== 'quiz' || type !== 0;
+}
+
 export interface ExamForm {
   mode: ExamMode;
-  type: 1 | 2;
+  type: AssessmentType;
   courseId: string;
   title: string;
   /** Giá trị ô datetime-local đã đổi sang ISO (null = trống). */
@@ -175,6 +183,8 @@ export function examProblem(form: ExamForm): string | null {
   // Giống CourseContentService.requireScoreRelease: không có giờ đóng thì không có lúc công bố
   if (form.scoreRelease === 1 && !form.closesAt)
     return 'Công bố điểm sau giờ đóng bài thì cần chọn giờ đóng.';
+  if (!modeAllowed(form.mode, form.type))
+    return 'Bài tập chỉ tạo được dạng tải đề lên hoặc lập trình.';
   // Đề và bộ test của bài lập trình kiểm tra riêng bằng problemDraftProblem (lib/code.ts)
   if (form.mode === 'code') return null;
   // Giống CourseContentService: bài kiểm tra nộp file bắt buộc có đề PDF

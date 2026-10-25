@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { SessionProvider } from '@/providers/session-provider';
 import { DropdownDismiss } from '@/components/ui/dropdown-dismiss';
+import { FileDropGuard } from '@/components/ui/drop-zone';
 // Font và icon đóng gói cùng ứng dụng (không CDN); nạp trước globals.css để style riêng được ưu tiên.
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import './fonts/source-sans-pro.css';
@@ -20,6 +21,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <SessionProvider>
           {/* Khung trang do layout của từng nhóm route quyết định: (auth), (learn), admin. */}
           <DropdownDismiss />
+          <FileDropGuard />
           {children}
         </SessionProvider>
       </body>

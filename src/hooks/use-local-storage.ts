@@ -25,6 +25,17 @@ function read(key: string) {
   }
 }
 
+/** Xóa giá trị của `key` (về null) từ ngoài component, vd. khi đăng nhập lại. */
+export function removeLocalStorage(key: string) {
+  memory.delete(key);
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    /* Storage bị chặn: chỉ còn bản trong bộ nhớ, đã xóa ở trên. */
+  }
+  listeners.forEach((listener) => listener());
+}
+
 /**
  * Chuỗi lưu trong localStorage theo `key` (null = chưa có), dùng chung cho mọi tùy chọn giao diện.
  * Lúc export tĩnh và lần hydrate đầu luôn là null nên HTML không lệch; sau đó React tự đọc giá trị thật.

@@ -51,12 +51,24 @@ function isAllowedOrigin(browserRequest) {
   return !requestOrigin || requestOrigin === previewOrigin;
 }
 
+/** IP của máy đang kết nối tới gateway; IPv4 qua socket IPv6 có dạng ::ffff:192.168.1.20. */
+function browserIp(browserRequest) {
+  const address = browserRequest.socket.remoteAddress ?? '';
+  return address.startsWith('::ffff:') ? address.slice(7) : address;
+}
+
 /**
  * Giữ cookie/CSRF và các header cần thiết, đổi Host/Origin sang địa chỉ backend.
+ * X-Forwarded-For là IP máy người dùng để backend ghi nhật ký, phiên đăng nhập, điểm danh đúng máy;
+ * gateway là điểm đầu tiên browser kết nối nên ghi đè giá trị browser tự gửi (tránh giả IP).
  * Chỉ gọi hàm này sau khi isAllowedOrigin() đã chấp nhận request.
  */
 function createBackendHeaders(browserRequest) {
-  const forwardedHeaders = { ...browserRequest.headers, host: backendUrl.host };
+  const forwardedHeaders = {
+    ...browserRequest.headers,
+    host: backendUrl.host,
+    'x-forwarded-for': browserIp(browserRequest),
+  };
   if (forwardedHeaders.origin) {
     forwardedHeaders.origin = backendUrl.origin;
   }

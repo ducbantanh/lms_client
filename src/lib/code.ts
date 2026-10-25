@@ -312,6 +312,11 @@ export interface ProblemDraft {
   /** File ZIP bộ test sẽ gửi kèm (test trong ZIP thêm vào sau, là test ẩn) và kết quả đọc thử. */
   archive: File | null;
   archiveCheck: ArchiveCheck | null;
+  /**
+   * Câu mới chọn từ kho bài lập trình: server chép bộ test của câu trong kho (tests để trống, không có ZIP);
+   * tiêu đề, đề, giới hạn vẫn sửa được trước khi tạo bài.
+   */
+  source: { id: string; tests: number; samples: number } | null;
 }
 
 /** Cả bài đang soạn: ngôn ngữ chung và các câu theo thứ tự. */
@@ -347,6 +352,7 @@ export function emptyProblem(): ProblemDraft {
     tests: [emptyTest(true), emptyTest()],
     archive: null,
     archiveCheck: null,
+    source: null,
   };
 }
 
@@ -354,33 +360,36 @@ export function emptyCode(): CodeDraft {
   return { languages: ['c', 'cpp', 'java', 'python'], problems: [emptyProblem()] };
 }
 
-export function draftFromTeacher(code: TeacherCode): CodeDraft {
+/** Câu đã lưu (của bài, hoặc trong kho bài lập trình) → câu đang soạn để sửa. */
+export function problemFromTeacher(problem: TeacherProblem): ProblemDraft {
   return {
-    languages: code.languages,
-    problems: code.problems.map((problem) => ({
-      key: problem.id,
-      id: problem.id,
-      title: problem.title,
-      statement: problem.statement,
-      timeLimit: String(problem.timeLimitMs / 1000).replace('.', ','),
-      memoryLimit: String(problem.memoryLimitMb),
-      maxAttempts: problem.maxAttempts === null ? '' : String(problem.maxAttempts),
-      tests: problem.tests.map((test) => ({
-        key: test.id,
-        id: test.id,
-        name: test.name,
-        input: test.input,
-        expected: test.expected,
-        truncated: test.inputTruncated || test.expectedTruncated,
-        inputSize: test.inputSize,
-        expectedSize: test.expectedSize,
-        dirty: false,
-        sample: test.sample,
-      })),
-      archive: null,
-      archiveCheck: null,
+    key: problem.id,
+    id: problem.id,
+    title: problem.title,
+    statement: problem.statement,
+    timeLimit: String(problem.timeLimitMs / 1000).replace('.', ','),
+    memoryLimit: String(problem.memoryLimitMb),
+    maxAttempts: problem.maxAttempts === null ? '' : String(problem.maxAttempts),
+    tests: problem.tests.map((test) => ({
+      key: test.id,
+      id: test.id,
+      name: test.name,
+      input: test.input,
+      expected: test.expected,
+      truncated: test.inputTruncated || test.expectedTruncated,
+      inputSize: test.inputSize,
+      expectedSize: test.expectedSize,
+      dirty: false,
+      sample: test.sample,
     })),
+    archive: null,
+    archiveCheck: null,
+    source: null,
   };
+}
+
+export function draftFromTeacher(code: TeacherCode): CodeDraft {
+  return { languages: code.languages, problems: code.problems.map(problemFromTeacher) };
 }
 
 /** "1,5" hoặc "1.5" giây → mili giây; null nếu không phải số. */
@@ -405,8 +414,9 @@ export function testSizes(test: TestDraft) {
     : { input: utf8Size(test.input), expected: utf8Size(test.expected) };
 }
 
-/** Số test của câu kể cả test trong file ZIP đã đọc thử. */
+/** Số test của câu kể cả test trong file ZIP đã đọc thử và bộ test chép từ kho. */
 export function testCount(problem: ProblemDraft) {
+  if (problem.source) return problem.source.tests;
   return problem.tests.length + (problem.archive ? (problem.archiveCheck?.tests.length ?? 0) : 0);
 }
 
@@ -422,6 +432,8 @@ export function problemDraftProblem(problem: ProblemDraft): string | null {
     return `giới hạn bộ nhớ là số MB nguyên từ ${MIN_MEMORY_MB} đến ${MAX_MEMORY_MB}.`;
   if (problem.maxAttempts.trim() && !isInt(problem.maxAttempts, 1, MAX_ATTEMPTS))
     return `số lần nộp tối đa là số nguyên từ 1 đến ${MAX_ATTEMPTS} (để trống = không giới hạn).`;
+  // Bộ test chép từ kho đã được kiểm tra khi lưu vào kho
+  if (problem.source) return problem.source.tests ? null : 'câu trong kho chưa có test.';
   if (problem.archive) {
     if (!problem.archiveCheck) return 'đang đọc file ZIP bộ test, đợi một chút.';
     if (problem.archiveCheck.problems.length || !problem.archiveCheck.tests.length)
@@ -468,29 +480,39 @@ export const archivePart = (index: number) => `zip-${index}`;
 export function codeRequest(draft: CodeDraft) {
   const files: { name: string; file: File }[] = [];
   const problems = draft.problems.map((problem, index) => {
-    if (problem.archive) files.push({ name: archivePart(index), file: problem.archive });
-    return {
-      id: problem.id,
-      title: problem.title.trim(),
-      statement: problem.statement.trim(),
-      timeLimitMs: parseSeconds(problem.timeLimit)!,
-      memoryLimitMb: Number(problem.memoryLimit),
-      maxAttempts: problem.maxAttempts.trim() ? Number(problem.maxAttempts) : null,
-      archive: problem.archive ? archivePart(index) : null,
-      tests: problem.tests.map((test) =>
-        test.id && (test.truncated || !test.dirty)
-          ? { id: test.id, sample: test.sample }
-          : {
-              id: test.id,
-              name: test.name,
-              input: test.input,
-              expected: test.expected,
-              sample: test.sample,
-            },
-      ),
-    };
+    if (problem.archive && !problem.source)
+      files.push({ name: archivePart(index), file: problem.archive });
+    return problemRequest(problem, archivePart(index));
   });
   return { code: { languages: draft.languages, problems }, files };
+}
+
+/** ProblemRequest của một câu; part: tên part multipart của file ZIP (nếu câu có ZIP). Dùng chung với kho. */
+export function problemRequest(problem: ProblemDraft, part: string) {
+  const sourced = !!problem.source;
+  return {
+    id: problem.id,
+    title: problem.title.trim(),
+    statement: problem.statement.trim(),
+    timeLimitMs: parseSeconds(problem.timeLimit)!,
+    memoryLimitMb: Number(problem.memoryLimit),
+    maxAttempts: problem.maxAttempts.trim() ? Number(problem.maxAttempts) : null,
+    archive: problem.archive && !sourced ? part : null,
+    source: problem.source?.id ?? null,
+    tests: sourced
+      ? []
+      : problem.tests.map((test) =>
+          test.id && (test.truncated || !test.dirty)
+            ? { id: test.id, sample: test.sample }
+            : {
+                id: test.id,
+                name: test.name,
+                input: test.input,
+                expected: test.expected,
+                sample: test.sample,
+              },
+        ),
+  };
 }
 
 /** JSON, hoặc multipart (part `data` + mỗi file ZIP một part) khi có file ZIP bộ test. */
