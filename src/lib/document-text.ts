@@ -1,4 +1,5 @@
 import { PDFJS_ASSETS, loadPdfjs } from './pdfjs-assets.ts';
+import { readZipText } from './zip.ts';
 
 /**
  * Đọc chữ từ file Word (.docx) và PDF ngay trên trình duyệt, để dán vào ô "Nhập câu hỏi từ văn bản".
@@ -7,54 +8,8 @@ import { PDFJS_ASSETS, loadPdfjs } from './pdfjs-assets.ts';
  * Người dùng xem lại trong ô nhập trước khi bấm Nhập.
  */
 
-// ---------------------------------------------------------------- ZIP (file .docx là một file zip)
-
-const EOCD = 0x06054b50;
-const CENTRAL = 0x02014b50;
-const LOCAL = 0x04034b50;
-
-async function inflateRaw(bytes: Uint8Array): Promise<Uint8Array> {
-  const stream = new Blob([bytes as BlobPart])
-    .stream()
-    .pipeThrough(new DecompressionStream('deflate-raw'));
-  return new Uint8Array(await new Response(stream).arrayBuffer());
-}
-
-/** Nội dung (UTF-8) của một file trong zip; null nếu không có. Chỉ hỗ trợ cách nén stored/deflate như Word. */
-export async function readZipText(data: ArrayBuffer, name: string): Promise<string | null> {
-  const view = new DataView(data);
-  let eocd = -1;
-  // Bản ghi cuối nằm trong 22 byte + tối đa 64 KB chú thích cuối file
-  for (let i = data.byteLength - 22; i >= Math.max(0, data.byteLength - 22 - 0xffff); i--) {
-    if (view.getUint32(i, true) === EOCD) {
-      eocd = i;
-      break;
-    }
-  }
-  if (eocd < 0) throw new Error('NOT_ZIP');
-  const count = view.getUint16(eocd + 10, true);
-  let offset = view.getUint32(eocd + 16, true);
-  const decoder = new TextDecoder();
-  for (let n = 0; n < count; n++) {
-    if (view.getUint32(offset, true) !== CENTRAL) throw new Error('NOT_ZIP');
-    const method = view.getUint16(offset + 10, true);
-    const size = view.getUint32(offset + 20, true);
-    const nameLength = view.getUint16(offset + 28, true);
-    const extraLength = view.getUint16(offset + 30, true);
-    const commentLength = view.getUint16(offset + 32, true);
-    const local = view.getUint32(offset + 42, true);
-    const entry = decoder.decode(new Uint8Array(data, offset + 46, nameLength));
-    offset += 46 + nameLength + extraLength + commentLength;
-    if (entry !== name) continue;
-    if (view.getUint32(local, true) !== LOCAL) throw new Error('NOT_ZIP');
-    const start = local + 30 + view.getUint16(local + 26, true) + view.getUint16(local + 28, true);
-    const raw = new Uint8Array(data, start, size);
-    if (method === 0) return decoder.decode(raw);
-    if (method === 8) return decoder.decode(await inflateRaw(raw));
-    throw new Error('UNSUPPORTED_ZIP');
-  }
-  return null;
-}
+// File .docx là một file zip (lib/zip.ts); giữ export readZipText ở đây cho nơi đang dùng.
+export { readZipText };
 
 // ---------------------------------------------------------------- DOCX
 

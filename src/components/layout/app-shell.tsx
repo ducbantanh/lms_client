@@ -12,6 +12,7 @@ import { AccountMenu, ConnectionChip } from '@/components/layout/account-menu';
 import { Icon, type IconName } from '@/components/ui/icon';
 import { Modal } from '@/components/ui/modal';
 import { NotificationBell } from '@/components/layout/notification-bell';
+import { UnreadBanner } from '@/components/layout/unread-banner';
 
 /** learn: sinh viên; manage: quản trị + giảng dạy, cùng một sidebar lọc theo quyền. */
 type Area = 'learn' | 'manage';
@@ -27,8 +28,8 @@ interface NavGroup {
 }
 
 /**
- * Menu theo khu vực, cố ý chỉ vài mục: Tổng quan, Khóa học, Cài đặt (sinh viên và giảng viên);
- * giảng viên có thêm Ngân hàng câu hỏi và Tạo bài thi.
+ * Menu theo khu vực, cố ý chỉ vài mục: Tổng quan, Khóa học, Hồ sơ, Cài đặt (sinh viên và giảng viên);
+ * giảng viên có thêm Ngân hàng câu hỏi, Kho bài lập trình và Tạo bài thi.
  * Thông báo đã có chuông trên thanh trên; người online của lớp xem ở tab Sinh viên của khóa học.
  * Admin có thêm các trang quản trị; khu quản lý lọc theo permission giống MANAGE_ROUTES trong lib/auth.ts.
  */
@@ -48,6 +49,12 @@ function navFor(area: Area, user: User | null): NavGroup[] {
             label: 'Khóa học',
             icon: 'book',
             active: (path) => path === '/' || path.startsWith('/course'),
+          },
+          {
+            href: '/profile/',
+            label: 'Hồ sơ',
+            icon: 'profile',
+            active: (path) => path === '/profile',
           },
           {
             href: '/settings/',
@@ -72,6 +79,13 @@ function navFor(area: Area, user: User | null): NavGroup[] {
     icon: 'bank',
     active: (path) => path.startsWith(`${TEACHER_PATH}/question-bank`),
   };
+  // /teacher/code-problems: kho bài lập trình (câu dùng lại khi tạo bài)
+  const codeLibrary: NavLink = {
+    href: `${TEACHER_PATH}/code-problems/`,
+    label: 'Kho bài lập trình',
+    icon: 'code',
+    active: (path) => path === `${TEACHER_PATH}/code-problems`,
+  };
   const createExam: NavLink = {
     href: `${TEACHER_PATH}/create-exam/`,
     label: 'Tạo bài thi',
@@ -89,7 +103,15 @@ function navFor(area: Area, user: User | null): NavGroup[] {
             icon: 'dashboard',
             active: (path) => path === TEACHER_PATH,
           },
-          ...(hasPermission(user, 'courses.manage') ? [courses, banks, createExam] : []),
+          ...(hasPermission(user, 'courses.manage')
+            ? [courses, banks, codeLibrary, createExam]
+            : []),
+          {
+            href: `${TEACHER_PATH}/profile/`,
+            label: 'Hồ sơ',
+            icon: 'profile',
+            active: (path) => path === `${TEACHER_PATH}/profile`,
+          },
           {
             href: `${TEACHER_PATH}/settings/`,
             label: 'Cài đặt',
@@ -255,7 +277,11 @@ function Shell({ area, children }: { area: Area; children: ReactNode }) {
             <AccountMenu onHelp={area === 'learn' ? () => setHelpOpen(true) : undefined} />
           </div>
         </header>
-        <div className="shell-content">{children}</div>
+        <div className="shell-content">
+          {/* Chỉ khu học tập có NotificationsProvider; khu quản lý banner tự trả null */}
+          <UnreadBanner />
+          {children}
+        </div>
       </div>
       {helpOpen && (
         <Modal title="Hướng dẫn sử dụng" onClose={() => setHelpOpen(false)}>

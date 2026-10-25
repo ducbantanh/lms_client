@@ -28,9 +28,10 @@ import {
   EXAM_MODES,
   MAX_QUIZ_QUESTIONS,
   MAX_TIME_LIMIT,
-  QUIZ_TYPES,
+  EXAM_TYPES,
   REVEAL_MODES,
   examProblem,
+  modeAllowed,
   parseTimeLimit,
   pickRandom,
   type ExamMode,
@@ -43,6 +44,7 @@ import {
   moveId,
   SCORE_RELEASES,
   uploadProblem,
+  type AssessmentType,
   type ScoreRelease,
   type TeacherCourse,
 } from '@/lib/teaching';
@@ -54,9 +56,30 @@ import {
   testCount,
   type CodeDraft,
 } from '@/lib/code';
+import type { ImportResult } from '@/lib/code-import';
+import { LIBRARY_PATH, sourcedDraft, type LibraryDetail } from '@/lib/code-library';
 import { AdminHeading, FlashMessage, type Flash } from '@/components/admin-ui';
 import { CodeFields } from '@/components/code-problem-editor';
+import { DropZone } from '@/components/ui/drop-zone';
 import { Icon } from '@/components/ui/icon';
+
+/** Một bài trong chế độ tạo nhiều bài lập trình cùng lúc. */
+interface BatchItem {
+  key: string;
+  title: string;
+  draft: CodeDraft;
+}
+
+/** Kiểm tra mọi bài trước khi tạo; null = hợp lệ. */
+function batchProblem(items: BatchItem[]): string | null {
+  for (const [index, item] of items.entries()) {
+    const name = item.title.trim() || `Bài ${index + 1}`;
+    if (!item.title.trim()) return `Bài ${index + 1}: nhập tiêu đề bài.`;
+    const invalid = codeDraftProblem(item.draft);
+    if (invalid) return `${name} – ${invalid}`;
+  }
+  return null;
+}
 
 /** Câu đã chọn vào đề (giữ lại khi chuyển sang ngân hàng khác). */
 interface Picked {
@@ -70,8 +93,8 @@ interface Picked {
 const LEVELS: Difficulty[] = [0, 1, 2];
 
 /**
- * Trang /teacher/create-exam/?course=...&type=...&mode=...: tạo bài thực hành hoặc bài kiểm tra cho một
- * khóa học mình phụ trách, theo một trong ba hình thức:
+ * Trang /teacher/create-exam/?course=...&type=...&mode=...: tạo bài tập, bài thực hành hoặc bài kiểm tra cho
+ * một khóa học mình phụ trách, theo một trong ba hình thức (bài tập không có trắc nghiệm, xem modeAllowed):
  * - trắc nghiệm: chọn câu hỏi (chọn tay hoặc bốc ngẫu nhiên theo mức độ) từ ngân hàng câu hỏi; câu hỏi được
  *   chép sang bài, sửa ngân hàng sau đó không làm đổi bài đã tạo;
  * - tải đề lên: đề PDF (bắt buộc với bài kiểm tra), sinh viên nộp file bài làm, giảng viên chấm tay;
@@ -80,13 +103,16 @@ const LEVELS: Difficulty[] = [0, 1, 2];
 export function ExamBuilder() {
   const router = useRouter();
   const params = useSearchParams();
-  const initialType: 1 | 2 = params.get('type') === '1' ? 1 : 2;
+  const typeParam = params.get('type');
+  const initialType: AssessmentType = typeParam === '0' ? 0 : typeParam === '1' ? 1 : 2;
   const [courses, setCourses] = useState<TeacherCourse[] | null>(null);
   const [banks, setBanks] = useState<QuestionBankSummary[] | null>(null);
   const [loadError, setLoadError] = useState('');
   const [mode, setMode] = useState<ExamMode>(() => {
     const value = params.get('mode');
-    return value === 'file' || value === 'code' ? value : 'quiz';
+    if (value === 'file' || value === 'code') return value;
+    // Bài tập (tab Bài tập của khóa học) không có trắc nghiệm: mặc định bài lập trình
+    return initialType === 0 ? 'code' : 'quiz';
   });
   const [code, setCode] = useState<CodeDraft>(emptyCode);
   const [paper, setPaper] = useState<File | null>(null);
@@ -102,6 +128,8 @@ export function ExamBuilder() {
     shuffle: true,
     reveal: (initialType === 1 ? 1 : 2) as RevealMode,
     scoreRelease: 0 as ScoreRelease,
+    /** Chỉ bài tập mới hỏi; bài thực hành và bài kiểm tra luôn thông báo (như form trong khóa học). */
+    notify: false,
   });
   const [bankId, setBankId] = useState('');
   const [details, setDetails] = useState<Record<string, QuestionBankDetail>>({});
@@ -116,6 +144,80 @@ export function ExamBuilder() {
   const clearFlash = useCallback(() => setFlash(null), []);
   const deferredSearch = useDeferredValue(search);
   const set = (patch: Partial<typeof form>) => setForm({ ...form, ...patch });
+  const typeLabel = EXAM_TYPES.find((item) => item.value === form.type)!.label.toLowerCase();
+  const notifyStudents = form.type === 0 ? form.notify : true;
+  /**
+   * Nhập nhanh ra nhiều bài lập trình (thư mục chứa nhiều thư mục bài): tạo cùng lúc, mỗi bài một tiêu đề,
+   * dùng chung khóa học, loại bài, giờ mở/đóng, cách xem kết quả và thông báo; null = tạo một bài như thường.
+   */
+  const [batch, setBatch] = useState<BatchItem[] | null>(null);
+  const [batchOpen, setBatchOpen] = useState<string | null>(null);
+  /** Lưu ý khi đọc thư mục nhiều bài (thiếu đề, test lỗi...), hiện ở đầu phần Các bài. */
+  const [batchWarnings, setBatchWarnings] = useState<string[]>([]);
+  const batchMode = mode === 'code' && !!batch;
+
+  function importMany(result: ImportResult) {
+    setBatchWarnings(result.warnings);
+    setBatch(
+      result.assessments.map((item, index) => ({
+        key: `batch-${Date.now()}-${index}`,
+        title: (item.title ?? `Bài ${index + 1}`).slice(0, 200),
+        draft: { languages: code.languages, problems: item.problems },
+      })),
+    );
+    setBatchOpen(null);
+    setError('');
+  }
+
+  const updateBatch = (key: string, patch: Partial<BatchItem>) =>
+    setBatch((current) =>
+      current ? current.map((item) => (item.key === key ? { ...item, ...patch } : item)) : current,
+    );
+
+  /** Còn một bài thì quay về tạo một bài như thường, giữ tiêu đề và các câu của bài đó. */
+  function removeBatch(key: string) {
+    const rest = (batch ?? []).filter((item) => item.key !== key);
+    if (rest.length > 1) {
+      setBatch(rest);
+      return;
+    }
+    setBatch(null);
+    if (rest.length === 1) {
+      setCode(rest[0].draft);
+      setForm((current) => ({ ...current, title: rest[0].title }));
+    }
+  }
+
+  /** Tạo lần lượt từng bài; lỗi giữa chừng thì bỏ các bài đã tạo khỏi danh sách để sửa rồi tạo tiếp. */
+  async function createBatch(items: BatchItem[], common: Record<string, unknown>) {
+    const course = encodeURIComponent(form.courseId);
+    const done = new Set<string>();
+    for (const item of items) {
+      try {
+        const request = codeRequest(item.draft);
+        await apiRequest(`/teacher/courses/${course}/code-assessments`, {
+          method: 'POST',
+          body: codeBody(
+            { ...common, title: item.title.trim(), notifyStudents, code: request.code },
+            request.files,
+          ),
+        });
+        done.add(item.key);
+      } catch (reason) {
+        setBatch(items.filter((other) => !done.has(other.key)));
+        setError(
+          `Đã tạo ${done.size}/${items.length} bài. "${item.title.trim()}" chưa tạo được: ${
+            reason instanceof Error ? reason.message : 'lỗi không xác định'
+          } Sửa rồi bấm tạo tiếp các bài còn lại.`,
+        );
+        setBusy(false);
+        return;
+      }
+    }
+    router.push(
+      `${TEACHER_PATH}/course/?id=${encodeURIComponent(form.courseId)}&tab=${ASSESSMENT_TAB_PARAM[form.type]}`,
+    );
+  }
 
   useEffect(() => {
     const controller = new AbortController();
@@ -142,6 +244,27 @@ export function ExamBuilder() {
       });
     return () => controller.abort();
   }, []);
+
+  // Từ trang Kho bài lập trình (?library=id1,id2): các câu đã chọn thành câu của bài, bộ test chép từ kho
+  const libraryParam = params.get('library');
+  useEffect(() => {
+    const ids = (libraryParam ?? '').split(',').filter(Boolean);
+    if (!ids.length) return;
+    const controller = new AbortController();
+    Promise.all(
+      ids.map((id) =>
+        apiRequest<LibraryDetail>(`${LIBRARY_PATH}/${encodeURIComponent(id)}`, {
+          signal: controller.signal,
+        }),
+      ),
+    )
+      .then((list) => setCode((current) => ({ ...current, problems: list.map(sourcedDraft) })))
+      .catch((reason) => {
+        if (!controller.signal.aborted)
+          setError(reason instanceof Error ? reason.message : 'Không tải được câu từ kho.');
+      });
+    return () => controller.abort();
+  }, [libraryParam]);
 
   const course = courses?.find((item) => item.id === form.courseId) ?? null;
   // Ngân hàng cùng môn (mã học phần) với khóa học lên trước
@@ -255,7 +378,8 @@ export function ExamBuilder() {
       mode,
       type: form.type,
       courseId: form.courseId,
-      title: form.title,
+      // Nhiều bài: tiêu đề từng bài kiểm tra riêng bên dưới
+      title: batchMode ? 'batch' : form.title,
       opensAt,
       closesAt,
       timeLimit: form.timeLimit,
@@ -263,7 +387,9 @@ export function ExamBuilder() {
       hasPaper: !!paper,
       scoreRelease: form.scoreRelease,
     });
-    const invalid = problem ?? (mode === 'code' ? codeDraftProblem(code) : null);
+    const invalid =
+      problem ??
+      (batchMode ? batchProblem(batch!) : mode === 'code' ? codeDraftProblem(code) : null);
     if (invalid) {
       setError(invalid);
       return;
@@ -279,6 +405,10 @@ export function ExamBuilder() {
       closesAt,
       scoreRelease: form.scoreRelease,
     };
+    if (batchMode) {
+      await createBatch(batch!, common);
+      return;
+    }
     try {
       if (mode === 'quiz') {
         await apiRequest(`/teacher/courses/${course}/quizzes`, {
@@ -296,12 +426,12 @@ export function ExamBuilder() {
         const request = codeRequest(code);
         await apiRequest(`/teacher/courses/${course}/code-assessments`, {
           method: 'POST',
-          body: codeBody({ ...common, notifyStudents: true, code: request.code }, request.files),
+          body: codeBody({ ...common, notifyStudents, code: request.code }, request.files),
         });
       } else {
         // Như form tạo bài trong khóa học: đề gửi cùng request, chỉ thuộc bài này (không vào tài liệu);
         // bài thực hành, bài kiểm tra luôn được thông báo cho sinh viên
-        const data = { ...common, notifyStudents: true };
+        const data = { ...common, notifyStudents };
         let body: unknown = data;
         if (paper) {
           const multipart = new FormData();
@@ -344,7 +474,7 @@ export function ExamBuilder() {
     <main id="main-content" className="shell-main">
       <AdminHeading
         title="Tạo bài thi"
-        description="Bài thực hành hoặc bài kiểm tra cho khóa học bạn phụ trách: trắc nghiệm lấy câu hỏi từ ngân hàng (server chấm điểm ngay khi nộp), tải đề PDF lên để sinh viên nộp file bài làm, hoặc bài lập trình chấm tự động bằng bộ test."
+        description="Bài tập, bài thực hành hoặc bài kiểm tra cho khóa học bạn phụ trách: trắc nghiệm lấy câu hỏi từ ngân hàng (server chấm điểm ngay khi nộp), tải đề PDF lên để sinh viên nộp file bài làm, hoặc bài lập trình chấm tự động bằng bộ test."
       />
       {!courses.length && (
         <div className="notice" role="status">
@@ -385,12 +515,14 @@ export function ExamBuilder() {
                   className="select"
                   value={form.type}
                   onChange={(event) => {
-                    const type = Number(event.target.value) as 1 | 2;
+                    const type = Number(event.target.value) as AssessmentType;
                     // Bài thực hành thường cho xem đáp án ngay; bài kiểm tra đợi hết giờ
                     set({ type, reveal: type === 1 ? 1 : 2 });
+                    // Bài tập không có trắc nghiệm: chuyển sang bài lập trình
+                    if (!modeAllowed(mode, type)) setMode('code');
                   }}
                 >
-                  {QUIZ_TYPES.map((item) => (
+                  {EXAM_TYPES.map((item) => (
                     <option key={item.value} value={item.value}>
                       {item.label}
                     </option>
@@ -407,6 +539,12 @@ export function ExamBuilder() {
                     type="button"
                     className={mode === item.value ? 'selected' : ''}
                     aria-pressed={mode === item.value}
+                    disabled={!modeAllowed(item.value, form.type)}
+                    title={
+                      modeAllowed(item.value, form.type)
+                        ? undefined
+                        : 'Trắc nghiệm chỉ dùng cho bài thực hành và bài kiểm tra'
+                    }
                     onClick={() => {
                       setMode(item.value);
                       setError('');
@@ -417,17 +555,30 @@ export function ExamBuilder() {
                 ))}
               </div>
             </div>
-            <label className="form-field">
-              Tiêu đề
-              <input
-                className="input"
-                value={form.title}
-                onChange={(event) => set({ title: event.target.value })}
-                maxLength={200}
-                placeholder={form.type === 1 ? 'vd. Thực hành tuần 3' : 'vd. Kiểm tra giữa kỳ'}
-                required
-              />
-            </label>
+            {batchMode ? (
+              <p className="notice" role="status">
+                Đang tạo {batch!.length} bài cùng lúc: tiêu đề đặt riêng cho từng bài ở phần Các bài
+                bên dưới; các thông tin khác ở đây dùng chung cho mọi bài.
+              </p>
+            ) : (
+              <label className="form-field">
+                Tiêu đề
+                <input
+                  className="input"
+                  value={form.title}
+                  onChange={(event) => set({ title: event.target.value })}
+                  maxLength={200}
+                  placeholder={
+                    form.type === 0
+                      ? 'vd. Bài tập tuần 3'
+                      : form.type === 1
+                        ? 'vd. Thực hành tuần 3'
+                        : 'vd. Kiểm tra giữa kỳ'
+                  }
+                  required
+                />
+              </label>
+            )}
             <label className="form-field">
               <span>
                 Mô tả <span className="optional">(không bắt buộc)</span>
@@ -575,13 +726,15 @@ export function ExamBuilder() {
                       {form.type === 2 ? '(PDF, bắt buộc)' : '(PDF, không bắt buộc)'}
                     </span>
                   </span>
-                  <input
-                    ref={paperInput}
-                    className="input file-input"
-                    type="file"
-                    accept=".pdf,application/pdf"
-                    onChange={(event) => pickPaper(event.target.files?.[0] ?? null)}
-                  />
+                  <DropZone className="drop-box" hint="Hoặc kéo thả file PDF vào đây">
+                    <input
+                      ref={paperInput}
+                      className="input file-input"
+                      type="file"
+                      accept=".pdf,application/pdf"
+                      onChange={(event) => pickPaper(event.target.files?.[0] ?? null)}
+                    />
+                  </DropZone>
                 </label>
                 <p className="admin-hint">
                   Để trống giờ mở là mở ngay; để trống giờ đóng là không giới hạn. Đề chỉ hiện với
@@ -590,20 +743,145 @@ export function ExamBuilder() {
                 </p>
               </>
             )}
+            {form.type === 0 && (
+              <label className="check-field">
+                <input
+                  type="checkbox"
+                  checked={form.notify}
+                  onChange={(event) => set({ notify: event.target.checked })}
+                />
+                Gửi thông báo cho sinh viên
+              </label>
+            )}
           </section>
 
-          {mode === 'code' && (
+          {batchMode ? (
             <section className="panel">
               <div className="panel-title">
                 <h2>
                   <i className="title-icon violet">
-                    <Icon name="file" size={12} />
+                    <Icon name="layers" size={12} />
                   </i>
-                  Các câu
+                  Các bài ({batch!.length})
                 </h2>
+                <button
+                  type="button"
+                  className="link-button"
+                  disabled={busy}
+                  onClick={() => setBatch(null)}
+                >
+                  Bỏ, tạo một bài
+                </button>
               </div>
-              <CodeFields draft={code} onChange={setCode} courseId={form.courseId} />
+              <p className="admin-hint">
+                Mở từng bài để sửa tiêu đề, xem lại đề và bộ test của các câu.
+              </p>
+              {batchWarnings.length > 0 && (
+                <div className="code-import-report warn" role="status">
+                  <p>Lưu ý khi đọc thư mục:</p>
+                  <ul>
+                    {batchWarnings.slice(0, 20).map((warning) => (
+                      <li key={warning}>{warning}</li>
+                    ))}
+                    {batchWarnings.length > 20 && (
+                      <li>… và {batchWarnings.length - 20} lưu ý khác</li>
+                    )}
+                  </ul>
+                </div>
+              )}
+              <ol className="code-problem-list">
+                {batch!.map((item, index) => {
+                  const expanded = batchOpen === item.key;
+                  const invalid = !item.title.trim() || !!codeDraftProblem(item.draft);
+                  return (
+                    <li key={item.key} className={`code-problem-card${expanded ? ' open' : ''}`}>
+                      <div className="code-problem-head">
+                        <button
+                          type="button"
+                          className="code-test-toggle"
+                          aria-expanded={expanded}
+                          onClick={() => setBatchOpen(expanded ? null : item.key)}
+                        >
+                          <Icon name={expanded ? 'down' : 'chevron'} size={10} />
+                          <b>
+                            Bài {index + 1}
+                            {item.title.trim() ? ` – ${item.title.trim()}` : ''}
+                          </b>
+                          <small>
+                            {item.draft.problems.length} câu ·{' '}
+                            {item.draft.problems.reduce(
+                              (sum, problem) => sum + testCount(problem),
+                              0,
+                            )}{' '}
+                            test
+                          </small>
+                          {invalid && !expanded && <span className="badge warn">Chưa xong</span>}
+                        </button>
+                        <span className="file-actions">
+                          <button
+                            type="button"
+                            className="icon-button row-action danger"
+                            aria-label={`Bỏ bài ${index + 1}`}
+                            title="Bỏ bài này khỏi danh sách"
+                            disabled={busy}
+                            onClick={() => removeBatch(item.key)}
+                          >
+                            <Icon name="trash" size={12} />
+                          </button>
+                        </span>
+                      </div>
+                      {expanded && (
+                        <div className="code-problem-body">
+                          <label className="form-field">
+                            Tiêu đề bài
+                            <input
+                              className="input"
+                              value={item.title}
+                              onChange={(event) =>
+                                updateBatch(item.key, { title: event.target.value })
+                              }
+                              maxLength={200}
+                            />
+                          </label>
+                          <CodeFields
+                            draft={item.draft}
+                            onChange={(draft) => updateBatch(item.key, { draft })}
+                            courseId={form.courseId}
+                            subjectCode={course?.code}
+                            disabled={busy}
+                          />
+                        </div>
+                      )}
+                    </li>
+                  );
+                })}
+              </ol>
             </section>
+          ) : (
+            mode === 'code' && (
+              <section className="panel">
+                <div className="panel-title">
+                  <h2>
+                    <i className="title-icon violet">
+                      <Icon name="file" size={12} />
+                    </i>
+                    Các câu
+                  </h2>
+                </div>
+                <CodeFields
+                  draft={code}
+                  onChange={setCode}
+                  courseId={form.courseId}
+                  subjectCode={course?.code}
+                  onImportMany={importMany}
+                  onImportTitle={(title) =>
+                    setForm((current) =>
+                      current.title.trim() ? current : { ...current, title: title.slice(0, 200) },
+                    )
+                  }
+                />
+              </section>
+            )
           )}
           {mode === 'quiz' && (
             <section className="panel">
@@ -862,9 +1140,7 @@ export function ExamBuilder() {
               className="button primary full-width"
               disabled={busy || !courses.length || !selected.length}
             >
-              {busy
-                ? 'Đang tạo…'
-                : `Tạo ${QUIZ_TYPES.find((item) => item.value === form.type)!.label.toLowerCase()}`}
+              {busy ? 'Đang tạo…' : `Tạo ${typeLabel}`}
             </button>
           </aside>
         ) : mode === 'code' ? (
@@ -877,15 +1153,53 @@ export function ExamBuilder() {
                 Bài lập trình
               </h2>
             </div>
-            <ul className="quiz-facts code-facts">
-              <li>
-                <b>{code.problems.length}</b> câu
-              </li>
-              <li>
-                <b>{code.problems.reduce((sum, problem) => sum + testCount(problem), 0)}</b> test
-              </li>
-            </ul>
-            {code.problems.length > 0 && (
+            {batchMode ? (
+              <>
+                <ul className="quiz-facts code-facts">
+                  <li>
+                    <b>{batch!.length}</b> bài
+                  </li>
+                  <li>
+                    <b>{batch!.reduce((sum, item) => sum + item.draft.problems.length, 0)}</b> câu
+                  </li>
+                  <li>
+                    <b>
+                      {batch!.reduce(
+                        (sum, item) =>
+                          sum +
+                          item.draft.problems.reduce(
+                            (total, problem) => total + testCount(problem),
+                            0,
+                          ),
+                        0,
+                      )}
+                    </b>{' '}
+                    test
+                  </li>
+                </ul>
+                <ol className="exam-picked" aria-label="Các bài">
+                  {batch!.map((item, index) => (
+                    <li key={item.key}>
+                      <span className="exam-picked-number">{index + 1}</span>
+                      <span className="exam-picked-text">
+                        {item.title.trim() || '(chưa có tiêu đề)'} · {item.draft.problems.length}{' '}
+                        câu
+                      </span>
+                    </li>
+                  ))}
+                </ol>
+              </>
+            ) : (
+              <ul className="quiz-facts code-facts">
+                <li>
+                  <b>{code.problems.length}</b> câu
+                </li>
+                <li>
+                  <b>{code.problems.reduce((sum, problem) => sum + testCount(problem), 0)}</b> test
+                </li>
+              </ul>
+            )}
+            {!batchMode && code.problems.length > 0 && (
               <ol className="exam-picked" aria-label="Các câu">
                 {code.problems.map((problem, index) => (
                   <li key={problem.key}>
@@ -910,7 +1224,9 @@ export function ExamBuilder() {
             <button className="button primary full-width" disabled={busy || !courses.length}>
               {busy
                 ? 'Đang tạo…'
-                : `Tạo ${QUIZ_TYPES.find((item) => item.value === form.type)!.label.toLowerCase()}`}
+                : batchMode
+                  ? `Tạo ${batch!.length} ${typeLabel}`
+                  : `Tạo ${typeLabel}`}
             </button>
           </aside>
         ) : (
@@ -946,9 +1262,7 @@ export function ExamBuilder() {
               </p>
             )}
             <button className="button primary full-width" disabled={busy || !courses.length}>
-              {busy
-                ? 'Đang tạo…'
-                : `Tạo ${QUIZ_TYPES.find((item) => item.value === form.type)!.label.toLowerCase()}`}
+              {busy ? 'Đang tạo…' : `Tạo ${typeLabel}`}
             </button>
           </aside>
         )}

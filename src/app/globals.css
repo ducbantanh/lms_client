@@ -992,6 +992,79 @@ a.list-row:hover {
 .info-list dd {
   font-weight: 600;
   text-align: right;
+  overflow-wrap: anywhere;
+}
+.info-list dd.mono {
+  font-family: var(--mono);
+}
+
+/* Hồ sơ cá nhân: thẻ đầu trang rồi hai khung thông tin */
+.profile-hero {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+.avatar.profile-avatar {
+  flex-shrink: 0;
+  width: 72px;
+  height: 72px;
+  font-size: 26px;
+}
+.profile-hero-text {
+  min-width: 0;
+}
+.profile-hero-text h2 {
+  font-size: 22px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.profile-hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  margin-top: 6px;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+.profile-hero-meta .badge {
+  margin-right: 0;
+}
+.profile-hero-meta .mono {
+  font-family: var(--mono);
+}
+.profile-link {
+  color: var(--accent);
+}
+.profile-link:hover {
+  color: var(--accent-hover);
+  text-decoration: underline;
+}
+.profile-bio {
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  font-size: 14px;
+}
+.profile-bio b {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+.profile-bio p {
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 720px) {
+  .profile-hero {
+    gap: 14px;
+  }
+  .avatar.profile-avatar {
+    width: 56px;
+    height: 56px;
+    font-size: 20px;
+  }
 }
 
 /* Dashboard */
@@ -1911,6 +1984,43 @@ a.list-row:hover {
 .notif-list.compact a {
   padding: 10px 14px;
 }
+/* Khung thông báo chưa đọc ở đầu trang khu học tập (components/layout/unread-banner.tsx) */
+.unread-banner {
+  margin-bottom: 20px;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+}
+.unread-banner-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 10px 10px 14px;
+}
+.unread-banner-head h2 {
+  flex: 1;
+  min-width: 0;
+  font-size: 15px;
+}
+.unread-banner .notif-list {
+  border-top: 1px solid var(--border);
+}
+.unread-banner-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 16px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.unread-banner-foot > span {
+  margin-right: auto;
+}
 .notif-text {
   display: flex;
   flex: 1;
@@ -2612,6 +2722,47 @@ a.list-row:hover {
 .file-input {
   padding: 6px 8px;
 }
+/* Kéo thả file (components/ui/drop-zone.tsx): viền nổi bật kèm chữ khi đang kéo file vào vùng */
+.drop-zone {
+  position: relative;
+}
+.drop-zone.is-over::after {
+  content: attr(data-label);
+  position: absolute;
+  inset: -6px;
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  border: 2px dashed var(--accent);
+  border-radius: var(--radius);
+  background: rgb(252 239 232 / 0.92);
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 600;
+  pointer-events: none;
+}
+/* Ô chọn file hiện sẵn: khung viền đứt để thấy là kéo thả được */
+.drop-box {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface-muted);
+  font-weight: 400;
+}
+.drop-box .file-input {
+  background: var(--surface);
+}
+.drop-box.is-over::after {
+  inset: -2px;
+  border-radius: var(--radius-sm);
+}
+.drop-hint {
+  font-size: 13px;
+  color: var(--text-subtle);
+}
 .check-field {
   display: flex;
   align-items: flex-start;
@@ -3291,8 +3442,31 @@ a.list-row:hover {
 }
 
 /* ---------- Ngân hàng câu hỏi (giảng viên) ---------- */
-.bank-link:hover b {
-  color: var(--accent);
+/* Trang danh sách ngân hàng: mỗi môn một nhóm thẻ, cùng kiểu thẻ với trang Khóa học */
+.bank-group-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.bank-group-head h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  font-size: 16px;
+}
+.bank-group-head .count {
+  padding: 0 7px;
+  border-radius: 999px;
+  background: #eceef1;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.course-options .dropdown-panel > button.danger {
+  color: var(--danger);
 }
 /* Dòng chọn tất cả + thao tác với các câu đã chọn, ngay trên danh sách câu hỏi */
 .selection-bar {
@@ -4312,8 +4486,177 @@ a.list-row:hover {
 }
 
 /* Soạn bài nhiều câu (giảng viên) */
-.code-fields > .button {
+.code-fields > .button,
+.code-fields-actions {
   margin-top: 12px;
+}
+/* Câu lấy từ kho bài lập trình: bộ test chỉ đọc */
+.code-source-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-muted);
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.code-source-note .icon {
+  margin-top: 3px;
+  color: var(--accent);
+}
+
+/* Kho bài lập trình (/teacher/code-problems/) */
+.library-import {
+  margin-bottom: 20px;
+}
+.library-import .code-import {
+  margin-bottom: 0;
+}
+.library-staged {
+  margin-top: 16px;
+}
+.library-staged-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 360px;
+  margin: 0 0 12px;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+.library-staged-list li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.library-staged-item {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  text-align: left;
+}
+.library-staged-item:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-muted);
+}
+.library-staged-item b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+.library-staged-item small {
+  color: var(--text-subtle);
+}
+.library-staged-item .badge {
+  margin: 0 0 0 auto;
+}
+.library-staged-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+}
+.library-staged-actions .form-field {
+  flex: 1;
+  min-width: 220px;
+  margin-bottom: 0;
+}
+.library-table tr.selected td {
+  background: var(--accent-soft);
+}
+.library-table td:first-child {
+  width: 28px;
+}
+.library-table .table-link {
+  text-align: left;
+}
+.library-pick-list {
+  max-height: 420px;
+  margin: 0 0 12px;
+  padding: 0;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  list-style: none;
+}
+.library-pick-list li + li {
+  border-top: 1px solid var(--border);
+}
+.library-pick-list label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+.library-pick-list label:hover,
+.library-pick-list label.selected {
+  background: var(--surface-muted);
+}
+.library-pick-list input {
+  margin-top: 3px;
+}
+.library-pick-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  font-size: 14px;
+}
+.library-pick-text small {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.dialog-note {
+  margin-right: auto;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+/* Nhập nhanh bài lập trình từ thư mục / ZIP (components/code-import.tsx) */
+.code-import {
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface-muted);
+}
+.code-import-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.code-import-head b {
+  font-size: 14px;
+}
+.code-import-head .admin-hint {
+  margin: 2px 0 0;
+}
+.code-import > .admin-hint,
+.code-import > .form-error {
+  margin: 10px 0 0;
+}
+.code-import-report {
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--success);
+}
+.code-import-report.warn {
+  margin: 0 0 12px;
+  color: var(--warning);
+}
+.code-import-report ul {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  color: var(--warning);
 }
 .code-problem-list {
   display: flex;

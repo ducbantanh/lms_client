@@ -18,6 +18,7 @@ import { ViewToggle } from '@/components/ui/view-toggle';
 import { useSession } from '@/providers/session-provider';
 import { useViewMode } from '@/hooks/use-view-mode';
 import { Modal } from '@/components/ui/modal';
+import { DropZone } from '@/components/ui/drop-zone';
 import { Icon } from '@/components/ui/icon';
 import { errorFlash, type TabProps } from './course-manager';
 
@@ -727,7 +728,7 @@ function LessonDialog({
             </select>
           </label>
         </div>
-        <div className="form-field">
+        <DropZone className="form-field" label="Thả file .txt để lấy nội dung">
           <div className="field-head">
             <label htmlFor="lesson-body">
               Nội dung <span className="optional">(văn bản thuần, link http sẽ bấm được)</span>
@@ -756,9 +757,10 @@ function LessonDialog({
             value={body}
             onChange={(event) => setBody(event.target.value)}
             maxLength={MAX_LESSON_BODY}
+            placeholder="Nhập nội dung, hoặc kéo thả file .txt vào đây"
           />
-        </div>
-        <div className="form-field">
+        </DropZone>
+        <DropZone className="form-field" label="Thả file để đính kèm">
           <div className="field-head">
             <span>
               Tài liệu đính kèm{' '}
@@ -813,9 +815,9 @@ function LessonDialog({
               ))}
             </ul>
           ) : (
-            <p className="admin-hint">Chưa có file đính kèm.</p>
+            <p className="admin-hint">Chưa có file đính kèm. Chọn file hoặc kéo thả vào đây.</p>
           )}
-        </div>
+        </DropZone>
         <label className="check-field">
           <input
             type="checkbox"
@@ -915,16 +917,18 @@ function UploadPanel({ content, base, reload, notify }: TabProps) {
         )}
         <label className="form-field">
           File (PDF, DOCX, PPTX · tối đa 20 MB)
-          <input
-            ref={inputRef}
-            className="input file-input"
-            type="file"
-            accept=".pdf,.docx,.pptx"
-            onChange={(event) => {
-              setFile(event.target.files?.[0] ?? null);
-              setError('');
-            }}
-          />
+          <DropZone className="drop-box" hint="Hoặc kéo thả file vào đây">
+            <input
+              ref={inputRef}
+              className="input file-input"
+              type="file"
+              accept=".pdf,.docx,.pptx"
+              onChange={(event) => {
+                setFile(event.target.files?.[0] ?? null);
+                setError('');
+              }}
+            />
+          </DropZone>
         </label>
         {format !== 2 && (
           <label className="form-field">

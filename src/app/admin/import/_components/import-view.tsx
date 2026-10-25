@@ -10,6 +10,7 @@ import {
   type ConfirmRequest,
   type Flash,
 } from '@/components/admin-ui';
+import { DropZone } from '@/components/ui/drop-zone';
 import { Icon, type IconName } from '@/components/ui/icon';
 
 /** Khớp giới hạn app.student-import.max-bytes của server (256 KB). */
@@ -171,7 +172,7 @@ export function ImportView() {
       <FlashMessage flash={flash} onDone={clearFlash} />
       <div className="columns even">
         <div className="stack">
-          <section className="panel">
+          <DropZone className="panel" label="Thả file .txt / .csv để mở">
             <div className="panel-title">
               <h2>Danh sách {label.toLowerCase()}</h2>
               <span>{lines} dòng</span>
@@ -181,7 +182,7 @@ export function ImportView() {
               <code>họ tên</code>. File <b>.txt</b> ngăn bằng <code>|</code>; file <b>.csv</b> ngăn
               bằng <code>,</code> hoặc <code>;</code> (dòng tiêu đề tự bỏ qua); dán từ Excel cũng
               được. Ngày sinh dạng <code>ddmmyyyy</code>, <code>dd/mm/yyyy</code> hoặc{' '}
-              <code>yyyy-mm-dd</code>.
+              <code>yyyy-mm-dd</code>. Có thể kéo thả file vào khung này.
             </p>
             <textarea
               className="input admin-textarea"
@@ -220,7 +221,7 @@ export function ImportView() {
                 Tạo tài khoản
               </button>
             </div>
-          </section>
+          </DropZone>
           <SingleAccount key={role} role={role} onSubmit={send} />
         </div>
         <section className="panel">

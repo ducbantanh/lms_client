@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { useSession } from '@/providers/session-provider';
 import { roleName } from '@/lib/auth';
 import { initials } from '@/lib/course-utils';
+import { profileHref } from '@/lib/profile';
 import { Icon } from '@/components/ui/icon';
 import { Modal } from '@/components/ui/modal';
 
@@ -29,6 +30,7 @@ export function AccountMenu({ onHelp }: { onHelp?: () => void }) {
   const { user, logout } = useSession();
   const [message, setMessage] = useState('');
   if (!user) return null;
+  const profile = profileHref(user);
 
   async function handleLogout() {
     try {
@@ -53,6 +55,7 @@ export function AccountMenu({ onHelp }: { onHelp?: () => void }) {
               {user.username} · {roleName(user.role)}
             </small>
           </div>
+          {profile && <Link href={profile}>Hồ sơ cá nhân</Link>}
           <Link href="/change-password/">Đổi mật khẩu</Link>
           {onHelp && <button onClick={onHelp}>Hướng dẫn sử dụng</button>}
           <button onClick={handleLogout}>Đăng xuất</button>

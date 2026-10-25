@@ -55,6 +55,9 @@ const icons = {
   fileZip: 'far fa-file-archive',
   qrcode: 'fas fa-qrcode',
   bank: 'fas fa-database',
+  code: 'fas fa-code',
+  profile: 'far fa-id-card',
+  mail: 'far fa-envelope',
 } as const;
 
 export type IconName = keyof typeof icons;

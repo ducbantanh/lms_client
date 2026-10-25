@@ -61,6 +61,14 @@ export const CATEGORY_INFO: Record<
   announcement: { label: 'Giảng viên', icon: 'bell', tone: 'orange' },
 };
 
+/**
+ * Khung "thông báo chưa đọc" ở đầu trang (components/layout/unread-banner.tsx): sinh viên bấm ẩn thì
+ * nhớ theo tài khoản, mỗi lần đăng nhập lại SessionProvider xóa key để khung hiện lại.
+ */
+export function unreadBannerKey(userId: string) {
+  return `lms.ui.unread-banner.${userId}`;
+}
+
 /** Trang mở khi bấm thông báo: bài kiểm tra → trang làm bài; bài khác → tab của loại; còn lại → khóa học. */
 export function notificationHref(notification: AppNotification) {
   const course = notification.course;

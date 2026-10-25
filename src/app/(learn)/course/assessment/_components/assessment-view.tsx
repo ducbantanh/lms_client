@@ -34,6 +34,7 @@ import {
   type ConfirmRequest,
   type Flash,
 } from '@/components/admin-ui';
+import { DropZone } from '@/components/ui/drop-zone';
 import { Icon } from '@/components/ui/icon';
 import { CodePanel } from './code-panel';
 import { QuizPanel } from './quiz-panel';
@@ -403,15 +404,17 @@ function SubmissionPanel({
           <label className="form-field submission-pick">
             Chọn file bài làm (PDF, DOCX, PPTX, ZIP · tối đa 20 MB/file, {MAX_SUBMISSION_FILES}{' '}
             file)
-            <input
-              ref={inputRef}
-              className="input file-input"
-              type="file"
-              accept=".pdf,.docx,.pptx,.zip"
-              multiple
-              disabled={!!busy || room <= 0}
-              onChange={(event) => void upload(event.target.files)}
-            />
+            <DropZone className="drop-box" hint="Hoặc kéo thả file vào đây">
+              <input
+                ref={inputRef}
+                className="input file-input"
+                type="file"
+                accept=".pdf,.docx,.pptx,.zip"
+                multiple
+                disabled={!!busy || room <= 0}
+                onChange={(event) => void upload(event.target.files)}
+              />
+            </DropZone>
           </label>
           <button
             className="button primary full-width"
