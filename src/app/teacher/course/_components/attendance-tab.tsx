@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { apiRequest } from '@/lib/api';
 import { formatDateTime } from '@/lib/admin';
 import { useSession } from '@/providers/session-provider';
@@ -24,6 +25,7 @@ import {
 import { Icon } from '@/components/ui/icon';
 import { Modal } from '@/components/ui/modal';
 import { errorFlash, type TabProps } from './course-manager';
+import { LeavePanel } from './leave-panel';
 
 /**
  * Tab Điểm danh: danh sách buổi, mỗi buổi chiếu mã QR (đổi mỗi 10 giây) cho sinh viên quét
@@ -35,7 +37,9 @@ export function AttendanceTab(props: TabProps) {
   const base = attendanceBase(courseId);
   const { subscribe } = useSession();
   const [overview, setOverview] = useState<AttendanceOverview | null>(null);
-  const [selected, setSelected] = useState<string | null>(null);
+  // ?session=...: mở thẳng một buổi (bấm "Điểm danh" ở trang Lịch dạy)
+  const params = useSearchParams();
+  const [selected, setSelected] = useState<string | null>(() => params.get('session'));
   const [creating, setCreating] = useState(false);
 
   const loadOverview = useCallback(
@@ -72,101 +76,104 @@ export function AttendanceTab(props: TabProps) {
 
   const sessions = overview?.sessions ?? [];
   return (
-    <section className="panel">
-      <div className="toolbar">
-        <p className="table-summary">
-          {overview
-            ? `${sessions.length} buổi · sĩ số ${overview.students} sinh viên`
-            : 'Đang tải…'}
-        </p>
-        <div className="toolbar-right">
-          {sessions.length > 0 && (
-            <a className="button" href={attendanceCsvUrl(courseId)} download>
-              <Icon name="download" size={13} />
-              Xuất bảng điểm danh
-            </a>
-          )}
-          {canTeach && (
-            <button className="button primary" onClick={() => setCreating(true)}>
-              <Icon name="plus" size={12} />
-              Điểm danh buổi mới
-            </button>
-          )}
+    <>
+      <LeavePanel {...props} />
+      <section className="panel">
+        <div className="toolbar">
+          <p className="table-summary">
+            {overview
+              ? `${sessions.length} buổi · sĩ số ${overview.students} sinh viên`
+              : 'Đang tải…'}
+          </p>
+          <div className="toolbar-right">
+            {sessions.length > 0 && (
+              <a className="button" href={attendanceCsvUrl(courseId)} download>
+                <Icon name="download" size={13} />
+                Xuất bảng điểm danh
+              </a>
+            )}
+            {canTeach && (
+              <button className="button primary" onClick={() => setCreating(true)}>
+                <Icon name="plus" size={12} />
+                Điểm danh buổi mới
+              </button>
+            )}
+          </div>
         </div>
-      </div>
-      <div className="table-responsive">
-        <table className="table admin-table attendance-sessions">
-          <thead>
-            <tr>
-              <th>Buổi</th>
-              <th className="numeric">Có mặt</th>
-              <th className="numeric">Đi muộn</th>
-              <th className="numeric hide-sm">Có phép</th>
-              <th className="numeric">Vắng</th>
-              <th />
-            </tr>
-          </thead>
-          <tbody>
-            {!overview ? (
+        <div className="table-responsive">
+          <table className="table admin-table attendance-sessions">
+            <thead>
               <tr>
-                <td colSpan={6} className="empty-cell">
-                  Đang tải…
-                </td>
+                <th>Buổi</th>
+                <th className="numeric">Có mặt</th>
+                <th className="numeric">Đi muộn</th>
+                <th className="numeric hide-sm">Có phép</th>
+                <th className="numeric">Vắng</th>
+                <th />
               </tr>
-            ) : sessions.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="empty-cell">
-                  {canTeach
-                    ? 'Chưa có buổi điểm danh. Bấm "Điểm danh buổi mới" khi bắt đầu buổi học.'
-                    : 'Chưa có buổi điểm danh nào.'}
-                </td>
-              </tr>
-            ) : (
-              sessions.map((session) => (
-                <tr key={session.id}>
-                  <td>
-                    <button className="link-button" onClick={() => setSelected(session.id)}>
-                      {session.title}
-                    </button>
-                    {session.qrOpen && <span className="badge ok qr-badge">Đang mở QR</span>}
-                    <small className="cell-sub">{formatDateTime(session.createdAt)}</small>
-                  </td>
-                  <td className="numeric">{session.present}</td>
-                  <td className="numeric">{session.late}</td>
-                  <td className="numeric hide-sm">{session.excused}</td>
-                  <td className="numeric">
-                    <b className={absentCount(session, overview.students) ? 'text-danger' : ''}>
-                      {absentCount(session, overview.students)}
-                    </b>
-                  </td>
-                  <td className="actions">
-                    <button
-                      className="icon-button row-action"
-                      title="Mở buổi điểm danh"
-                      aria-label={`Mở ${session.title}`}
-                      onClick={() => setSelected(session.id)}
-                    >
-                      <Icon name="chevron" size={10} />
-                    </button>
+            </thead>
+            <tbody>
+              {!overview ? (
+                <tr>
+                  <td colSpan={6} className="empty-cell">
+                    Đang tải…
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-      {creating && (
-        <CreateSessionDialog
-          {...props}
-          nextNumber={sessions.length + 1}
-          onClose={() => setCreating(false)}
-          onCreated={(detail) => {
-            setCreating(false);
-            setSelected(detail.session.id);
-          }}
-        />
-      )}
-    </section>
+              ) : sessions.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="empty-cell">
+                    {canTeach
+                      ? 'Chưa có buổi điểm danh. Bấm "Điểm danh buổi mới" khi bắt đầu buổi học.'
+                      : 'Chưa có buổi điểm danh nào.'}
+                  </td>
+                </tr>
+              ) : (
+                sessions.map((session) => (
+                  <tr key={session.id}>
+                    <td>
+                      <button className="link-button" onClick={() => setSelected(session.id)}>
+                        {session.title}
+                      </button>
+                      {session.qrOpen && <span className="badge ok qr-badge">Đang mở QR</span>}
+                      <small className="cell-sub">{formatDateTime(session.createdAt)}</small>
+                    </td>
+                    <td className="numeric">{session.present}</td>
+                    <td className="numeric">{session.late}</td>
+                    <td className="numeric hide-sm">{session.excused}</td>
+                    <td className="numeric">
+                      <b className={absentCount(session, overview.students) ? 'text-danger' : ''}>
+                        {absentCount(session, overview.students)}
+                      </b>
+                    </td>
+                    <td className="actions">
+                      <button
+                        className="icon-button row-action"
+                        title="Mở buổi điểm danh"
+                        aria-label={`Mở ${session.title}`}
+                        onClick={() => setSelected(session.id)}
+                      >
+                        <Icon name="chevron" size={10} />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+        {creating && (
+          <CreateSessionDialog
+            {...props}
+            nextNumber={sessions.length + 1}
+            onClose={() => setCreating(false)}
+            onCreated={(detail) => {
+              setCreating(false);
+              setSelected(detail.session.id);
+            }}
+          />
+        )}
+      </section>
+    </>
   );
 }
 

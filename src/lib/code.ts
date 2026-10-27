@@ -218,6 +218,26 @@ export interface CodeResults {
   rows: ResultRow[];
 }
 
+/**
+ * Sự kiện realtime code.judged (CodeService.JudgedEvent): một lần chạy/nộp vừa chấm xong. Chỉ báo có kết quả mới,
+ * không kèm kết quả; trang tải lại qua API (API quyết định có được xem kết quả hay không).
+ */
+export interface CodeJudgedEvent {
+  courseId: string | null;
+  assessmentId: string;
+  problemId: string | null;
+  attemptId: string;
+  kind: 'run' | 'submit';
+}
+
+/** Khi WebSocket hoạt động, kết quả về qua code.judged; hỏi lại định kỳ chỉ để dự phòng lúc mất kết nối. */
+export const JUDGE_FALLBACK_POLL_MS = 10_000;
+
+/** GET .../code/results.csv: bảng kết quả dạng CSV (link thường, server trả attachment). */
+export function codeResultsCsvUrl(courseId: string, assessmentId: string) {
+  return `/api/v1/teacher/courses/${encodeURIComponent(courseId)}/assessments/${encodeURIComponent(assessmentId)}/code/results.csv`;
+}
+
 /** GET .../submissions/{studentId}/code: mọi lần chạy/nộp của một sinh viên, mới nhất trước. */
 export interface StudentCode {
   studentId: string;

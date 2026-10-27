@@ -4,10 +4,12 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocalStorage } from '@/hooks/use-local-storage';
+import { useCodeJudged } from '@/hooks/use-code-judged';
 import { useRemaining } from '@/hooks/use-remaining';
 import { ApiError, apiRequest } from '@/lib/api';
 import { formatDateTime } from '@/lib/admin';
 import {
+  JUDGE_FALLBACK_POLL_MS,
   MAX_SOURCE,
   PROBLEM_STATUS,
   STARTER_CODE,
@@ -26,8 +28,6 @@ import { AttemptDetail, AttemptList } from '@/components/code-attempt';
 import { CodeEditor } from '@/components/code-editor';
 import { Icon } from '@/components/ui/icon';
 
-/** Còn lần chạy chờ chấm thì hỏi lại server sau chừng này. */
-const POLL_MS = 1500;
 const FONT_SIZES = [12, 13, 14, 16, 18, 20];
 
 /**
@@ -72,11 +72,15 @@ export function CodePanel({
     return () => controller.abort();
   }, [load]);
 
-  // Còn câu đang chấm thì hỏi lại định kỳ (màu của câu đổi khi chấm xong)
+  // Chấm xong một lần nộp thì server báo qua WebSocket: tải lại để màu của câu đổi ngay
+  useCodeJudged(assessment.id, () => {
+    if (!problemId) void load();
+  });
+  // Dự phòng khi mất kết nối WebSocket: còn câu đang chấm thì thỉnh thoảng hỏi lại
   const pending = !!state?.problems.some((problem) => problem.status === 'pending');
   useEffect(() => {
     if (!pending || problemId) return;
-    const timer = setTimeout(() => void load(), POLL_MS);
+    const timer = setTimeout(() => void load(), JUDGE_FALLBACK_POLL_MS);
     return () => clearTimeout(timer);
   }, [pending, problemId, state, load]);
 
@@ -263,10 +267,15 @@ function ProblemView({
     return () => controller.abort();
   }, [load]);
 
+  // Lần chạy/nộp của câu này chấm xong: server báo qua WebSocket, tải lại ngay
+  useCodeJudged(assessment.id, (event) => {
+    if (event.problemId === summary.id) void load();
+  });
+  // Dự phòng khi mất kết nối WebSocket
   const pending = !!data && hasPending(data.attempts);
   useEffect(() => {
     if (!pending) return;
-    const timer = setTimeout(() => void load(), POLL_MS);
+    const timer = setTimeout(() => void load(), JUDGE_FALLBACK_POLL_MS);
     return () => clearTimeout(timer);
   }, [pending, data, load]);
 

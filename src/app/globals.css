@@ -4762,3 +4762,367 @@ a.list-row:hover {
 .code-problem-view > .lesson-text {
   margin: 10px 0 0;
 }
+
+/* ---------- Lịch học (components/schedule): lưới thứ × tiết trên màn rộng, danh sách theo ngày trên màn hẹp ---------- */
+.week-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.week-label {
+  margin-left: 6px;
+  font-size: 15px;
+}
+.week-schedule .toolbar-right .select {
+  width: auto;
+  max-width: 220px;
+}
+.week-grid {
+  display: grid;
+  grid-template-columns: 64px repeat(7, minmax(108px, 1fr));
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.week-corner,
+.week-day-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  min-height: 52px;
+  padding: 6px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-muted);
+}
+.week-day-head {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  border-left: 1px solid var(--border);
+  font-size: 13px;
+}
+.week-day-head span {
+  color: var(--text-subtle);
+}
+.week-day-head.today {
+  background: var(--accent-soft);
+}
+.week-day-head.today b {
+  color: var(--accent);
+}
+.week-periods {
+  display: grid;
+  grid-template-rows: repeat(var(--rows), var(--row));
+}
+.week-period {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 6px;
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  line-height: 1.3;
+  color: var(--text-subtle);
+}
+.week-period b {
+  color: var(--text-muted);
+}
+.week-column {
+  position: relative;
+  height: calc(var(--rows) * var(--row));
+  border-left: 1px solid var(--border);
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent calc(var(--row) - 1px),
+    var(--border) calc(var(--row) - 1px),
+    var(--border) var(--row)
+  );
+}
+.week-column.today {
+  background-color: rgb(252 239 232 / 0.35);
+}
+.meeting-block {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  margin-top: 2px;
+  padding: 4px 6px;
+  overflow: hidden;
+  border-left: 3px solid var(--cover);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--cover) 12%, var(--surface));
+  font-size: 12px;
+  line-height: 1.3;
+  text-align: left;
+  color: var(--text);
+}
+.meeting-block:not(:disabled):hover {
+  background: color-mix(in srgb, var(--cover) 20%, var(--surface));
+}
+.meeting-block b {
+  color: var(--cover);
+}
+.meeting-block .meeting-title {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.meeting-block .meeting-meta {
+  color: var(--text-muted);
+}
+.meeting-block .badge {
+  margin-top: 2px;
+  font-size: 11px;
+}
+.meeting-block.practice {
+  background-image: repeating-linear-gradient(
+    135deg,
+    transparent 0 8px,
+    color-mix(in srgb, var(--cover) 6%, transparent) 8px 16px
+  );
+}
+.meeting-block.cancelled {
+  opacity: 0.6;
+  border-left-style: dashed;
+}
+.meeting-block.cancelled b,
+.meeting-block.cancelled .meeting-title,
+.struck {
+  text-decoration: line-through;
+}
+.deadline-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  padding: 1px 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.deadline-chip.closes {
+  border-color: color-mix(in srgb, var(--danger) 30%, transparent);
+  color: var(--danger);
+}
+.week-list {
+  display: none;
+}
+.week-list-day + .week-list-day {
+  margin-top: 16px;
+}
+.week-list-day h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+.week-list-day h3.today {
+  color: var(--accent);
+}
+.week-list-day .deadline-chip {
+  margin: 4px 0 0 4px;
+}
+.meeting-row {
+  width: 100%;
+  text-align: left;
+}
+.meeting-swatch {
+  flex-shrink: 0;
+  align-self: stretch;
+  width: 4px;
+  border-radius: 2px;
+  background: var(--cover);
+}
+.week-empty-note {
+  margin-top: 12px;
+  font-size: 13px;
+  text-align: center;
+  color: var(--text-subtle);
+}
+.meeting-facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 8px 16px;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+.meeting-facts dt {
+  color: var(--text-muted);
+}
+.meeting-facts dd {
+  margin: 0;
+}
+.dialog-error {
+  flex-basis: 100%;
+  margin: 0;
+}
+.conflict-list {
+  margin: 6px 0 0 18px;
+  font-size: 13px;
+}
+@media (max-width: 720px) {
+  .week-grid,
+  .week-empty-note {
+    display: none;
+  }
+  .week-list {
+    display: block;
+  }
+  .week-schedule .toolbar-right {
+    flex-wrap: wrap;
+    margin-left: 0;
+  }
+  .week-schedule .toolbar-right .select {
+    max-width: 100%;
+  }
+}
+button.list-row:hover {
+  background: var(--surface-muted);
+}
+.upcoming-day {
+  display: block;
+  padding: 10px 20px 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-subtle);
+}
+.upcoming-day + .list-row {
+  padding-top: 4px;
+}
+.upcoming-panel {
+  margin-bottom: 20px;
+}
+.columns + .upcoming-panel {
+  margin-bottom: 0;
+}
+.modal-panel .admin-textarea {
+  width: 100%;
+  min-height: 200px;
+}
+.admin-import-actions .table-summary {
+  align-self: center;
+}
+.room-import-summary {
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+.room-import-issues {
+  max-height: 320px;
+  overflow-y: auto;
+}
+.schedule-import-notify {
+  margin: 12px 0 0;
+}
+.schedule-import-result {
+  margin-top: 16px;
+}
+
+/* ---------- Đơn xin nghỉ (components/schedule/leave-dialog.tsx, teacher/course/_components/leave-panel.tsx) ---------- */
+.leave-panel {
+  margin-bottom: 20px;
+}
+.leave-panel .panel-title {
+  flex-wrap: wrap;
+  gap: 8px 16px;
+}
+.leave-panel .panel-title h2 .badge {
+  margin-left: 8px;
+  vertical-align: middle;
+}
+.leave-notice {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.leave-notice .input {
+  width: 72px;
+  height: 30px;
+}
+.leave-table .leave-reason {
+  min-width: 220px;
+  max-width: 420px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.leave-table .actions .button + .button {
+  margin-left: 6px;
+}
+.leave-evidence {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  margin-top: 6px;
+  font-size: 12px;
+}
+.leave-evidence a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--accent);
+}
+.leave-quote {
+  margin: 10px 0 14px;
+  padding: 8px 12px;
+  border-left: 3px solid var(--border-strong);
+  background: var(--surface-muted);
+  font-size: 14px;
+  white-space: pre-wrap;
+}
+.leave-info {
+  margin: 4px 0 0;
+  font-size: 14px;
+}
+.leave-info p {
+  margin-top: 4px;
+  color: var(--text-muted);
+}
+.leave-info.muted {
+  color: var(--text-muted);
+}
+.leave-meeting {
+  margin-bottom: 14px;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+.leave-meeting b {
+  color: var(--text);
+}
+.leave-files {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0 0 8px;
+  padding: 0;
+  list-style: none;
+  font-weight: 400;
+}
+.leave-files li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+.leave-files li span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.leave-pick {
+  align-self: flex-start;
+}
