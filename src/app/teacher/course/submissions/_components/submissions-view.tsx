@@ -28,6 +28,14 @@ import {
 import { FlashMessage, type Flash } from '@/components/admin-ui';
 import { Icon } from '@/components/ui/icon';
 import { PdfViewer } from '@/components/pdf-viewer';
+import {
+  GRADER_ACTIONS,
+  GRADER_META,
+  GRADER_NAV,
+  GRADER_POSITION,
+  GRADER_STEPPER,
+  GRADER_STUDENT,
+} from './grader';
 import { StatCard } from '@/components/ui/stat-card';
 import { QuizReviewList } from '@/components/quiz-review';
 import type { StudentReview, TeacherQuiz } from '@/lib/quiz';
@@ -126,7 +134,7 @@ export function SubmissionsView() {
       </Link>
       <div className="page-heading">
         <div>
-          <p className="detail-code">
+          <p className="text-[13px] font-semibold text-ink-subtle">
             <span className="badge muted-solid">{ASSESSMENT_TYPES[assessment.type]}</span>
             <span className={`badge ${status.tone}`}>{status.label}</span>
           </p>
@@ -262,7 +270,7 @@ export function SubmissionsView() {
                                 : '—'}
                           </td>
                           {!auto && <td>{row.files.length ? `${row.files.length} file` : '—'}</td>}
-                          <td className="numeric score-cell">
+                          <td className="numeric font-bold">
                             {row.grade ? formatScore(row.grade.score) : '—'}
                           </td>
                           <td className="actions">
@@ -380,7 +388,7 @@ function Grader({
   }
 
   return (
-    <div className="columns exam-columns">
+    <div className="columns items-start">
       {quiz ? (
         <QuizAnswers url={`${base}/${encodeURIComponent(row.studentId)}/quiz`} />
       ) : (
@@ -399,13 +407,21 @@ function Grader({
             )}
           </div>
           {row.files.length > 1 && (
-            <div className="grader-files" role="tablist" aria-label="File bài làm">
+            <div
+              className="flex gap-1.5 overflow-x-auto border-t border-line px-4 py-2"
+              role="tablist"
+              aria-label="File bài làm"
+            >
               {row.files.map((item, index) => (
                 <button
                   key={item.id}
                   role="tab"
                   aria-selected={index === fileIndex}
-                  className={index === fileIndex ? 'selected' : ''}
+                  className={`flex h-7.5 shrink-0 items-center gap-1.5 rounded-sm border px-2.5 text-[13px] ${
+                    index === fileIndex
+                      ? 'border-primary-600 bg-primary-50 font-semibold text-primary-600'
+                      : 'border-line text-ink-muted hover:bg-surface-muted'
+                  }`}
                   onClick={() => setFileIndex(index)}
                 >
                   <Icon name={fileIcon(item.contentType)} size={12} />
@@ -423,7 +439,7 @@ function Grader({
               title={`Bài làm: ${file.name}`}
             />
           ) : (
-            <div className="grader-download">
+            <div className="flex flex-col items-center gap-2 border-t border-line px-5 py-12 text-center">
               <Icon name={fileIcon(file.contentType)} size={36} className="file-icon" />
               <p>
                 <b>{file.name}</b> · {formatSize(file.size)}
@@ -440,12 +456,12 @@ function Grader({
         </section>
       )}
       <aside className="panel">
-        <div className="grader-nav">
+        <div className={GRADER_NAV}>
           <button className="button small" onClick={onBack}>
             <Icon name="list" size={11} />
             Danh sách
           </button>
-          <span>
+          <span className={GRADER_STEPPER}>
             <button
               className="icon-button"
               title="Sinh viên trước"
@@ -455,7 +471,7 @@ function Grader({
             >
               <Icon name="back" size={12} />
             </button>
-            <small>{position}</small>
+            <small className={GRADER_POSITION}>{position}</small>
             <button
               className="icon-button"
               title="Sinh viên sau"
@@ -467,12 +483,12 @@ function Grader({
             </button>
           </span>
         </div>
-        <h2 className="grader-student">{row.fullName}</h2>
-        <p className="grader-meta">
-          <span className="mono">{row.username}</span>
+        <h2 className={GRADER_STUDENT}>{row.fullName}</h2>
+        <p className={GRADER_META}>
+          <span className="font-mono text-[13px]">{row.username}</span>
           <span className={`badge ${label.tone}`}>{label.label}</span>
         </p>
-        <p className="grader-meta">
+        <p className={GRADER_META}>
           {row.submittedAt
             ? `Nộp lúc ${formatDateTime(row.submittedAt)}`
             : row.status === 'auto_submitted'
@@ -481,7 +497,7 @@ function Grader({
           {row.files.length > 0 && ` · ${row.files.length} file`}
         </p>
         {row.grade && (
-          <p className="admin-hint">
+          <p className="admin-hint mt-3.5">
             {row.grade.gradedBy
               ? `Đã chấm ${formatDateTime(row.grade.gradedAt)} bởi ${row.grade.gradedBy}.`
               : row.grade.autoScore !== null
@@ -493,14 +509,14 @@ function Grader({
           </p>
         )}
         {!canGrade ? (
-          <div className="grade-readonly">
+          <div className="mt-3.5 rounded-sm border border-line bg-surface-muted px-4 py-3.5">
             {row.grade ? (
               <>
-                <b>
+                <b className="text-[26px] font-bold tabular-nums">
                   {formatScore(row.grade.score)}
-                  <small>/{MAX_SCORE}</small>
+                  <small className="text-sm font-semibold text-ink-subtle">/{MAX_SCORE}</small>
                 </b>
-                {row.grade.feedback && <p className="lesson-text">{row.grade.feedback}</p>}
+                {row.grade.feedback && <p className="lesson-text mt-2">{row.grade.feedback}</p>}
               </>
             ) : (
               <p>Chưa chấm.</p>
@@ -508,7 +524,7 @@ function Grader({
             <p className="admin-hint">Chỉ giảng viên phụ trách mới chấm điểm bài này.</p>
           </div>
         ) : gradable ? (
-          <form onSubmit={(event) => submit(event, false)}>
+          <form className="mt-3.5" onSubmit={(event) => submit(event, false)}>
             {error && (
               <p className="form-error" role="alert">
                 {error}
@@ -516,9 +532,9 @@ function Grader({
             )}
             <label className="form-field">
               Điểm (thang {MAX_SCORE})
-              <span className="score-input">
+              <span className="flex items-center gap-2 font-normal text-ink-muted">
                 <input
-                  className="input"
+                  className="input h-10 w-27.5 text-lg font-bold tabular-nums"
                   inputMode="decimal"
                   value={score}
                   onChange={(event) => setScore(event.target.value)}
@@ -540,7 +556,7 @@ function Grader({
                 maxLength={2000}
               />
             </label>
-            <div className="grader-actions">
+            <div className={GRADER_ACTIONS}>
               <button className="button primary" disabled={busy}>
                 {busy ? 'Đang lưu…' : 'Lưu điểm'}
               </button>
@@ -648,8 +664,8 @@ function QuizStats({ courseId, assessmentId }: { courseId: string; assessmentId:
 
   const stats = new Map(data?.stats.map((stat) => [stat.questionId, stat]));
   return (
-    <details className="panel quiz-stats" onToggle={(event) => setOpen(event.currentTarget.open)}>
-      <summary>
+    <details className="panel group mt-5" onToggle={(event) => setOpen(event.currentTarget.open)}>
+      <summary className="flex cursor-pointer items-center gap-2 font-semibold group-open:mb-3">
         <Icon name="list" size={12} />
         Đề và tỷ lệ làm đúng từng câu
       </summary>

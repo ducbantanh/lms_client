@@ -6,6 +6,7 @@ import { CourseCard } from './course-card';
 import { FlashMessage, type Flash } from '@/components/admin-ui';
 import { JoinCourseDialog } from './join-course-dialog';
 import { ViewToggle } from '@/components/ui/view-toggle';
+import { RESULTS_FOOTER, TILE_GRID, TILE_SKELETON } from '@/components/ui/tile';
 import { useCourses } from '@/hooks/use-courses';
 import { useCoursePreferences } from '@/hooks/use-course-preferences';
 import { useSession } from '@/providers/session-provider';
@@ -155,9 +156,9 @@ export function CourseOverview() {
         {announcement}
       </p>
       {loading ? (
-        <div className="course-grid" aria-label="Đang tải khóa học" aria-busy="true">
+        <div className={TILE_GRID} aria-label="Đang tải khóa học" aria-busy="true">
           {Array.from({ length: 4 }, (_, index) => (
-            <div className="course-skeleton" key={index} />
+            <div className={TILE_SKELETON} key={index} />
           ))}
         </div>
       ) : error ? (
@@ -193,10 +194,7 @@ export function CourseOverview() {
           )}
         </div>
       ) : (
-        <div
-          className={`course-grid ${preferences.view === 'list' ? 'is-list' : ''}`}
-          aria-label="Danh sách khóa học"
-        >
+        <div className={TILE_GRID} data-view={preferences.view} aria-label="Danh sách khóa học">
           {shownCourses.map((course) => (
             <CourseCard
               key={course.id}
@@ -217,13 +215,13 @@ export function CourseOverview() {
       )}
 
       {!loading && !error && (
-        <div className="results-footer">
-          <span aria-live="polite">
+        <div className={RESULTS_FOOTER}>
+          <span className="min-w-30" aria-live="polite">
             {Math.min(visibleCount, filteredCourses.length)} / {filteredCourses.length} khóa học
           </span>
           {visibleCount < filteredCourses.length && (
             <button
-              className="button"
+              className="button max-md:order-3 max-md:w-full"
               onClick={() => setVisibleCount((count) => count + PAGE_SIZE)}
             >
               Xem thêm
@@ -231,7 +229,7 @@ export function CourseOverview() {
           )}
           {(hiddenCount > 0 || filter === 'hidden') && (
             <button
-              className={`link-button ${filter === 'hidden' ? 'selected' : ''}`}
+              className={`link-button min-w-30 text-right ${filter === 'hidden' ? 'selected' : ''}`}
               onClick={() => {
                 setFilter(filter === 'hidden' ? 'all' : 'hidden');
                 resetPage();

@@ -109,6 +109,9 @@ const LEVELS: Difficulty[] = [0, 1, 2];
  * - tải đề lên: đề PDF (bắt buộc với bài kiểm tra), sinh viên nộp file bài làm, giảng viên chấm tay;
  * - lập trình: đề và bộ test, sinh viên nộp mã nguồn, máy chấm chạy test và cho điểm.
  */
+/** Cột phải (đề đang soạn) bám theo khi cuộn danh sách câu hỏi; trừ chiều cao thanh trên. */
+const EXAM_SUMMARY = 'panel sticky top-18 max-lg:static';
+
 export function ExamBuilder() {
   const router = useRouter();
   const params = useSearchParams();
@@ -531,7 +534,7 @@ export function ExamBuilder() {
           Bạn chưa được phân công khóa học nào nên chưa tạo được bài thi.
         </div>
       )}
-      <form className="columns exam-builder" onSubmit={submit}>
+      <form className="columns" onSubmit={submit}>
         <div className="stack">
           <section className="panel">
             <div className="panel-title">
@@ -1020,12 +1023,16 @@ export function ExamBuilder() {
                       </select>
                     </label>
                   </div>
-                  <div className="random-picker" role="group" aria-label="Bốc câu ngẫu nhiên">
+                  <div
+                    className="mb-3 flex flex-wrap items-center gap-x-3.5 gap-y-2 rounded-sm border border-dashed border-line-strong bg-surface-muted px-3 py-2.5 text-sm text-ink-muted"
+                    role="group"
+                    aria-label="Bốc câu ngẫu nhiên"
+                  >
                     <span>Bốc ngẫu nhiên:</span>
                     {LEVELS.map((level) => (
-                      <label key={level}>
+                      <label key={level} className="inline-flex items-center gap-1.5">
                         <input
-                          className="input"
+                          className="input h-8 w-16"
                           type="number"
                           min={0}
                           max={MAX_QUIZ_QUESTIONS}
@@ -1049,7 +1056,7 @@ export function ExamBuilder() {
                     </button>
                   </div>
                   <FlashMessage flash={flash} onDone={clearFlash} />
-                  <label className="search-field full-width">
+                  <label className="search-field mb-3 max-w-none">
                     <Icon name="search" size={14} />
                     <span className="sr-only">Tìm câu hỏi</span>
                     <input
@@ -1089,14 +1096,22 @@ export function ExamBuilder() {
                           Chọn cả {shown.length} câu đang hiện
                         </label>
                       </div>
-                      <ul className="bank-questions" aria-label="Câu hỏi trong ngân hàng">
+                      <ul
+                        className="m-0 max-h-130 list-none divide-y divide-line overflow-y-auto rounded-sm border border-line p-0"
+                        aria-label="Câu hỏi trong ngân hàng"
+                      >
                         {shown.map((question) => {
                           const level = DIFFICULTIES[question.difficulty];
                           const checked = selectedIds.has(question.id);
                           return (
                             <li key={question.id}>
-                              <label className={checked ? 'is-picked' : undefined}>
+                              <label
+                                className={`flex cursor-pointer items-start gap-2.5 px-3 py-2.5 text-sm ${
+                                  checked ? 'bg-primary-50' : 'hover:bg-surface-muted'
+                                }`}
+                              >
                                 <input
+                                  className="mt-[3px] accent-primary-600"
                                   type="checkbox"
                                   checked={checked}
                                   onChange={(event) =>
@@ -1105,10 +1120,14 @@ export function ExamBuilder() {
                                       : remove(new Set([question.id]))
                                   }
                                 />
-                                <span className="bank-question-text">{question.body}</span>
-                                <span className={`badge ${level.tone}`}>{level.label}</span>
+                                <span className="line-clamp-3 min-w-0 flex-1 whitespace-pre-wrap wrap-anywhere">
+                                  {question.body}
+                                </span>
+                                <span className={`badge m-0 shrink-0 ${level.tone}`}>
+                                  {level.label}
+                                </span>
                                 {question.multiple && (
-                                  <span className="badge muted-solid">Chọn nhiều</span>
+                                  <span className="badge muted-solid m-0 shrink-0">Chọn nhiều</span>
                                 )}
                               </label>
                             </li>
@@ -1124,7 +1143,7 @@ export function ExamBuilder() {
         </div>
 
         {mode === 'quiz' ? (
-          <aside className="panel exam-summary">
+          <aside className={EXAM_SUMMARY}>
             <div className="panel-title">
               <h2>
                 <i className="title-icon red">
@@ -1139,9 +1158,9 @@ export function ExamBuilder() {
               )}
             </div>
             {selected.length > 0 && (
-              <p className="exam-counts">
+              <p className="mb-2.5 flex flex-wrap gap-1.5">
                 {LEVELS.map((level) => (
-                  <span key={level} className={`badge ${DIFFICULTIES[level].tone}`}>
+                  <span key={level} className={`badge m-0 ${DIFFICULTIES[level].tone}`}>
                     {DIFFICULTIES[level].label}: {counts[level]}
                   </span>
                 ))}
@@ -1208,7 +1227,7 @@ export function ExamBuilder() {
             </button>
           </aside>
         ) : mode === 'code' ? (
-          <aside className="panel exam-summary">
+          <aside className={EXAM_SUMMARY}>
             <div className="panel-title">
               <h2>
                 <i className="title-icon red">
@@ -1294,7 +1313,7 @@ export function ExamBuilder() {
             </button>
           </aside>
         ) : (
-          <aside className="panel exam-summary">
+          <aside className={EXAM_SUMMARY}>
             <div className="panel-title">
               <h2>
                 <i className="title-icon red">

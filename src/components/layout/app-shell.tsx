@@ -6,9 +6,19 @@ import { useState, type ReactNode } from 'react';
 import { useLocalStorage } from '@/hooks/use-local-storage';
 import { useSession } from '@/providers/session-provider';
 import { NotificationsProvider } from '@/providers/notifications-provider';
-import { ADMIN_PATH, TEACHER_PATH, hasPermission, homeFor, normalizePath } from '@/lib/auth';
+import {
+  ADMIN_PATH,
+  TEACHER_PATH,
+  hasPermission,
+  homeFor,
+  normalizePath,
+  roleName,
+} from '@/lib/auth';
+import { initials } from '@/lib/course-utils';
+import { profileHref } from '@/lib/profile';
 import type { User } from '@/lib/types';
 import { AccountMenu, ConnectionChip } from '@/components/layout/account-menu';
+import { CommandPalette } from '@/components/layout/command-palette';
 import { Icon, type IconName } from '@/components/ui/icon';
 import { Modal } from '@/components/ui/modal';
 import { InExamNotice } from '@/components/layout/in-exam-notice';
@@ -223,85 +233,150 @@ function Shell({ area, children }: { area: Area; children: ReactNode }) {
   const [helpOpen, setHelpOpen] = useState(false);
   const [collapsed, setCollapsed] = useSidebarCollapsed();
   const groups = navFor(area, user).filter((group) => group.links.length);
+  const profile = user ? profileHref(user) : null;
+  // Thu gọn chỉ áp dụng màn hình rộng; ngăn kéo trên điện thoại luôn có chữ
+  const width = collapsed ? 'lg:w-16' : 'lg:w-[240px]';
+  const hideWhenNarrow = collapsed ? 'lg:hidden' : '';
 
   return (
-    <div className={`shell${collapsed ? ' is-collapsed' : ''}`}>
+    <div className="min-h-dvh overflow-x-clip lg:flex">
       <a className="skip-link" href="#main-content">
         Đến nội dung chính
       </a>
-      <aside className={`shell-sidebar ${open ? 'is-open' : ''}`} aria-label="Menu chính">
-        <Link
-          href={area === 'manage' && user ? homeFor(user) : '/dashboard/'}
-          className="shell-brand"
-          onClick={() => setOpen(false)}
+      <aside
+        aria-label="Menu chính"
+        className={`fixed inset-y-0 left-0 z-50 flex w-[264px] shrink-0 flex-col bg-sidebar text-slate-300 shadow-float transition-[width,translate] duration-200 ease-out lg:sticky lg:top-0 lg:z-30 lg:h-dvh lg:translate-x-0 lg:shadow-none ${width} ${open ? 'translate-x-0' : '-translate-x-full'}`}
+      >
+        {/* Đầu sidebar cao bằng thanh trên (h-16) để hai đường kẻ ngang thẳng hàng */}
+        <div
+          className={`flex h-16 shrink-0 items-center border-b border-white/10 ${collapsed ? 'lg:justify-center' : ''}`}
         >
-          <span className="brand-mark">F</span>
-          <span className="brand-text">
-            <strong>F LMS</strong>
-            <small>
-              {area === 'learn'
-                ? 'Khoa Công nghệ Thông tin'
-                : user?.role === 0
-                  ? 'Quản trị hệ thống'
-                  : 'Giảng viên'}
-            </small>
-          </span>
-        </Link>
-        <nav className="shell-nav">
+          <Link
+            href={area === 'manage' && user ? homeFor(user) : '/dashboard/'}
+            onClick={() => setOpen(false)}
+            className={`flex min-w-0 flex-1 items-center gap-3 self-stretch px-4 ${collapsed ? 'lg:hidden' : ''}`}
+          >
+            <span className="grid size-8 shrink-0 place-items-center rounded-sm bg-primary-600 text-base font-bold text-white">
+              F
+            </span>
+            <span className="min-w-0 leading-tight">
+              <strong className="block text-[15px] font-semibold text-white">F LMS</strong>
+              <small className="block truncate text-xs text-slate-400">
+                {area === 'learn'
+                  ? 'Khoa Công nghệ Thông tin'
+                  : user?.role === 0
+                    ? 'Quản trị hệ thống'
+                    : 'Giảng viên'}
+              </small>
+            </span>
+          </Link>
+          {/* Nút ba gạch kiểu Windows: thu gọn chỉ còn icon / mở rộng có chữ */}
+          <button
+            type="button"
+            onClick={() => setCollapsed(!collapsed)}
+            aria-label={collapsed ? 'Mở rộng menu' : 'Thu gọn menu'}
+            aria-expanded={!collapsed}
+            title={collapsed ? 'Mở rộng menu' : 'Thu gọn menu'}
+            className={`hidden size-10 shrink-0 place-items-center rounded-sm text-slate-300 transition-colors hover:bg-sidebar-hover hover:text-white lg:grid ${collapsed ? '' : 'mr-3'}`}
+          >
+            <Icon name="menu" size={15} />
+          </button>
+        </div>
+        <nav
+          className={`flex-1 overflow-y-auto py-2 [scrollbar-color:rgb(255_255_255/0.2)_transparent] [scrollbar-width:thin] ${collapsed ? 'lg:overflow-visible' : ''}`}
+        >
           {groups.map((group, index) => (
             <div key={group.title ?? index}>
-              {group.title && <p className="shell-nav-title">{group.title}</p>}
+              {group.title && (
+                <p
+                  className={`px-5 pt-4 pb-1 text-[11px] font-semibold tracking-wider text-slate-500 uppercase ${hideWhenNarrow}`}
+                >
+                  {group.title}
+                </p>
+              )}
               {group.links.map((link) => {
                 const active = link.active(path);
                 return (
                   <Link
                     key={link.href}
                     href={link.href}
-                    className={active ? 'active' : ''}
                     aria-current={active ? 'page' : undefined}
-                    // Thu gọn chỉ còn icon: rê chuột để xem tên mục
-                    title={collapsed ? link.label : undefined}
                     onClick={() => setOpen(false)}
+                    className={`group relative flex h-11 items-center gap-3 px-5 text-sm transition-colors duration-150 ${
+                      collapsed ? 'lg:justify-center lg:px-0' : ''
+                    } ${active ? 'bg-white/10 font-semibold text-white' : 'hover:bg-sidebar-hover hover:text-white'}`}
                   >
-                    <Icon name={link.icon} size={15} />
-                    <span className="nav-label">{link.label}</span>
+                    {/* Vạch xanh bên trái mục đang mở */}
+                    {active && <span className="absolute inset-y-0 left-0 w-1 bg-primary-400" />}
+                    <Icon
+                      name={link.icon}
+                      size={16}
+                      className={`w-5 text-center ${active ? 'text-primary-300' : ''}`}
+                    />
+                    <span className={`truncate ${hideWhenNarrow}`}>{link.label}</span>
+                    {/* Thu gọn: tên mục hiện khi rê chuột */}
+                    {collapsed && (
+                      <span className="pointer-events-none absolute left-full z-50 ml-1 hidden rounded-sm bg-sidebar px-2.5 py-1.5 text-xs whitespace-nowrap text-white opacity-0 shadow-lift transition-opacity group-hover:opacity-100 lg:block">
+                        {link.label}
+                      </span>
+                    )}
                   </Link>
                 );
               })}
             </div>
           ))}
         </nav>
+        {user && (
+          <div className="border-t border-white/10">
+            <Link
+              href={profile ?? (area === 'manage' ? homeFor(user) : '/dashboard/')}
+              onClick={() => setOpen(false)}
+              title={collapsed ? user.fullName : undefined}
+              className={`flex items-center gap-3 px-4 py-3 transition-colors hover:bg-sidebar-hover ${collapsed ? 'lg:justify-center lg:px-0' : ''}`}
+            >
+              <span className="grid size-9 shrink-0 place-items-center rounded-full bg-primary-100 text-xs font-bold text-primary-700">
+                {initials(user.fullName)}
+              </span>
+              <span className={`min-w-0 leading-tight ${hideWhenNarrow}`}>
+                <b className="block truncate text-[13px] font-semibold text-white">
+                  {user.fullName}
+                </b>
+                <small className="block truncate text-xs text-slate-400">
+                  {roleName(user.role)}
+                </small>
+              </span>
+            </Link>
+          </div>
+        )}
       </aside>
-      {open && <div className="shell-backdrop" onClick={() => setOpen(false)} />}
-      <div className="shell-body">
-        <header className="shell-topbar">
-          {/* Màn hình rộng: thu gọn/mở rộng menu trái (chỉ icon, tên hiện khi rê chuột) */}
+      {/* Màn hình hẹp: menu là ngăn kéo, bấm nền tối để đóng */}
+      <div
+        aria-hidden="true"
+        onClick={() => setOpen(false)}
+        className={`fixed inset-0 z-40 bg-sidebar/40 transition-opacity duration-200 lg:hidden ${
+          open ? 'opacity-100' : 'pointer-events-none opacity-0'
+        }`}
+      />
+      <div className="flex min-h-dvh min-w-0 flex-1 flex-col">
+        <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 border-b border-line bg-white px-4 md:px-6 lg:px-8">
           <button
-            className="icon-button shell-collapse"
-            aria-label={collapsed ? 'Mở rộng menu' : 'Thu gọn menu'}
-            aria-expanded={!collapsed}
-            title={collapsed ? 'Mở rộng menu' : 'Thu gọn menu'}
-            onClick={() => setCollapsed(!collapsed)}
-          >
-            <Icon name={collapsed ? 'expand' : 'collapse'} size={15} />
-          </button>
-          {/* Màn hình hẹp: menu là ngăn kéo */}
-          <button
-            className="icon-button shell-menu-toggle"
+            type="button"
             aria-label="Mở menu"
             aria-expanded={open}
             onClick={() => setOpen(!open)}
+            className="grid size-10 place-items-center rounded-sm text-ink-muted transition-colors hover:bg-surface-muted lg:hidden"
           >
-            <Icon name="menu" size={18} />
+            <Icon name="menu" size={16} />
           </button>
-          <div className="shell-topbar-actions">
+          <CommandPalette area={area} user={user} links={groups.flatMap((group) => group.links)} />
+          <div className="ml-auto flex items-center gap-2 md:gap-3">
             {/* Khu quản lý phụ thuộc dữ liệu realtime nên luôn hiện trạng thái kết nối. */}
             <ConnectionChip always={area === 'manage'} />
             <NotificationBell />
             <AccountMenu onHelp={area === 'learn' ? () => setHelpOpen(true) : undefined} />
           </div>
         </header>
-        <div className="shell-content">
+        <div className="mx-auto w-full max-w-[1680px] flex-1 px-4 pt-6 pb-12 md:px-6 lg:px-8">
           {/* Chỉ khu học tập có NotificationsProvider; khu quản lý banner tự trả null */}
           <UnreadBanner />
           {children}
@@ -311,11 +386,12 @@ function Shell({ area, children }: { area: Area; children: ReactNode }) {
       {area === 'learn' && <InExamNotice />}
       {helpOpen && (
         <Modal title="Hướng dẫn sử dụng" onClose={() => setHelpOpen(false)}>
-          <ol className="help-steps">
+          <ol className="list-decimal space-y-1.5 pl-5">
             <li>Tìm khóa học theo tên, mã học phần hoặc tên giảng viên.</li>
             <li>Lọc theo trạng thái, học kỳ hoặc đánh dấu khóa học yêu thích.</li>
             <li>Nhấn vào tên khóa học để xem tài liệu và bài kiểm tra.</li>
             <li>Giảng viên cho mã tham gia thì dùng nút “Tham gia bằng mã”.</li>
+            <li>Bấm Ctrl+K (⌘K trên Mac) để tìm nhanh trang và khóa học.</li>
           </ol>
           <div className="dialog-actions">
             <button className="button primary" onClick={() => setHelpOpen(false)}>

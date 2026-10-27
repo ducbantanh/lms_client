@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { apiRequest } from '@/lib/api';
 import { formatDateTime } from '@/lib/admin';
@@ -14,6 +13,7 @@ import {
   type NotificationCategory,
   type NotificationPage,
 } from '@/lib/notifications';
+import { CategoryBadge, NOTIFICATION_LIST, NotificationRow } from '@/components/notification-row';
 import { Icon } from '@/components/ui/icon';
 
 const PAGE_SIZE = 20;
@@ -109,14 +109,16 @@ export function NotificationsView() {
             onClick={() => setCategory(tab.value)}
           >
             {tab.label}
-            {tab.unread > 0 && <span className="count unread">{tab.unread}</span>}
+            {tab.unread > 0 && (
+              <span className="count bg-red-600 text-white ring-red-600">{tab.unread}</span>
+            )}
           </button>
         ))}
       </div>
       <section className="panel flush">
         <div className="panel-title">
           <h2>{tabs.find((tab) => tab.value === category)?.label}</h2>
-          <label className="check-field notif-filter">
+          <label className="check-field m-0 font-normal">
             <input
               type="checkbox"
               checked={unreadOnly}
@@ -132,38 +134,43 @@ export function NotificationsView() {
           </p>
         )}
         {items.length > 0 && (
-          <ul className="notif-list">
-            {items.map((item) => {
-              const info = CATEGORY_INFO[item.category];
-              return (
-                <li key={item.id} className={item.read ? '' : 'unread'}>
-                  <Link href={notificationHref(item)} onClick={() => void markRead(item)}>
-                    <i className={`title-icon ${info.tone}`}>
-                      <Icon name={info.icon} size={13} />
-                    </i>
-                    <span className="notif-text">
-                      <b>{item.title}</b>
-                      {item.body && <span className="notif-body">{item.body}</span>}
-                      <small>
-                        <span className={`badge ${info.tone}-badge`}>{info.label}</span>
-                        {item.course && `${item.course.code} · ${item.course.title}`}
-                        {item.senderName && ` · ${item.senderName}`}
-                        {' · '}
-                        <time dateTime={item.createdAt} title={formatDateTime(item.createdAt)}>
-                          {timeAgo(item.createdAt)}
-                        </time>
-                      </small>
-                    </span>
-                    {!item.read && <span className="notif-dot" aria-label="Chưa đọc" />}
-                  </Link>
-                </li>
-              );
-            })}
+          <ul className={NOTIFICATION_LIST}>
+            {items.map((item) => (
+              <li key={item.id}>
+                <NotificationRow
+                  category={item.category}
+                  title={item.title}
+                  body={item.body}
+                  unread={!item.read}
+                  href={notificationHref(item)}
+                  onClick={() => void markRead(item)}
+                  meta={
+                    <>
+                      <CategoryBadge category={item.category} />
+                      {item.course && `${item.course.code} · ${item.course.title}`}
+                      {item.senderName && ` · ${item.senderName}`}
+                      {' · '}
+                      <time dateTime={item.createdAt} title={formatDateTime(item.createdAt)}>
+                        {timeAgo(item.createdAt)}
+                      </time>
+                    </>
+                  }
+                  trailing={
+                    !item.read && (
+                      <span
+                        className="mt-1.5 size-[9px] shrink-0 rounded-full bg-primary-600"
+                        aria-label="Chưa đọc"
+                      />
+                    )
+                  }
+                />
+              </li>
+            ))}
           </ul>
         )}
         {loading && <p className="empty-cell">Đang tải…</p>}
         {!loading && page < totalPages - 1 && (
-          <div className="notif-more">
+          <div className="border-t border-line px-5 pt-3 pb-4 text-center">
             <button className="button" onClick={loadMore}>
               Xem thêm
             </button>

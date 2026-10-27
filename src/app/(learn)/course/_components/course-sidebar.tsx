@@ -29,20 +29,27 @@ const URGENT_MS = 24 * 3600_000;
 function AssessmentLink({
   assessment,
   onOpenTab,
+  className = '',
 }: {
   assessment: Assessment;
   onOpenTab: (type: AssessmentType) => void;
+  className?: string;
 }) {
+  const style = `min-w-0 text-left text-sm font-semibold wrap-anywhere text-ink transition-colors hover:text-primary-600 ${className}`;
   return isSubmittable(assessment) ? (
-    <Link href={`/course/assessment/?id=${encodeURIComponent(assessment.id)}`}>
+    <Link href={`/course/assessment/?id=${encodeURIComponent(assessment.id)}`} className={style}>
       {assessment.title}
     </Link>
   ) : (
-    <button className="link-button" onClick={() => onOpenTab(assessment.type)}>
+    <button className={style} onClick={() => onOpenTab(assessment.type)}>
       {assessment.title}
     </button>
   );
 }
+
+/** Số lớn đầu khung (58%, 6/11, 0/2…). */
+const BIG_NUMBER = 'text-[26px] leading-[1.2] font-bold text-ink tabular-nums';
+const NEXT_LESSON = 'mt-3.5 flex flex-col gap-0.5 text-[13px] text-ink-muted';
 
 /**
  * Cột phải tab Nội dung của sinh viên: tiến độ, bài sắp đến hạn, kết quả của mình, thông tin khóa học.
@@ -90,9 +97,9 @@ export function CourseSidebar({
               Tiến độ
             </h2>
           </div>
-          <div className="progress-head">
-            <b>{progress.percent}%</b>
-            <span>
+          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <b className={BIG_NUMBER}>{progress.percent}%</b>
+            <span className="text-[13px] text-ink-muted">
               {[
                 progress.lessonsTotal > 0 &&
                   `${progress.lessonsDone}/${progress.lessonsTotal} bài học`,
@@ -104,7 +111,7 @@ export function CourseSidebar({
             </span>
           </div>
           <div
-            className="progress-track"
+            className="progress-track mt-3 h-1.5"
             role="progressbar"
             aria-label="Tiến độ khóa học"
             aria-valuenow={progress.percent}
@@ -114,14 +121,17 @@ export function CourseSidebar({
             <span style={{ width: `${progress.percent}%` }} />
           </div>
           {progress.nextLesson ? (
-            <p className="next-lesson">
-              <span>Bài tiếp theo</span>
-              <button className="link-button" onClick={() => onOpenLesson(progress.nextLesson!.id)}>
+            <p className={NEXT_LESSON}>
+              <span className="text-xs text-ink-subtle">Bài tiếp theo</span>
+              <button
+                className="text-left text-sm font-semibold wrap-anywhere text-primary-600 hover:text-primary-700"
+                onClick={() => onOpenLesson(progress.nextLesson!.id)}
+              >
                 {progress.nextLesson.title}
               </button>
             </p>
           ) : (
-            progress.lessonsTotal > 0 && <p className="next-lesson">Bạn đã học hết các bài học.</p>
+            progress.lessonsTotal > 0 && <p className={NEXT_LESSON}>Bạn đã học hết các bài học.</p>
           )}
         </section>
       )}
@@ -136,16 +146,29 @@ export function CourseSidebar({
           </h2>
         </div>
         {upcoming.length ? (
-          <ul className="upcoming-list">
+          <ul className="m-0 list-none p-0">
             {upcoming.map(({ assessment, kind, at, result }) => {
               const left = Date.parse(at) - now;
               const done = result?.status === 'submitted' || result?.status === 'auto_submitted';
               const urgent = kind === 'due' && !done && left < URGENT_MS;
               return (
-                <li key={assessment.id} className={urgent ? 'urgent' : ''}>
-                  <span className="upcoming-type">{ASSESSMENT_TYPES[assessment.type]}</span>
-                  <AssessmentLink assessment={assessment} onOpenTab={onOpenTab} />
-                  <small>
+                <li
+                  key={assessment.id}
+                  className={`grid grid-cols-[minmax(0,1fr)_auto] gap-x-2 gap-y-0.5 border-t border-l-3 border-line py-2.5 pl-3 first:border-t-0 ${
+                    urgent ? 'border-l-red-600' : ''
+                  }`}
+                >
+                  <span className="col-start-1 text-xs font-semibold text-ink-subtle">
+                    {ASSESSMENT_TYPES[assessment.type]}
+                  </span>
+                  <AssessmentLink
+                    assessment={assessment}
+                    onOpenTab={onOpenTab}
+                    className="col-start-1"
+                  />
+                  <small
+                    className={`col-start-1 text-[13px] ${urgent ? 'font-semibold text-red-600' : 'text-ink-muted'}`}
+                  >
                     {kind === 'due'
                       ? `Hạn nộp còn ${formatRelative(left)}`
                       : `Mở sau ${formatRelative(left)}`}
@@ -153,7 +176,9 @@ export function CourseSidebar({
                     {formatDateTime(at)}
                   </small>
                   {done && (
-                    <span className="badge ok">{SUBMISSION_STATUS[result!.status].label}</span>
+                    <span className="badge ok col-start-2 row-span-3 row-start-1 m-0 self-center">
+                      {SUBMISSION_STATUS[result!.status].label}
+                    </span>
                   )}
                 </li>
               );
@@ -173,22 +198,26 @@ export function CourseSidebar({
               Kết quả của bạn
             </h2>
           </div>
-          <div className="result-stats">
-            <div>
-              <b>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col">
+              <b className={BIG_NUMBER}>
                 {summary.submitted}
-                <small>/{summary.total}</small>
+                <small className="text-sm font-semibold text-ink-subtle">/{summary.total}</small>
               </b>
-              <span>bài kiểm tra đã nộp</span>
+              <span className="text-[13px] text-ink-muted">bài kiểm tra đã nộp</span>
             </div>
-            <div>
-              <b>{summary.average === null ? '—' : formatScore(summary.average)}</b>
-              <span>điểm trung bình{summary.graded ? ` (${summary.graded} bài đã chấm)` : ''}</span>
+            <div className="flex flex-col">
+              <b className={BIG_NUMBER}>
+                {summary.average === null ? '—' : formatScore(summary.average)}
+              </b>
+              <span className="text-[13px] text-ink-muted">
+                điểm trung bình{summary.graded ? ` (${summary.graded} bài đã chấm)` : ''}
+              </span>
             </div>
           </div>
           {summary.total > 0 && (
             <div
-              className="progress-track"
+              className="progress-track mt-3 h-1.5"
               role="progressbar"
               aria-label="Tỉ lệ bài đã nộp"
               aria-valuenow={Math.round((summary.submitted / summary.total) * 100)}
@@ -199,13 +228,16 @@ export function CourseSidebar({
             </div>
           )}
           {graded.length > 0 && (
-            <ul className="score-list">
+            <ul className="m-0 mt-3.5 list-none p-0">
               {graded.map(({ assessment, score }) => (
-                <li key={assessment.id}>
+                <li
+                  key={assessment.id}
+                  className="flex items-baseline justify-between gap-3 border-t border-line py-2"
+                >
                   <AssessmentLink assessment={assessment} onOpenTab={onOpenTab} />
-                  <b>
+                  <b className="shrink-0 text-base text-primary-600 tabular-nums">
                     {formatScore(score)}
-                    <small>/{MAX_SCORE}</small>
+                    <small className="text-sm font-semibold text-ink-subtle">/{MAX_SCORE}</small>
                   </b>
                 </li>
               ))}
@@ -275,23 +307,28 @@ function AttendancePanel({ courseId }: { courseId: string }) {
           Điểm danh
         </h2>
       </div>
-      <div className="progress-head">
-        <b>
+      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+        <b className={BIG_NUMBER}>
           {attended}/{sessions.length}
         </b>
-        <span>buổi có mặt</span>
+        <span className="text-[13px] text-ink-muted">buổi có mặt</span>
       </div>
-      <ul className="attendance-mine">
+      <ul className="m-0 mt-3 list-none p-0">
         {sessions
           .slice(-RECENT_SESSIONS)
           .reverse()
           .map((item) => (
-            <li key={item.sessionId}>
+            <li
+              key={item.sessionId}
+              className="flex items-center justify-between gap-2 border-t border-line py-2 text-sm"
+            >
               <span>
                 {item.title}
-                <small>{formatDateTime(item.createdAt)}</small>
+                <small className="block text-xs text-ink-subtle">
+                  {formatDateTime(item.createdAt)}
+                </small>
               </span>
-              <span className={`badge ${statusInfo(item.status).tone}`}>
+              <span className={`badge m-0 ${statusInfo(item.status).tone}`}>
                 {statusInfo(item.status).label}
               </span>
             </li>

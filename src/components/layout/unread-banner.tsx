@@ -4,9 +4,10 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useLocalStorage } from '@/hooks/use-local-storage';
 import { normalizePath } from '@/lib/auth';
-import { CATEGORY_INFO, notificationHref, timeAgo, unreadBannerKey } from '@/lib/notifications';
+import { notificationHref, timeAgo, unreadBannerKey } from '@/lib/notifications';
 import { useNotifications } from '@/providers/notifications-provider';
 import { useSession } from '@/providers/session-provider';
+import { NOTIFICATION_LIST, NotificationRow } from '@/components/notification-row';
 import { Icon } from '@/components/ui/icon';
 
 /** Số thông báo chưa đọc liệt kê trong khung; còn lại gom vào "và N thông báo khác". */
@@ -31,12 +32,17 @@ export function UnreadBanner() {
   const more = summary.unread - unread.length;
 
   return (
-    <section className="unread-banner" aria-labelledby="unread-banner-title">
-      <div className="unread-banner-head">
+    <section
+      className="mb-5 overflow-hidden rounded-lg border border-l-3 border-line border-l-primary-600 bg-white shadow-card"
+      aria-labelledby="unread-banner-title"
+    >
+      <div className="flex items-center gap-2.5 py-2.5 pr-2.5 pl-3.5">
         <i className="title-icon orange">
           <Icon name="bell" size={13} />
         </i>
-        <h2 id="unread-banner-title">Bạn có {summary.unread} thông báo chưa đọc</h2>
+        <h2 id="unread-banner-title" className="min-w-0 flex-1 text-[15px]">
+          Bạn có {summary.unread} thông báo chưa đọc
+        </h2>
         <button
           className="icon-button"
           aria-label="Ẩn khung thông báo"
@@ -47,29 +53,24 @@ export function UnreadBanner() {
         </button>
       </div>
       {unread.length > 0 && (
-        <ul className="notif-list compact">
-          {unread.map((item) => {
-            const info = CATEGORY_INFO[item.category];
-            return (
-              <li key={item.id} className="unread">
-                <Link href={notificationHref(item)} onClick={() => void markRead(item)}>
-                  <i className={`title-icon ${info.tone}`}>
-                    <Icon name={info.icon} size={12} />
-                  </i>
-                  <span className="notif-text">
-                    <b>{item.title}</b>
-                    <small>
-                      {item.course?.code} · {timeAgo(item.createdAt)}
-                    </small>
-                  </span>
-                </Link>
-              </li>
-            );
-          })}
+        <ul className={`${NOTIFICATION_LIST} border-t border-line`}>
+          {unread.map((item) => (
+            <li key={item.id}>
+              <NotificationRow
+                compact
+                unread
+                category={item.category}
+                title={item.title}
+                meta={`${item.course?.code ?? ''} · ${timeAgo(item.createdAt)}`}
+                href={notificationHref(item)}
+                onClick={() => void markRead(item)}
+              />
+            </li>
+          ))}
         </ul>
       )}
-      <div className="unread-banner-foot">
-        {more > 0 && <span>và {more} thông báo khác</span>}
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 border-t border-line px-3.5 py-2.5 text-[13px] text-ink-muted">
+        {more > 0 && <span className="mr-auto">và {more} thông báo khác</span>}
         <Link href="/notifications/" className="link-button">
           Xem tất cả
         </Link>

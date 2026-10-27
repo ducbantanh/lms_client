@@ -52,15 +52,18 @@ export function ProfileView() {
         </p>
       ) : (
         <>
-          <section className="panel profile-hero">
-            <span className="avatar profile-avatar" aria-hidden="true">
+          <section className="panel mb-6 flex items-center gap-5 max-md:gap-3.5">
+            <span
+              className="grid size-18 shrink-0 place-items-center rounded-full bg-primary-50 text-[26px] font-bold text-primary-600 max-md:size-14 max-md:text-xl"
+              aria-hidden="true"
+            >
               {initials(profile.fullName)}
             </span>
-            <div className="profile-hero-text">
-              <h2>{profile.fullName}</h2>
-              <p className="profile-hero-meta">
-                <span className="badge muted-solid">{roleName(profile.role)}</span>
-                <span className="mono">{profile.username}</span>
+            <div className="min-w-0">
+              <h2 className="text-[22px] font-semibold wrap-anywhere">{profile.fullName}</h2>
+              <p className="mt-1.5 flex flex-wrap items-center gap-x-3.5 gap-y-1.5 text-sm text-ink-muted">
+                <span className="badge muted-solid mr-0">{roleName(profile.role)}</span>
+                <span className="font-mono">{profile.username}</span>
                 <span>Tham gia từ {formatDate(profile.createdAt)}</span>
               </p>
             </div>
@@ -133,7 +136,10 @@ export function ProfileView() {
                       <dt>Email</dt>
                       <dd>
                         {profile.email ? (
-                          <a className="profile-link" href={`mailto:${profile.email}`}>
+                          <a
+                            className="text-primary-600 hover:text-primary-700 hover:underline"
+                            href={`mailto:${profile.email}`}
+                          >
                             {profile.email}
                           </a>
                         ) : (
@@ -146,10 +152,10 @@ export function ProfileView() {
                       <dd>{profile.phone ?? <span className="optional">Chưa có</span>}</dd>
                     </div>
                   </dl>
-                  <div className="profile-bio">
-                    <b>Giới thiệu</b>
+                  <div className="border-t border-line pt-2.5 text-sm">
+                    <b className="mb-1 block font-normal text-ink-muted">Giới thiệu</b>
                     {profile.bio ? (
-                      <p>{profile.bio}</p>
+                      <p className="whitespace-pre-line wrap-anywhere">{profile.bio}</p>
                     ) : (
                       <p className="optional">
                         Chưa có lời giới thiệu. Nhấn “Sửa” để viết vài dòng về bản thân.

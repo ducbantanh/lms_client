@@ -13,7 +13,15 @@ import {
   type Lesson,
   type Section,
 } from '@/lib/teaching';
-import { FileRow, LessonItem, SectionCard } from '@/components/course-items';
+import {
+  CONTENT_TOOLBAR,
+  FileRow,
+  LESSON_LIST,
+  LessonItem,
+  SECTION_CARD_FRAME,
+  SECTION_GRID,
+  SectionCard,
+} from '@/components/course-items';
 import { ViewToggle } from '@/components/ui/view-toggle';
 import { useSession } from '@/providers/session-provider';
 import { useViewMode } from '@/hooks/use-view-mode';
@@ -233,7 +241,7 @@ export function ContentTab(props: TabProps) {
           )}
         </div>
         {lessons.length > 0 && (
-          <ul className="lesson-list">
+          <ul className={LESSON_LIST}>
             {lessons.map((group, index) => (
               <LessonItem
                 key={group.lesson.id}
@@ -314,9 +322,12 @@ export function ContentTab(props: TabProps) {
     <div className={canTeach ? 'columns' : undefined}>
       <div className="stack">
         {!empty && (
-          <div className="content-toolbar">
+          <div className={CONTENT_TOOLBAR}>
             {opened ? (
-              <button className="link-button" onClick={() => setOpenSection(null)}>
+              <button
+                className="link-button flex items-center gap-1.5 text-sm"
+                onClick={() => setOpenSection(null)}
+              >
                 <Icon name="back" size={11} /> Tất cả {unit}
               </button>
             ) : (
@@ -348,7 +359,7 @@ export function ContentTab(props: TabProps) {
         ) : opened ? (
           renderSection(opened)
         ) : grid ? (
-          <div className="section-grid">
+          <div className={SECTION_GRID}>
             {groups.map((group) => (
               <SectionCard
                 key={groupKey(group)}
@@ -523,11 +534,11 @@ function AddSection({
   if (variant === 'card')
     return editing ? (
       <form
-        className="section-card section-add editing"
+        className={`${SECTION_CARD_FRAME} border-[1.5px] border-primary-600 bg-white text-ink ring-3 ring-primary-600/18`}
         onSubmit={submit}
         onKeyDown={(event) => event.key === 'Escape' && !busy && cancel()}
       >
-        <label className="form-field">
+        <label className="form-field m-0">
           Tên {unit} mới
           <input
             className="input"
@@ -538,7 +549,7 @@ function AddSection({
             autoFocus
           />
         </label>
-        <div className="button-row">
+        <div className="button-row mt-auto justify-end">
           <button type="button" className="button small" disabled={busy} onClick={cancel}>
             Hủy
           </button>
@@ -548,12 +559,18 @@ function AddSection({
         </div>
       </form>
     ) : (
-      <button type="button" className="section-card section-add" onClick={() => setEditing(true)}>
-        <i className="section-add-icon">
+      <button
+        type="button"
+        className={`group/add ${SECTION_CARD_FRAME} items-center justify-center gap-1.5 border-[1.5px] border-dashed border-line-strong text-center text-ink-muted transition-colors hover:border-primary-600 hover:bg-primary-50 hover:text-primary-600`}
+        onClick={() => setEditing(true)}
+      >
+        <i className="mb-1 grid size-9.5 place-items-center rounded-sm bg-surface-muted transition-colors group-hover/add:bg-white">
           <Icon name="plus" size={14} />
         </i>
-        <b>Thêm {unit}</b>
-        <small>{suggestion ? `Gợi ý: ${suggestion}` : 'Đặt tên rồi thêm bài học, tài liệu'}</small>
+        <b className="text-[15px] font-bold">Thêm {unit}</b>
+        <small className="text-[12.5px] text-ink-subtle">
+          {suggestion ? `Gợi ý: ${suggestion}` : 'Đặt tên rồi thêm bài học, tài liệu'}
+        </small>
       </button>
     );
 

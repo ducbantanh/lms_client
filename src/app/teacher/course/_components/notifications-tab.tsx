@@ -4,8 +4,9 @@ import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { apiRequest } from '@/lib/api';
 import { formatDateTime } from '@/lib/admin';
 import { normalizeSearch } from '@/lib/course-utils';
-import { CATEGORY_INFO, timeAgo, type SentNotification } from '@/lib/notifications';
+import { timeAgo, type SentNotification } from '@/lib/notifications';
 import type { EnrolledStudent } from '@/lib/teaching';
+import { CategoryBadge, NOTIFICATION_LIST, NotificationRow } from '@/components/notification-row';
 import { Icon } from '@/components/ui/icon';
 import { errorFlash, type TabProps } from './course-manager';
 
@@ -35,34 +36,34 @@ export function NotificationsTab(props: TabProps) {
         {history === null ? (
           <p className="empty-cell">Đang tải…</p>
         ) : history.length ? (
-          <ul className="notif-list">
-            {history.map((item) => {
-              const info = CATEGORY_INFO[item.category];
-              return (
-                <li key={item.id}>
-                  <div className="notif-row">
-                    <i className={`title-icon ${info.tone}`}>
-                      <Icon name={info.icon} size={13} />
-                    </i>
-                    <span className="notif-text">
-                      <b>{item.title}</b>
-                      {item.body && <span className="notif-body">{item.body}</span>}
-                      <small>
-                        <span className={`badge ${info.tone}-badge`}>{info.label}</span>
-                        {item.senderName && `${item.senderName} · `}
-                        <time dateTime={item.createdAt} title={formatDateTime(item.createdAt)}>
-                          {timeAgo(item.createdAt)}
-                        </time>
-                      </small>
-                    </span>
-                    <span className="notif-read" title="Số sinh viên đã đọc / đã nhận">
+          <ul className={NOTIFICATION_LIST}>
+            {history.map((item) => (
+              <li key={item.id}>
+                <NotificationRow
+                  category={item.category}
+                  title={item.title}
+                  body={item.body}
+                  meta={
+                    <>
+                      <CategoryBadge category={item.category} />
+                      {item.senderName && `${item.senderName} · `}
+                      <time dateTime={item.createdAt} title={formatDateTime(item.createdAt)}>
+                        {timeAgo(item.createdAt)}
+                      </time>
+                    </>
+                  }
+                  trailing={
+                    <span
+                      className="flex shrink-0 items-center gap-[5px] text-[13px] text-ink-muted tabular-nums"
+                      title="Số sinh viên đã đọc / đã nhận"
+                    >
                       <Icon name="eye" size={12} />
                       {item.read}/{item.recipients}
                     </span>
-                  </div>
-                </li>
-              );
-            })}
+                  }
+                />
+              </li>
+            ))}
           </ul>
         ) : (
           <p className="empty-cell">Chưa có thông báo nào trong khóa học này.</p>

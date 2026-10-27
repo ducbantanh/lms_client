@@ -150,7 +150,7 @@ function AssessmentPage({
     ) : assessment.answerMode === 2 ? (
       <CodePanel assessment={assessment} back={back} onSubmitted={reload} />
     ) : (
-      <div className="columns exam-columns">
+      <div className="columns items-start">
         <section className="panel flush">
           <div className="panel-title">
             <h2>
@@ -199,7 +199,7 @@ function AssessmentPage({
       </Link>
       <div className="page-heading">
         <div>
-          <p className="detail-code">
+          <p className="text-[13px] font-semibold text-ink-subtle">
             <span className="badge muted-solid">{ASSESSMENT_TYPES[assessment.type]}</span>
             <span className={`badge ${status.tone}`}>{status.label}</span>
             {assessment.status !== 'upcoming' && (
@@ -220,11 +220,11 @@ function AssessmentPage({
         </div>
       </div>
       {assessment.status === 'upcoming' ? (
-        <section className="panel countdown-panel">
-          <p className="countdown-caption">Bài sẽ mở sau</p>
+        <section className="panel px-5 py-8">
+          <p className="text-center text-sm text-ink-muted">Bài sẽ mở sau</p>
           <Countdown ms={untilOpen ?? 0} />
           {assessment.opensAt && (
-            <p className="countdown-caption">
+            <p className="text-center text-sm text-ink-muted">
               Mở lúc {formatDateTime(assessment.opensAt)}. Đề bài và chỗ nộp bài sẽ hiện khi bài mở.
             </p>
           )}
@@ -247,11 +247,21 @@ function Countdown({ ms }: { ms: number }) {
     [seconds, 'giây'],
   ];
   return (
-    <div className="countdown" role="timer" aria-live="off" aria-label={formatDuration(ms)}>
+    <div
+      className="my-4 flex flex-wrap justify-center gap-3"
+      role="timer"
+      aria-live="off"
+      aria-label={formatDuration(ms)}
+    >
       {units.map(([value, label]) => (
-        <span className="countdown-unit" key={label}>
-          <b>{String(value).padStart(2, '0')}</b>
-          <small>{label}</small>
+        <span
+          className="min-w-21 rounded-sm border border-line bg-surface-muted px-2 pt-3.5 pb-2.5 text-center"
+          key={label}
+        >
+          <b className="block text-[34px] leading-[1.1] font-bold text-primary-600 tabular-nums">
+            {String(value).padStart(2, '0')}
+          </b>
+          <small className="text-xs text-ink-subtle">{label}</small>
         </span>
       ))}
     </div>
@@ -427,7 +437,7 @@ function SubmissionPanel({
       )}
       {submission.editable ? (
         <>
-          <label className="form-field submission-pick">
+          <label className="form-field mt-3.5">
             Chọn file bài làm (PDF, DOCX, PPTX, ZIP · tối đa 20 MB/file, {MAX_SUBMISSION_FILES}{' '}
             file)
             <DropZone className="drop-box" hint="Hoặc kéo thả file vào đây">

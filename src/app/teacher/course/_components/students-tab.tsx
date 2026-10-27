@@ -160,7 +160,7 @@ export function StudentsTab(props: TabProps) {
                     <tr key={student.id}>
                       <td className="mono">{student.username}</td>
                       <td>
-                        <span className="name-with-status">
+                        <span className="inline-flex items-center gap-2">
                           {online && (
                             <span
                               className={`status-dot${online.has(student.id) ? ' online' : ''}`}
@@ -172,12 +172,12 @@ export function StudentsTab(props: TabProps) {
                           {student.fullName}
                         </span>
                       </td>
-                      <td className="progress-cell">
+                      <td>
                         {row && row.percent !== null ? (
-                          <span title={progressDetail(row)}>
-                            <b>{row.percent}%</b>
+                          <span className="flex items-center gap-2" title={progressDetail(row)}>
+                            <b className="min-w-9 text-[13px] tabular-nums">{row.percent}%</b>
                             <span
-                              className="progress-track"
+                              className="progress-track mt-0 w-16"
                               role="progressbar"
                               aria-label={`Tiến độ ${student.username}`}
                               aria-valuenow={row.percent}
@@ -339,7 +339,7 @@ function AddStudents({
         </>
       ) : (
         <>
-          <label className="search-field full-width">
+          <label className="search-field max-w-none">
             <Icon name="search" size={14} />
             <span className="sr-only">Tìm sinh viên</span>
             <input
@@ -400,7 +400,10 @@ function EnrollSummary({ report }: { report: EnrollReport }) {
     ['Không phải tài khoản sinh viên', report.notStudent, 'warn'],
   ];
   return (
-    <div className="enroll-report" role="status">
+    <div
+      className="mt-3 space-y-1.5 border-t border-line pt-3 text-[13px] text-ink-muted"
+      role="status"
+    >
       <p>
         <span className="badge ok">{report.added.length}</span>
         sinh viên được thêm.
@@ -410,7 +413,8 @@ function EnrollSummary({ report }: { report: EnrollReport }) {
         .map(([label, items, tone]) => (
           <p key={label}>
             <span className={`badge ${tone}`}>{items.length}</span>
-            {label}: <span className="mono">{items.join(', ')}</span>
+            {label}:{' '}
+            <span className="font-mono text-[13px] wrap-anywhere text-ink">{items.join(', ')}</span>
           </p>
         ))}
     </div>
@@ -467,10 +471,10 @@ function EnrollKeyPanel({ content, base, reload, notify, confirm }: TabProps) {
           Mã tham gia
         </h2>
       </div>
-      <div className="enroll-key">
+      <div className="mb-2 flex h-11 items-center justify-between gap-2 rounded-sm border border-dashed border-line-strong bg-surface-muted pr-1.5 pl-3.5 text-sm text-ink-subtle">
         {key ? (
           <>
-            <code>{key}</code>
+            <code className="font-mono text-lg font-bold tracking-[0.12em] text-ink">{key}</code>
             <button
               className="icon-button"
               title="Sao chép"

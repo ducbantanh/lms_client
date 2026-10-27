@@ -152,18 +152,30 @@ export function ImportView() {
         description="Tạo tài khoản sinh viên hoặc giảng viên. Mật khẩu ban đầu là ngày sinh (ddmmyyyy), người dùng phải đổi ở lần đăng nhập đầu."
       >
         {/* Nút chuyển loại tài khoản; rê chuột để xem mô tả */}
-        <div className="role-switch" role="radiogroup" aria-label="Loại tài khoản">
+        <div
+          className="inline-flex shrink-0 gap-1 rounded-sm border border-line bg-surface-muted p-1"
+          role="radiogroup"
+          aria-label="Loại tài khoản"
+        >
           {([5, 1] as const).map((value) => (
             <button
               key={value}
               type="button"
               role="radio"
               aria-checked={role === value}
-              className={role === value ? 'selected' : ''}
+              className={`inline-flex h-8.5 items-center gap-2 rounded-[3px] px-4 text-[13px] font-semibold transition focus-visible:outline-primary-600/20 ${
+                role === value
+                  ? 'bg-white text-primary-600 shadow-[0_1px_2px_rgb(16_24_40/0.08),0_0_0_1px_var(--color-line)]'
+                  : 'text-ink-muted hover:text-ink'
+              }`}
               title={ROLES[value].description}
               onClick={() => setRole(value)}
             >
-              <Icon name={ROLES[value].icon} size={14} />
+              <Icon
+                name={ROLES[value].icon}
+                size={14}
+                className={role === value ? 'text-primary-600' : 'text-ink-subtle'}
+              />
               {ROLES[value].label}
             </button>
           ))}
@@ -193,8 +205,8 @@ export function ImportView() {
               rows={12}
               aria-label={`Danh sách ${label.toLowerCase()}`}
             />
-            <div className="admin-import-actions">
-              <label className="button">
+            <div className="mt-3 flex flex-wrap gap-2">
+              <label className="button mr-auto max-w-full cursor-pointer truncate">
                 <Icon name="upload" size={13} />
                 {fileName || 'Chọn file .txt / .csv'}
                 <input
@@ -344,7 +356,7 @@ function ReportTable({ report, tab }: { report: ImportReport; tab: Tab }) {
         }));
   if (rows.length === 0) return <p className="empty-cell">Không có dòng nào.</p>;
   return (
-    <div className="table-responsive admin-report">
+    <div className="table-responsive max-h-105 overflow-y-auto">
       <table className="table admin-table">
         <thead>
           <tr>

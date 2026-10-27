@@ -18,7 +18,16 @@ import {
   type MyResult,
   isSubmittable,
 } from '@/lib/teaching';
-import { AssessmentItem, FileRow, LessonItem, SectionCard } from '@/components/course-items';
+import {
+  ASSESSMENT_LIST,
+  AssessmentItem,
+  CONTENT_TOOLBAR,
+  FileRow,
+  LESSON_LIST,
+  LessonItem,
+  SECTION_GRID,
+  SectionCard,
+} from '@/components/course-items';
 import { ViewToggle } from '@/components/ui/view-toggle';
 import { useViewMode } from '@/hooks/use-view-mode';
 import { Icon } from '@/components/ui/icon';
@@ -181,7 +190,7 @@ export function CourseDetail() {
         <p className="empty-cell">Chưa có nội dung.</p>
       )}
       {group.lessons.length > 0 && (
-        <ul className="lesson-list">
+        <ul className={LESSON_LIST}>
           {group.lessons.map((item) => {
             const lessonId = item.lesson.id;
             const done = completed?.has(lessonId) ?? false;
@@ -231,15 +240,23 @@ export function CourseDetail() {
         <Icon name="back" size={12} />
         Khóa học
       </Link>
-      <div className="detail-header">
-        <span className={`course-swatch cover-${coverFor(course.code)}`}>
+      <div className="mb-6 flex items-center gap-4">
+        <span
+          className={`grid size-16 shrink-0 place-items-center rounded-lg bg-(--cover) text-xl font-bold text-white cover-${coverFor(course.code)}`}
+        >
           {initials(course.title)}
         </span>
         <div>
-          <p className="detail-code">{courseLabel(course.code, course.group)}</p>
-          <h1>{course.title}</h1>
-          {course.description && <p className="detail-subtitle">{course.description}</p>}
-          <p className="detail-teacher">Giảng viên: {course.teacherName || 'Chưa có thông tin'}</p>
+          <p className="text-[13px] font-semibold text-ink-subtle">
+            {courseLabel(course.code, course.group)}
+          </p>
+          <h1 className="text-2xl leading-tight font-semibold max-md:text-[22px]">
+            {course.title}
+          </h1>
+          {course.description && <p className="text-[15px] text-ink-muted">{course.description}</p>}
+          <p className="mt-1.5 text-sm text-ink-muted">
+            Giảng viên: {course.teacherName || 'Chưa có thông tin'}
+          </p>
         </div>
       </div>
       <div className="tabs" role="tablist" aria-label="Nội dung khóa học">
@@ -259,7 +276,7 @@ export function CourseDetail() {
       {tab !== 'content' ? (
         <section className="panel">
           {ofType(tab).length ? (
-            <ul className="assessment-list">
+            <ul className={ASSESSMENT_LIST}>
               {ofType(tab).map((assessment) => (
                 <AssessmentItem
                   key={assessment.id}
@@ -286,9 +303,12 @@ export function CourseDetail() {
               </div>
             )}
             {!empty && (
-              <div className="content-toolbar">
+              <div className={CONTENT_TOOLBAR}>
                 {opened ? (
-                  <button className="link-button" onClick={() => setOpenSection(null)}>
+                  <button
+                    className="link-button flex items-center gap-1.5 text-sm"
+                    onClick={() => setOpenSection(null)}
+                  >
                     <Icon name="back" size={11} /> Tất cả {unit}
                   </button>
                 ) : (
@@ -318,7 +338,7 @@ export function CourseDetail() {
             ) : opened ? (
               renderSection(opened)
             ) : grid ? (
-              <div className="section-grid">
+              <div className={SECTION_GRID}>
                 {groups.map((group) => (
                   <SectionCard
                     key={groupKey(group)}

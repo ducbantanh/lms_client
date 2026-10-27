@@ -30,6 +30,20 @@ import {
 import { useViewMode } from '@/hooks/use-view-mode';
 import { useSession } from '@/providers/session-provider';
 import { Icon } from '@/components/ui/icon';
+import {
+  TILE,
+  TILE_GRID,
+  TILE_BODY,
+  TILE_CODE,
+  TILE_COVER,
+  TILE_FOOTER,
+  TILE_FOOTER_VALUE,
+  TILE_HEADING,
+  TILE_LINE,
+  TILE_MENU_BUTTON,
+  TILE_META,
+  TILE_TITLE,
+} from '@/components/ui/tile';
 import { Modal } from '@/components/ui/modal';
 import { ViewToggle } from '@/components/ui/view-toggle';
 
@@ -190,13 +204,15 @@ export function QuestionBanksView() {
               : 'Chưa gắn môn học';
             return (
               <section key={group.subject?.code ?? ''} aria-label={title}>
-                <div className="bank-group-head">
-                  <h2>
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <h2 className="flex min-w-0 items-center gap-2.5 text-base">
                     <i className="title-icon blue">
                       <Icon name={group.subject ? 'book' : 'bank'} size={12} />
                     </i>
                     {title}
-                    <span className="count">{group.banks.length}</span>
+                    <span className="rounded-full bg-surface-muted px-[7px] text-xs font-semibold text-ink-muted">
+                      {group.banks.length}
+                    </span>
                   </h2>
                   <button
                     className="link-button"
@@ -205,7 +221,7 @@ export function QuestionBanksView() {
                     + Thêm ngân hàng
                   </button>
                 </div>
-                <div className={`course-grid ${view === 'list' ? 'is-list' : ''}`}>
+                <div className={TILE_GRID} data-view={view}>
                   {group.banks.map((bank) => (
                     <BankCard
                       key={bank.id}
@@ -241,7 +257,7 @@ export function QuestionBanksView() {
 }
 
 /**
- * Thẻ ngân hàng cùng khung với thẻ khóa học (lưới hoặc danh sách do .course-grid/.is-list bố trí):
+ * Thẻ ngân hàng cùng khung với thẻ khóa học (lưới hoặc danh sách do data-view của lưới quyết định):
  * màu theo mã môn như khóa học cùng môn, số câu hỏi, lần sửa gần nhất, menu Sửa/Xóa.
  */
 function BankCard({
@@ -260,35 +276,35 @@ function BankCard({
     action();
   };
   return (
-    <article className="course-card">
+    <article className={TILE}>
       <Link
         href={href}
-        className={`course-cover cover-${coverFor(bank.subjectCode ?? bank.name)}`}
+        className={`${TILE_COVER} cover-${coverFor(bank.subjectCode ?? bank.name)}`}
         tabIndex={-1}
         aria-hidden="true"
       />
-      <div className="course-body">
-        <div className="course-meta">
-          <span className="course-code">{bank.subjectCode ?? 'Chưa gắn môn'}</span>
-          <details className="dropdown course-options">
-            <summary className="icon-button" aria-label={`Tùy chọn ${bank.name}`}>
+      <div className={TILE_BODY}>
+        <div className={TILE_META}>
+          <span className={TILE_CODE}>{bank.subjectCode ?? 'Chưa gắn môn'}</span>
+          <details className="dropdown">
+            <summary className={TILE_MENU_BUTTON} aria-label={`Tùy chọn ${bank.name}`}>
               <Icon name="more" size={15} />
             </summary>
             <div className="dropdown-panel">
               <button onClick={run(onEdit)}>Sửa tên, môn học, mô tả</button>
-              <button className="danger" onClick={run(onDelete)}>
+              <button className="text-red-600" onClick={run(onDelete)}>
                 Xóa ngân hàng
               </button>
             </div>
           </details>
         </div>
-        <Link href={href} className="course-title">
-          <h2>{bank.name}</h2>
+        <Link href={href} className={TILE_TITLE}>
+          <h2 className={TILE_HEADING}>{bank.name}</h2>
         </Link>
-        {bank.description && <p className="course-subtitle">{bank.description}</p>}
-        <div className="course-footer">
+        {bank.description && <p className={TILE_LINE}>{bank.description}</p>}
+        <div className={TILE_FOOTER}>
           <span>Sửa {formatDateTime(bank.updatedAt)}</span>
-          <b>{bank.questionCount} câu hỏi</b>
+          <b className={TILE_FOOTER_VALUE}>{bank.questionCount} câu hỏi</b>
         </div>
       </div>
     </article>

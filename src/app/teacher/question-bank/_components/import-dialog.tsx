@@ -145,9 +145,11 @@ export function ImportDialog({
             PDF cần dòng <code>ĐÁP ÁN</code> hoặc dấu <code>*</code>. Hình ảnh và công thức không
             chuyển được thành chữ.
           </p>
-          <details className="import-sample">
-            <summary>Xem mẫu</summary>
-            <pre>{IMPORT_SAMPLE}</pre>
+          <details className="mb-3 text-[13px]">
+            <summary className="cursor-pointer font-semibold text-primary-600">Xem mẫu</summary>
+            <pre className="my-2 rounded-sm border border-line bg-surface-muted px-3 py-2.5 font-mono text-xs leading-[1.5] whitespace-pre-wrap text-ink">
+              {IMPORT_SAMPLE}
+            </pre>
             <button
               type="button"
               className="button small"
@@ -157,7 +159,7 @@ export function ImportDialog({
             </button>
           </details>
           <textarea
-            className="input admin-textarea import-textarea"
+            className="input admin-textarea min-h-65 w-full leading-[1.5]"
             value={content}
             onChange={(event) => setContent(event.target.value)}
             maxLength={MAX_CHARS}
@@ -167,20 +169,23 @@ export function ImportDialog({
             autoFocus
           />
           {issues.length > 0 && (
-            <div className="import-issues" role="alert">
+            <div
+              className="mt-3 max-h-45 overflow-y-auto rounded-sm bg-red-50 px-3.5 py-2.5 text-[13px] text-red-600"
+              role="alert"
+            >
               <p>
                 <b>{issues.length} câu bị lỗi, chưa thêm câu nào.</b> Sửa trong ô trên rồi bấm Nhập
                 lại.
               </p>
-              <ul>
+              <ul className="mt-1.5 list-disc pl-4.5">
                 {issues.map((issue) => (
                   <li key={`${issue.line}-${issue.reason}`}>{importIssueText(issue)}</li>
                 ))}
               </ul>
             </div>
           )}
-          <div className="dialog-actions import-actions">
-            <label className="button">
+          <div className="dialog-actions">
+            <label className="button mr-auto cursor-pointer max-md:mr-0">
               <Icon name="file" size={13} />
               {busy ? 'Đang đọc…' : 'Mở file (.txt, .docx, .pdf)'}
               <input

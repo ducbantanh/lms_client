@@ -16,7 +16,7 @@ export function QuizReviewList({
   stats?: Map<string, { answered: number; correct: number }>;
 }) {
   return (
-    <ol className="quiz-questions" aria-label="Bài làm">
+    <ol className="question-list min-w-0" aria-label="Bài làm">
       {questions.map((question, index) => {
         const stat = stats?.get(question.id);
         return (

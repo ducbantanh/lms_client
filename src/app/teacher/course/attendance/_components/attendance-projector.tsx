@@ -155,12 +155,12 @@ export function AttendanceProjector() {
     );
 
   return (
-    <main id="main-content" className="projector">
-      <div className="projector-stage" ref={stageRef}>
-        <header className="projector-head">
+    <main id="main-content" className="fixed inset-0 z-[200] overflow-auto bg-white">
+      <div className="flex min-h-full flex-col bg-white px-8 py-6 max-md:p-4" ref={stageRef}>
+        <header className="mb-4 flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="detail-code">{qr?.course ?? 'Điểm danh'}</p>
-            <h1>{qr?.session ?? 'Mã QR điểm danh'}</h1>
+            <p className="text-[13px] font-semibold text-ink-subtle">{qr?.course ?? 'Điểm danh'}</p>
+            <h1 className="text-[28px]">{qr?.session ?? 'Mã QR điểm danh'}</h1>
           </div>
           <div className="button-row">
             <button className="button" onClick={toggleFullscreen}>
@@ -186,18 +186,20 @@ export function AttendanceProjector() {
           </div>
         )}
         {phase === 'loading' ? (
-          <p className="projector-message">Đang lấy mã QR…</p>
+          <p className="grid flex-1 place-content-center justify-items-center gap-3 text-center text-lg text-ink-muted">
+            Đang lấy mã QR…
+          </p>
         ) : phase === 'error' ? (
-          <div className="projector-message">
-            <h2>Không chiếu được mã QR</h2>
+          <div className="grid flex-1 place-content-center justify-items-center gap-3 text-center text-lg text-ink-muted">
+            <h2 className="text-2xl text-ink">Không chiếu được mã QR</h2>
             <p>{error}</p>
             <Link href={back} className="button">
               Về buổi điểm danh
             </Link>
           </div>
         ) : phase === 'closed' ? (
-          <div className="projector-message">
-            <h2>Đã dừng điểm danh bằng QR</h2>
+          <div className="grid flex-1 place-content-center justify-items-center gap-3 text-center text-lg text-ink-muted">
+            <h2 className="text-2xl text-ink">Đã dừng điểm danh bằng QR</h2>
             <p>Sinh viên chưa điểm danh liên hệ giảng viên để được điểm danh thủ công.</p>
             <button className="button primary" disabled={busy} onClick={() => setOpen(true)}>
               <Icon name="qrcode" size={13} />
@@ -205,10 +207,11 @@ export function AttendanceProjector() {
             </button>
           </div>
         ) : (
-          <div className="projector-body">
-            <figure className="projector-qr">
+          <div className="flex flex-1 flex-wrap items-center justify-center gap-12 max-md:gap-6">
+            <figure className="m-0 text-center">
               {code && !stale ? (
                 <svg
+                  className="block h-[min(72vh,62vw)] w-[min(72vh,62vw)] max-md:w-[min(86vw,60vh)] max-md:h-[min(86vw,60vh)]"
                   viewBox={`${-QUIET_ZONE} ${-QUIET_ZONE} ${code.size + QUIET_ZONE * 2} ${code.size + QUIET_ZONE * 2}`}
                   shapeRendering="crispEdges"
                   role="img"
@@ -224,28 +227,41 @@ export function AttendanceProjector() {
                   <path d={code.path} fill="#000" />
                 </svg>
               ) : (
-                <div className="projector-offline">Mất kết nối máy chủ, đang thử lại…</div>
+                <div className="block h-[min(72vh,62vw)] w-[min(72vh,62vw)] max-md:w-[min(86vw,60vh)] max-md:h-[min(86vw,60vh)] grid place-items-center rounded-lg border-2 border-dashed border-line-strong text-lg text-ink-muted">
+                  Mất kết nối máy chủ, đang thử lại…
+                </div>
               )}
-              <div className="projector-timer" aria-hidden="true">
-                <span style={{ width: `${Math.min(100, (left / period) * 100)}%` }} />
+              <div
+                className="mx-auto mt-3 mb-2 h-1.5 w-[min(72vh,62vw)] max-md:w-[min(86vw,60vh)] overflow-hidden rounded-[3px] bg-surface-muted"
+                aria-hidden="true"
+              >
+                <span
+                  className="block h-full bg-primary-600 transition-[width] duration-250 ease-linear"
+                  style={{ width: `${Math.min(100, (left / period) * 100)}%` }}
+                />
               </div>
-              <figcaption>{offline ? 'Đang kết nối lại…' : `Mã mới sau ${left} giây`}</figcaption>
+              <figcaption className="text-base text-ink-muted">
+                {offline ? 'Đang kết nối lại…' : `Mã mới sau ${left} giây`}
+              </figcaption>
             </figure>
-            <aside className="projector-side">
-              <p className="projector-count" aria-live="polite">
+            <aside className="max-w-85 min-w-60">
+              <p className="text-[72px] leading-none font-bold tabular-nums" aria-live="polite">
                 <b>{qr?.checkedIn ?? 0}</b>
-                <span>/{qr?.students ?? 0}</span>
+                <span className="text-[36px] text-ink-subtle">/{qr?.students ?? 0}</span>
               </p>
-              <p className="projector-count-label">sinh viên đã điểm danh</p>
-              <ol className="projector-steps">
+              <p className="mt-1 text-lg text-ink-muted">sinh viên đã điểm danh</p>
+              <ol className="mt-7 ml-5 list-decimal p-0 text-[17px] leading-[1.9]">
                 <li>Đăng nhập LMS trên điện thoại</li>
                 <li>Mở camera, quét mã QR</li>
                 <li>Chờ màn hình báo &quot;Đã điểm danh&quot;</li>
               </ol>
               {recent.length > 0 && (
-                <ul className="projector-recent" aria-label="Vừa điểm danh">
+                <ul className="mt-6 list-none p-0 text-base" aria-label="Vừa điểm danh">
                   {recent.map((row) => (
-                    <li key={row.studentId}>
+                    <li
+                      key={row.studentId}
+                      className="flex items-center gap-2 py-1 text-emerald-700"
+                    >
                       <Icon name="check" size={11} />
                       {row.fullName}
                     </li>

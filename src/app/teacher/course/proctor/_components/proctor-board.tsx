@@ -245,7 +245,7 @@ export function ProctorBoardView() {
       </Link>
       <div className="page-heading">
         <div>
-          <p className="detail-code">
+          <p className="text-[13px] font-semibold text-ink-subtle">
             <span className="badge muted-solid">Bài kiểm tra</span>
             <span className={`badge ${status.tone}`}>{status.label}</span>
             <span className={`badge ${settings.enabled ? 'warn' : 'muted'}`}>

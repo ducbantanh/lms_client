@@ -134,14 +134,14 @@ export function AttendanceTab(props: TabProps) {
                       <button className="link-button" onClick={() => setSelected(session.id)}>
                         {session.title}
                       </button>
-                      {session.qrOpen && <span className="badge ok qr-badge">Đang mở QR</span>}
+                      {session.qrOpen && <span className="badge ok ml-2">Đang mở QR</span>}
                       <small className="cell-sub">{formatDateTime(session.createdAt)}</small>
                     </td>
                     <td className="numeric">{session.present}</td>
                     <td className="numeric">{session.late}</td>
                     <td className="numeric hide-sm">{session.excused}</td>
                     <td className="numeric">
-                      <b className={absentCount(session, overview.students) ? 'text-danger' : ''}>
+                      <b className={absentCount(session, overview.students) ? 'text-red-600' : ''}>
                         {absentCount(session, overview.students)}
                       </b>
                     </td>
@@ -371,12 +371,12 @@ function SessionView({
         Tất cả buổi điểm danh
       </button>
       <section className="panel">
-        <div className="attendance-head">
+        <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h2>
+            <h2 className="flex items-center text-lg">
               {session.title}
               {session.qrOpen ? (
-                <span className="badge ok qr-badge">Đang mở QR</span>
+                <span className="badge ok ml-2">Đang mở QR</span>
               ) : (
                 <span className="badge muted">Đã dừng QR</span>
               )}
@@ -418,15 +418,15 @@ function SessionView({
             </div>
           )}
         </div>
-        <div className="attendance-counts">
+        <div className="mt-3.5 flex flex-wrap items-center gap-1.5">
           {([0, 1, 2] as const).map((status) => (
-            <span key={status} className={`badge ${statusInfo(status).tone}`}>
+            <span key={status} className={`badge ${COUNT_BADGE} ${statusInfo(status).tone}`}>
               {statusInfo(status).label}{' '}
               {status === 0 ? session.present : status === 1 ? session.late : session.excused}
             </span>
           ))}
-          <span className="badge locked">Vắng {absent.length}</span>
-          <span className="table-summary">/ {students} sinh viên</span>
+          <span className={`badge locked ${COUNT_BADGE}`}>Vắng {absent.length}</span>
+          <span className="table-summary m-0">/ {students} sinh viên</span>
         </div>
       </section>
       <section className="panel">
@@ -519,7 +519,7 @@ function SessionView({
                       {row.ip ?? '—'}
                       {row.ip && duplicateIps.has(row.ip) && (
                         <span
-                          className="badge warn ip-badge"
+                          className="badge warn my-0 mr-0 ml-1.5"
                           title={`${duplicateIps.get(row.ip)} sinh viên quét từ cùng địa chỉ IP này`}
                         >
                           Trùng IP
@@ -548,6 +548,16 @@ function SessionView({
   );
 }
 
+/** Màu nút trạng thái đang chọn, theo tone của statusInfo. */
+const PICKED = {
+  ok: 'bg-emerald-50 text-emerald-700',
+  warn: 'bg-amber-50 text-amber-700',
+  muted: 'bg-surface-muted text-ink',
+  locked: 'bg-red-50 text-red-600',
+};
+/** Badge đếm số sinh viên theo trạng thái ở đầu buổi điểm danh (to hơn badge thường). */
+const COUNT_BADGE = 'm-0 px-2.5 py-[3px] text-[13px]';
+
 /** Bốn nút Có mặt / Đi muộn / Có phép / Vắng; bấm lại trạng thái đang chọn thì không gửi gì. */
 function StatusPicker({
   row,
@@ -559,14 +569,22 @@ function StatusPicker({
   onChange: (status: AttendanceStatus | null) => void;
 }) {
   return (
-    <div className="status-picker" role="group" aria-label={`Trạng thái của ${row.username}`}>
+    <div
+      className="inline-flex divide-x divide-line-strong overflow-hidden rounded-sm border border-line-strong"
+      role="group"
+      aria-label={`Trạng thái của ${row.username}`}
+    >
       {STATUS_CHOICES.map((status) => {
         const info = statusInfo(status);
         const current = row.status === status;
         return (
           <button
             key={info.label}
-            className={current ? `selected ${info.tone}` : ''}
+            className={`h-7 px-2.5 text-xs font-semibold whitespace-nowrap transition-colors disabled:cursor-wait disabled:opacity-60 max-md:px-[7px] ${
+              current
+                ? PICKED[info.tone as keyof typeof PICKED]
+                : 'bg-white text-ink-muted hover:enabled:bg-surface-muted'
+            }`}
             aria-pressed={current}
             disabled={busy}
             onClick={() => !current && onChange(status)}

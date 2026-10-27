@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect, useState, type ReactNode } from 'react';
+import { PageHeading } from '@/components/ui/card';
 import { Modal } from '@/components/ui/modal';
 
-/** Tiêu đề dùng chung cho các trang quản trị. */
+/** Tiêu đề dùng chung cho các trang quản trị (PageHeading với mô tả bắt buộc). */
 export function AdminHeading({
   title,
   description,
@@ -14,13 +15,9 @@ export function AdminHeading({
   children?: ReactNode;
 }) {
   return (
-    <div className="page-heading">
-      <div>
-        <h1>{title}</h1>
-        <p>{description}</p>
-      </div>
+    <PageHeading title={title} description={description}>
       {children}
-    </div>
+    </PageHeading>
   );
 }
 

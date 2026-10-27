@@ -29,6 +29,7 @@ import { AttemptDetail, AttemptList } from '@/components/code-attempt';
 import { CodeFields } from '@/components/code-problem-editor';
 import { StatCard } from '@/components/ui/stat-card';
 import { Icon } from '@/components/ui/icon';
+import { GRADER_ACTIONS, GRADER_META, GRADER_NAV, GRADER_STUDENT } from './grader';
 
 /** /teacher/courses/{id}/assessments/{aid}. */
 function assessmentBase(courseId: string, assessmentId: string) {
@@ -322,7 +323,7 @@ function StudentAttempts({
   );
   return (
     <section className="panel">
-      <div className="grader-nav">
+      <div className={GRADER_NAV}>
         <button className="button small" onClick={onBack}>
           <Icon name="list" size={11} />
           Bảng kết quả
@@ -333,9 +334,9 @@ function StudentAttempts({
           </span>
         )}
       </div>
-      <h2 className="grader-student">{row.fullName}</h2>
-      <p className="grader-meta">
-        <span className="mono">{row.username}</span>
+      <h2 className={GRADER_STUDENT}>{row.fullName}</h2>
+      <p className={GRADER_META}>
+        <span className="font-mono text-[13px]">{row.username}</span>
         <span>
           Câu {problem.number} – {problem.title}
         </span>
@@ -517,7 +518,7 @@ function ProblemsPanel({
             Xóa một câu thì các lần nộp của sinh viên ở câu đó cũng bị xóa. Câu có bộ test hoặc giới
             hạn thay đổi được chấm lại.
           </p>
-          <div className="grader-actions">
+          <div className={GRADER_ACTIONS}>
             <button className="button primary" disabled={busy}>
               {busy ? 'Đang lưu…' : 'Lưu'}
             </button>
@@ -598,7 +599,7 @@ function ProblemsPanel({
             </details>
           ))}
           {canEdit && (
-            <div className="grader-actions">
+            <div className={GRADER_ACTIONS}>
               {code.editable && (
                 <button className="button" onClick={() => setDraft(draftFromTeacher(code))}>
                   <Icon name="edit" size={11} />

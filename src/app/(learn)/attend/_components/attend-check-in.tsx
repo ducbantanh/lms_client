@@ -40,23 +40,25 @@ export function AttendCheckIn() {
 
   return (
     <main id="main-content" className="shell-main">
-      <section className="panel attend-card">
+      <section className="panel mx-auto my-6 max-w-120">
         {waiting ? (
-          <p className="attend-status" role="status">
+          <p className="py-8 text-center text-ink-muted" role="status">
             Đang điểm danh…
           </p>
         ) : result ? (
-          <div className="attend-result" role="status">
-            <i className="attend-icon ok">
+          <div className="grid justify-items-center gap-2.5 px-1 py-4 text-center" role="status">
+            <i className="grid size-16 place-items-center rounded-full not-italic bg-emerald-50 text-emerald-700">
               <Icon name="check" size={28} />
             </i>
-            <h1>{result.alreadyRecorded ? 'Bạn đã được điểm danh' : 'Đã điểm danh'}</h1>
-            <p className="attend-course">
+            <h1 className="text-[22px]">
+              {result.alreadyRecorded ? 'Bạn đã được điểm danh' : 'Đã điểm danh'}
+            </h1>
+            <p className="text-[15px]">
               <b>{result.course}</b> · {result.courseTitle}
             </p>
             <p>
               {result.session} ·{' '}
-              <span className={`badge ${statusInfo(result.status).tone}`}>
+              <span className={`badge m-0 ${statusInfo(result.status).tone}`}>
                 {statusInfo(result.status).label}
               </span>
             </p>
@@ -66,11 +68,11 @@ export function AttendCheckIn() {
             </Link>
           </div>
         ) : error ? (
-          <div className="attend-result" role="alert">
-            <i className="attend-icon fail">
+          <div className="grid justify-items-center gap-2.5 px-1 py-4 text-center" role="alert">
+            <i className="grid size-16 place-items-center rounded-full not-italic bg-red-50 text-red-600">
               <Icon name="close" size={28} />
             </i>
-            <h1>Chưa điểm danh được</h1>
+            <h1 className="text-[22px]">Chưa điểm danh được</h1>
             <p>{error.message}</p>
             <p className="cell-sub">
               {error.code === 'NOT_ENROLLED' || error.code === 'ATTENDANCE_CLOSED'
@@ -79,11 +81,11 @@ export function AttendCheckIn() {
             </p>
           </div>
         ) : (
-          <div className="attend-result">
-            <i className="attend-icon">
+          <div className="grid justify-items-center gap-2.5 px-1 py-4 text-center">
+            <i className="grid size-16 place-items-center rounded-full not-italic bg-surface-muted text-ink-muted">
               <Icon name="qrcode" size={28} />
             </i>
-            <h1>Điểm danh bằng mã QR</h1>
+            <h1 className="text-[22px]">Điểm danh bằng mã QR</h1>
             <p>
               Mở camera điện thoại và quét mã QR giảng viên chiếu trên màn hình. Mã đổi mỗi 10 giây
               nên hãy quét trực tiếp, không dùng ảnh chụp.

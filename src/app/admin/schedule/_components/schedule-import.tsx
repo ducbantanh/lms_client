@@ -124,8 +124,8 @@ export function ScheduleImportDialog({
           />
           Gửi thông báo lịch học cho sinh viên và giảng viên của mỗi khóa học
         </label>
-        <div className="admin-import-actions">
-          <label className="button">
+        <div className="mt-3 flex flex-wrap gap-2">
+          <label className="button mr-auto max-w-full cursor-pointer truncate">
             <Icon name="upload" size={13} />
             {fileName || 'Chọn file .txt / .csv'}
             <input

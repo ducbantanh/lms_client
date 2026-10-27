@@ -1,7 +1,10 @@
 import Link from 'next/link';
 export default function NotFound() {
   return (
-    <main id="main-content" className="page-width main-content">
+    <main
+      id="main-content"
+      className="mx-auto w-[min(1200px,calc(100%-48px))] max-md:w-[calc(100%-32px)] pt-8 pb-12 max-md:pt-6 max-md:pb-10"
+    >
       <div className="empty-state">
         <p className="error-code">404</p>
         <h1>Trang này không tồn tại</h1>

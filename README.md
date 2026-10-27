@@ -27,7 +27,12 @@ lms_client/
 ├── src/
 │   ├── app/                       Chỉ chứa route (page, layout, not-found) và code riêng của route
 │   │   ├── layout.tsx             Root layout: session + CSS local (không có khung trang)
-│   │   ├── globals.css            Toàn bộ CSS của ứng dụng
+│   │   ├── globals.css            Tailwind: thứ tự layer, token (@theme), hiệu ứng chung
+│   │   ├── base.css               Reset thẻ HTML (thay preflight của Tailwind)
+│   │   ├── ui.css                 Thành phần dùng chung (@apply): nút, ô nhập, panel, bảng, badge, tab…
+│   │   ├── code.css               Bài lập trình (CodeMirror, bộ test, ma trận kết quả, kho bài)
+│   │   ├── schedule.css           Lịch học và đơn xin nghỉ
+│   │   ├── exam.css               Thi có giám sát (chế độ thi, mã phòng thi, bảng giám sát)
 │   │   ├── fonts/                 Source Sans Pro (woff2 + @font-face), import trong layout.tsx
 │   │   ├── (learn)/               Khu học tập, dùng khung sidebar (layout.tsx → AppShell)
 │   │   │   ├── page.tsx           Trang chủ: danh sách khóa học
@@ -112,14 +117,32 @@ trong README này để tra đường dẫn hiện tại.
   (`src/app/admin/settings/_components/idle-timeout-panel.tsx`). Sinh viên đang làm bài kiểm tra
   (bài đang mở, chưa nộp) và còn mở trang thì server giữ phiên, không tự đăng xuất.
 
-## CSS
+## CSS (Tailwind CSS v4)
 
-- Toàn bộ style nằm trong `src/app/globals.css`, dùng token màu ở `:root` (một màu nhấn cam duy nhất).
-- Không dùng AdminLTE/Bootstrap: Next xếp chunk vendor sau `globals.css` nên Bootstrap đè style riêng.
-- Class dùng chung: `button` (`primary`, `danger`, `small`), `input`, `select`, `panel`, `tabs`,
-  `toolbar`, `stats/stat-card`, `badge`, `empty-state`.
-- Font Awesome 5 lấy từ gói npm `@fortawesome/fontawesome-free`, font Source Sans Pro trong
-  `src/app/fonts/`; cả hai được `import` trong `src/app/layout.tsx` và đóng gói vào `out/`, không CDN.
+- Tailwind v4 build sẵn qua PostCSS (`postcss.config.mjs`), không CDN, chạy offline. `src/app/globals.css`
+  khai báo thứ tự layer, bộ token (`@theme`: màu `canvas`, `ink`, `line`, `primary-*`, `chart-*`, `sidebar`;
+  bo góc `rounded-card` (8px) / `--radius-control` (4px); bóng `shadow-card` / `shadow-lift`; chuyển động
+  `animate-fade-in`, `animate-grow-x`…) và vài hiệu ứng chung (trang vào hiện mờ dần, hộp thoại phóng nhẹ).
+- Giao diện viết bằng class Tailwind trong JSX. Phần dùng lại ở nhiều trang là class viết bằng `@apply`:
+  - `ui.css` (layer `ui`): `button` (`primary`, `danger`, `small`), `icon-button`, `input`, `select`,
+    `form-field`, `panel`, `panel-title`, `page-heading`, `tabs`, `toolbar`, `segmented`, `admin-table`,
+    `badge`, `notice`, `empty-state`, `info-list`, danh sách tệp (`file-list`, `file-row`), `pick-list`,
+    câu hỏi trắc nghiệm (`question-card`, `option-letter`), `time-left`, `grade-box`, màu bìa `cover-*`…
+  - `code.css`, `schedule.css`, `exam.css` (layer `features`): các cụm nhiều quy tắc lồng nhau (bài lập trình,
+    lịch học, thi có giám sát), giữ tên class cũ.
+  - Bộ class cho JSX: `src/components/ui/tile.ts` (thẻ khóa học / ngân hàng câu hỏi), `course-items.tsx`
+    (`LESSON_LIST`, `SECTION_GRID`…), `notification-row.tsx` (dòng thông báo dùng chung),
+    `app/teacher/course/submissions/_components/grader.ts` (khung chấm bài).
+- Thứ tự layer `theme, base, ui, features, components, utilities`: class Tailwind trong JSX luôn thắng.
+  Không nạp preflight: `base.css` giữ cỡ chữ tiêu đề và kiểu danh sách mặc định; danh sách mới tự thêm
+  `list-none p-0` khi cần.
+- Class Tailwind cỡ chữ (`text-sm`…) kèm chiều cao dòng chuẩn; cần cỡ chữ lẻ thì dùng `text-[13px]`.
+- Thành phần React dùng chung: `src/components/ui/card.tsx` (`Card`, `PageHeading`, `Skeleton`), `charts.tsx`,
+  `ratio-card.tsx`, `stat-card.tsx`, `modal.tsx`. Hàm thuần của trang Tổng quan ở `src/lib/dashboard.ts`.
+- Chuyển động tôn trọng cài đặt "giảm chuyển động" của hệ điều hành (`prefers-reduced-motion`).
+- Không dùng AdminLTE/Bootstrap.
+- Font Awesome 5 lấy từ gói npm `@fortawesome/fontawesome-free`, font Inter (`@fontsource-variable/inter`) và
+  Source Sans Pro dự phòng trong `src/app/fonts/`; cả hai được `import` trong `src/app/layout.tsx` và đóng gói vào `out/`, không CDN.
 - Đề PDF ở trang làm bài vẽ bằng pdf.js (`src/components/pdf-viewer.tsx`). Worker và dữ liệu font/wasm
   được `npm install` chép vào `public/vendor/pdfjs/` (`scripts/copy-pdf-worker.mjs`, đã bỏ qua trong Git);
   nếu thư mục này thiếu, chạy `node scripts/copy-pdf-worker.mjs`.
