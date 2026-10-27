@@ -193,7 +193,7 @@ export function CourseManager() {
       </Link>
       <div className="page-heading">
         <div>
-          <p className="detail-code">
+          <p className="text-[13px] font-semibold text-ink-subtle">
             {courseLabel(course.code, course.group)} · {COURSE_FORMATS[course.format]} ·{' '}
             {course.teacherName ?? <span className="badge warn">Chưa phân công giảng viên</span>}
           </p>

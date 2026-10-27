@@ -13,7 +13,7 @@ import {
   type Assessment,
   type AssessmentType,
 } from '@/lib/teaching';
-import { AssessmentItem } from '@/components/course-items';
+import { ASSESSMENT_LIST, AssessmentItem } from '@/components/course-items';
 import { Icon } from '@/components/ui/icon';
 import { Modal } from '@/components/ui/modal';
 import { errorFlash, type TabProps } from './course-manager';
@@ -56,7 +56,7 @@ export function AssessmentsTab(props: AssessmentTabProps) {
     <div className={canTeach ? 'columns' : undefined}>
       <section className="panel">
         {items.length ? (
-          <ul className="assessment-list">
+          <ul className={ASSESSMENT_LIST}>
             {items.map((assessment) => (
               <AssessmentItem
                 key={assessment.id}

@@ -45,10 +45,15 @@ export function AuthForm({ changePassword = false }: { changePassword?: boolean 
   }
 
   return (
-    <main id="main-content" className="auth-page">
-      <section className="auth-card">
-        <h1>{changePassword ? 'Đổi mật khẩu' : 'Đăng nhập'}</h1>
-        <p>
+    <main
+      id="main-content"
+      className="grid min-h-[calc(100vh-124px)] place-items-center px-4 py-12 max-md:items-start max-md:pt-8"
+    >
+      <section className="w-[min(400px,100%)] rounded-lg border border-line bg-white p-8 shadow-card max-md:p-6">
+        <h1 className="text-[22px] font-semibold">
+          {changePassword ? 'Đổi mật khẩu' : 'Đăng nhập'}
+        </h1>
+        <p className="mt-1 mb-6 text-sm text-ink-muted">
           {changePassword
             ? 'Tạo mật khẩu mới để bảo vệ tài khoản của bạn.'
             : 'Sử dụng tài khoản do nhà trường cung cấp.'}
@@ -86,9 +91,9 @@ export function AuthForm({ changePassword = false }: { changePassword?: boolean 
           )}
           <label className="form-field">
             {changePassword ? 'Mật khẩu mới' : 'Mật khẩu'}
-            <span className="password-field">
+            <span className="relative">
               <input
-                className="input"
+                className="input pr-10"
                 name="password"
                 type={showPassword ? 'text' : 'password'}
                 autoComplete={changePassword ? 'new-password' : 'current-password'}
@@ -99,7 +104,7 @@ export function AuthForm({ changePassword = false }: { changePassword?: boolean 
               />
               <button
                 type="button"
-                className="icon-button"
+                className="icon-button absolute top-0.5 right-0.5"
                 aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
                 onClick={() => setShowPassword(!showPassword)}
               >
@@ -126,7 +131,7 @@ export function AuthForm({ changePassword = false }: { changePassword?: boolean 
               {error}
             </p>
           )}
-          <button className="button primary full-width" type="submit" disabled={busy}>
+          <button className="button primary mt-1 h-10 w-full" type="submit" disabled={busy}>
             {busy ? 'Đang xử lý…' : changePassword ? 'Lưu mật khẩu mới' : 'Đăng nhập'}
           </button>
         </form>

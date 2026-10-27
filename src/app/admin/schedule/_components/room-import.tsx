@@ -151,8 +151,8 @@ export function RoomImportDialog({
             aria-label="Danh sách phòng học"
             autoFocus
           />
-          <div className="admin-import-actions">
-            <label className="button">
+          <div className="mt-3 flex flex-wrap gap-2">
+            <label className="button mr-auto max-w-full cursor-pointer truncate">
               <Icon name="upload" size={13} />
               {fileName || 'Chọn file .txt / .csv'}
               <input

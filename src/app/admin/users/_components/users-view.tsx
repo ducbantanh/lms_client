@@ -465,7 +465,7 @@ function EditUserDialog({
           </p>
         )}
         {!self && (
-          <div className="reset-password">
+          <div className="mt-4 mb-1 flex flex-wrap items-center justify-between gap-x-4 gap-y-2.5 rounded-sm border border-line bg-surface-muted px-3.5 py-3 text-[13px] text-ink-muted">
             {confirmReset ? (
               <>
                 <span>

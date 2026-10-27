@@ -1,9 +1,10 @@
 'use client';
 
-import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { apiRequest } from '@/lib/api';
 import { hasPermission, roleName } from '@/lib/auth';
+import { initials } from '@/lib/course-utils';
+import { CHART_COLORS, percent } from '@/lib/dashboard';
 import { useSession } from '@/providers/session-provider';
 import {
   formatDateTime,
@@ -14,6 +15,9 @@ import {
 } from '@/lib/admin';
 import { Icon } from '@/components/ui/icon';
 import { StatCard } from '@/components/ui/stat-card';
+import { Card, EmptyHint, Skeleton } from '@/components/ui/card';
+import { ColumnChart, CountUp, Donut, Legend, ProgressBar } from '@/components/ui/charts';
+import { RatioCard } from '@/components/ui/ratio-card';
 import {
   AdminHeading,
   ConfirmDialog,
@@ -36,7 +40,7 @@ interface FeedItem {
   at: Date;
 }
 
-/** Trang /admin/: thống kê + danh sách online cập nhật realtime qua presence.changed. */
+/** Trang /admin/: thống kê, người đang online, phân bổ tài khoản, hoạt động cập nhật realtime (presence.changed). */
 export function AdminOverview() {
   const { user, subscribe } = useSession();
   const canManage = hasPermission(user, 'users.manage');
@@ -122,14 +126,22 @@ export function AdminOverview() {
     });
   }
 
-  /** Phân bổ tài khoản; "khác" là mọi vai trò không phải sinh viên (admin, giảng viên...). */
-  const breakdown = stats
+  /** Phân bổ tài khoản; "vai trò khác" là mọi vai trò không phải sinh viên (admin, giảng viên...). */
+  const accounts = stats
     ? [
-        { label: 'Sinh viên', value: stats.students, tone: 'violet' },
-        { label: 'Vai trò khác', value: stats.total - stats.students, tone: 'blue' },
-        { label: 'Bị khóa', value: stats.locked, tone: 'red' },
+        { label: 'Sinh viên', value: stats.students, color: 'var(--color-chart-violet)' },
+        {
+          label: 'Vai trò khác',
+          value: stats.total - stats.students,
+          color: 'var(--color-chart-blue)',
+        },
       ]
     : [];
+  // Người online theo vai trò (biểu đồ cột)
+  const byRole = new Map<string, number>();
+  presence?.users.forEach((item) =>
+    byRole.set(roleName(item.role), (byRole.get(roleName(item.role)) ?? 0) + 1),
+  );
 
   return (
     <main id="main-content" className="shell-main">
@@ -172,45 +184,60 @@ export function AdminOverview() {
           </>
         )}
       </div>
-      <div className="columns">
-        <section className="panel">
-          <div className="panel-title">
-            <h2>Đang online</h2>
-          </div>
-          <div className="table-responsive">
-            <table className="table admin-table">
-              <thead>
-                <tr>
-                  <th>Tài khoản</th>
-                  <th>Họ tên</th>
-                  <th className="hide-sm">Vai trò</th>
-                  <th className="hide-sm">Kết nối</th>
-                  <th className="hide-sm">Từ lúc</th>
-                  <th />
-                </tr>
-              </thead>
-              <tbody>
-                {!presence ? (
-                  <tr>
-                    <td colSpan={6} className="empty-cell">
-                      Đang tải…
-                    </td>
+      <div className="grid gap-5 xl:grid-cols-12">
+        <Card
+          title="Đang online"
+          info="Người dùng đang mở ít nhất một kết nối realtime; cập nhật ngay khi có người vào / ra."
+          className={canManage ? 'xl:col-span-8' : 'xl:col-span-12'}
+        >
+          {!presence ? (
+            <div className="space-y-3">
+              <Skeleton className="h-10" />
+              <Skeleton className="h-10" />
+            </div>
+          ) : presence.users.length === 0 ? (
+            <EmptyHint>Không có ai online.</EmptyHint>
+          ) : (
+            <div className="-mx-5 -mb-5 overflow-x-auto">
+              <table className="w-full min-w-[560px] text-left text-sm">
+                <thead>
+                  <tr className="text-xs text-ink-subtle">
+                    <th className="px-5 pb-2 font-medium">Người dùng</th>
+                    <th className="px-3 pb-2 font-medium">Vai trò</th>
+                    <th className="px-3 pb-2 text-right font-medium">Kết nối</th>
+                    <th className="px-3 pb-2 font-medium">Từ lúc</th>
+                    <th className="px-5 pb-2" />
                   </tr>
-                ) : presence.users.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="empty-cell">
-                      Không có ai online.
-                    </td>
-                  </tr>
-                ) : (
-                  presence.users.map((item) => (
-                    <tr key={item.id}>
-                      <td className="mono">{item.username}</td>
-                      <td>{item.fullName}</td>
-                      <td className="hide-sm">{roleName(item.role)}</td>
-                      <td className="hide-sm numeric">{item.connections}</td>
-                      <td className="hide-sm">{formatDateTime(item.since)}</td>
-                      <td className="actions">
+                </thead>
+                <tbody>
+                  {presence.users.map((item, index) => (
+                    <tr
+                      key={item.id}
+                      className="animate-fade-in border-t border-line transition-colors hover:bg-surface-muted"
+                      style={{ animationDelay: `${index * 30}ms` }}
+                    >
+                      <td className="px-5 py-2.5">
+                        <span className="flex items-center gap-3">
+                          <span className="relative">
+                            <span className="grid size-8 place-items-center rounded-full bg-primary-50 text-[11px] font-bold text-primary-600">
+                              {initials(item.fullName)}
+                            </span>
+                            <span className="absolute -right-0.5 -bottom-0.5 size-2.5 animate-live rounded-full bg-emerald-500 shadow-[0_0_0_0_rgb(34_197_94/0.5)] ring-2 ring-white" />
+                          </span>
+                          <span className="min-w-0">
+                            <b className="block truncate font-semibold text-ink">{item.fullName}</b>
+                            <small className="font-mono text-xs text-ink-subtle">
+                              {item.username}
+                            </small>
+                          </span>
+                        </span>
+                      </td>
+                      <td className="px-3 py-2.5 text-ink-muted">{roleName(item.role)}</td>
+                      <td className="px-3 py-2.5 text-right text-ink-muted tabular-nums">
+                        {item.connections}
+                      </td>
+                      <td className="px-3 py-2.5 text-ink-muted">{formatDateTime(item.since)}</td>
+                      <td className="px-5 py-2.5 text-right">
                         {canKick && item.id !== user?.id && (
                           <button
                             className="icon-button row-action danger"
@@ -223,56 +250,118 @@ export function AdminOverview() {
                         )}
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </section>
-        <div className="admin-side">
-          {canManage && stats && (
-            <section className="panel">
-              <div className="panel-title">
-                <h2>Tài khoản</h2>
-                <Link href="/admin/users/">Quản lý</Link>
-              </div>
-              <ul className="breakdown">
-                {breakdown.map((row) => (
-                  <li key={row.label}>
-                    <span>{row.label}</span>
-                    <b>{row.value}</b>
-                    <span className="breakdown-bar">
-                      <span
-                        className={row.tone}
-                        style={{ width: `${stats.total ? (row.value / stats.total) * 100 : 0}%` }}
-                      />
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
-          <section className="panel">
-            <div className="panel-title">
-              <h2>Hoạt động</h2>
+                  ))}
+                </tbody>
+              </table>
             </div>
-            {feed.length === 0 ? (
-              <p className="empty-cell">Chưa có hoạt động mới.</p>
+          )}
+        </Card>
+
+        {canManage && (
+          <Card
+            title="Tài khoản"
+            info="Phân bổ tài khoản theo vai trò; bị khóa không đăng nhập được."
+            href="/admin/users/"
+            hrefLabel="Quản lý người dùng"
+            delay={60}
+            className="xl:col-span-4"
+          >
+            {stats ? (
+              <div className="flex flex-col items-center gap-6">
+                <Donut
+                  segments={accounts}
+                  center={
+                    <div>
+                      <b className="block text-4xl font-semibold tracking-tight text-ink">
+                        <CountUp value={stats.total} />
+                      </b>
+                      <span className="text-xs text-ink-subtle">tài khoản</span>
+                    </div>
+                  }
+                />
+                <div className="flex w-full flex-col gap-4">
+                  <Legend segments={accounts} />
+                  <div>
+                    <div className="mb-2 flex items-center justify-between text-[13px]">
+                      <span className="text-ink-muted">Bị khóa</span>
+                      <b className="font-semibold text-ink tabular-nums">
+                        {stats.locked} · {percent(stats.locked, stats.total)}%
+                      </b>
+                    </div>
+                    <ProgressBar
+                      value={percent(stats.locked, stats.total)}
+                      color="var(--color-chart-rose)"
+                      delay={300}
+                    />
+                  </div>
+                </div>
+              </div>
             ) : (
-              <ul className="admin-feed">
-                {feed.map((item) => (
-                  <li key={item.key}>
-                    <span className={`status-dot ${item.online ? 'online' : ''}`} />
-                    <span>
-                      <b>{item.username}</b> {item.online ? 'vừa online' : 'đã offline'}
-                    </span>
-                    <small>{formatTime(item.at)}</small>
-                  </li>
-                ))}
-              </ul>
+              <Skeleton className="mx-auto size-44 rounded-full" />
             )}
-          </section>
-        </div>
+          </Card>
+        )}
+
+        <Card
+          title="Hoạt động"
+          info="Người dùng vừa online / offline từ lúc bạn mở trang này."
+          delay={120}
+          className="xl:col-span-5"
+        >
+          {feed.length === 0 ? (
+            <EmptyHint>Chưa có hoạt động mới.</EmptyHint>
+          ) : (
+            <ul className="m-0 list-none p-0 max-h-80 space-y-1 overflow-y-auto">
+              {feed.map((item) => (
+                <li key={item.key} className="flex items-center gap-3 rounded-sm px-2 py-2 text-sm">
+                  <span
+                    className={`size-2 shrink-0 rounded-full ${item.online ? 'bg-emerald-500' : 'bg-line-strong'}`}
+                  />
+                  <span className="min-w-0 flex-1 truncate text-ink-muted">
+                    <b className="font-semibold text-ink">{item.username}</b>{' '}
+                    {item.online ? 'vừa online' : 'đã offline'}
+                  </span>
+                  <small className="text-xs text-ink-subtle tabular-nums">
+                    {formatTime(item.at)}
+                  </small>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+
+        <Card
+          title="Online theo vai trò"
+          info="Số người đang online của từng vai trò."
+          delay={180}
+          className="xl:col-span-4"
+        >
+          {byRole.size ? (
+            <ColumnChart
+              color={CHART_COLORS[2]}
+              columns={[...byRole].map(([label, value]) => ({
+                label,
+                value,
+                hint: `${value} người`,
+              }))}
+            />
+          ) : (
+            <EmptyHint>{presence ? 'Không có ai online.' : 'Đang tải…'}</EmptyHint>
+          )}
+        </Card>
+
+        {canManage && stats && presence && (
+          <RatioCard
+            title="Tỉ lệ đang online"
+            info="Người đang online trên tổng số tài khoản."
+            value={percent(presence.onlineUsers, stats.total)}
+            leftLabel="Online"
+            rightLabel="Offline"
+            delay={240}
+            className="xl:col-span-3"
+            note={`${presence.onlineUsers} / ${stats.total} tài khoản đang mở hệ thống.`}
+          />
+        )}
       </div>
       {confirm && <ConfirmDialog request={confirm} onClose={() => setConfirm(null)} />}
     </main>

@@ -168,7 +168,7 @@ export function AuditView() {
               ) : (
                 data.items.map((item, index) => (
                   <tr key={`${item.createdAt}-${index}`}>
-                    <td className="nowrap">{formatDateTime(item.createdAt)}</td>
+                    <td className="whitespace-nowrap">{formatDateTime(item.createdAt)}</td>
                     <td>
                       {item.actorUsername ? (
                         <span title={item.actorName ?? undefined} className="mono">
@@ -187,7 +187,9 @@ export function AuditView() {
                       </span>
                     </td>
                     <td className="mono">{item.target ?? '—'}</td>
-                    <td className="hide-sm audit-detail">{item.detail ?? ''}</td>
+                    <td className="hide-sm max-w-90 text-[13px] wrap-anywhere text-ink-muted">
+                      {item.detail ?? ''}
+                    </td>
                     <td className="hide-sm mono">{item.ip ?? '—'}</td>
                   </tr>
                 ))

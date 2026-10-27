@@ -171,7 +171,7 @@ function editorOptions(cm: CodeMirror, readOnly: boolean, fontSize: number, minH
     EditorView.theme({
       '&': { fontSize: `${fontSize}px` },
       '.cm-content, .cm-gutter': { minHeight: `${minHeight}px` },
-      '.cm-scroller': { fontFamily: 'var(--mono)', lineHeight: '1.55', maxHeight: '70vh' },
+      '.cm-scroller': { fontFamily: 'var(--font-mono)', lineHeight: '1.55', maxHeight: '70vh' },
     }),
   ];
 }

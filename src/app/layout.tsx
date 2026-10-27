@@ -4,6 +4,7 @@ import { DropdownDismiss } from '@/components/ui/dropdown-dismiss';
 import { FileDropGuard } from '@/components/ui/drop-zone';
 // Font và icon đóng gói cùng ứng dụng (không CDN); nạp trước globals.css để style riêng được ưu tiên.
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import '@fontsource-variable/inter';
 import './fonts/source-sans-pro.css';
 import './globals.css';
 

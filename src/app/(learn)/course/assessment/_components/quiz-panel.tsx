@@ -34,6 +34,14 @@ import { QuizReviewList } from '@/components/quiz-review';
  * (mỗi lần chọn đáp án được lưu ngay lên server), kết quả sau khi nộp hoặc hết giờ.
  * Hạn làm bài do server quyết định; đồng hồ ở đây chỉ hiển thị theo giờ server.
  */
+/** Màu chữ trạng thái lưu đáp án của từng câu. */
+const SAVE_TONES: Record<string, string> = {
+  idle: '',
+  saving: 'text-ink-subtle',
+  saved: 'text-emerald-700',
+  error: 'text-red-600',
+};
+
 export function QuizPanel({
   assessment,
   back,
@@ -127,7 +135,7 @@ function QuizIntro({
 
   if (assessment.status === 'closed')
     return (
-      <section className="panel quiz-intro">
+      <section className="panel [&_.button]:mt-1">
         <p className="submission-note locked">Bài đã đóng, bạn chưa làm bài này.</p>
       </section>
     );
@@ -150,7 +158,7 @@ function QuizIntro({
   }
 
   return (
-    <section className="panel quiz-intro">
+    <section className="panel [&_.button]:mt-1">
       <div className="panel-title">
         <h2>
           <i className="title-icon blue">
@@ -273,14 +281,17 @@ function QuizRunner({
   }
 
   return (
-    <div className="columns quiz-columns">
-      <ol className="quiz-questions" aria-label="Câu hỏi">
+    <div className="columns items-start">
+      <ol className="question-list min-w-0" aria-label="Câu hỏi">
         {questions.map((question, index) => (
-          <li key={question.id} id={`q-${question.id}`} className="question-card">
+          <li key={question.id} id={`q-${question.id}`} className="question-card scroll-mt-18">
             <div className="question-head">
               <b className="question-number">Câu {index + 1}</b>
               {question.multiple && <span className="badge muted-solid">Chọn nhiều đáp án</span>}
-              <span className={`quiz-save ${saving[question.id] ?? ''}`} aria-live="polite">
+              <span
+                className={`ml-auto text-xs ${SAVE_TONES[saving[question.id] ?? 'idle']}`}
+                aria-live="polite"
+              >
                 {saving[question.id] === 'saving'
                   ? 'Đang lưu…'
                   : saving[question.id] === 'saved'
@@ -292,7 +303,7 @@ function QuizRunner({
             </div>
             <p className="lesson-text question-body">{question.body}</p>
             <div
-              className="quiz-options"
+              className="flex flex-col gap-1.5"
               role={question.multiple ? 'group' : 'radiogroup'}
               aria-label={`Đáp án câu ${index + 1}`}
             >
@@ -301,9 +312,14 @@ function QuizRunner({
                 return (
                   <label
                     key={option.position}
-                    className={`quiz-option${checked ? ' is-chosen' : ''}`}
+                    className={`flex cursor-pointer items-start gap-2.5 rounded-sm border px-3 py-2 ${
+                      checked
+                        ? 'border-primary-600 bg-primary-50'
+                        : 'border-line hover:bg-surface-muted'
+                    }`}
                   >
                     <input
+                      className="mt-1 accent-primary-600"
                       type={question.multiple ? 'checkbox' : 'radio'}
                       name={`q-${question.id}`}
                       checked={checked}
@@ -314,36 +330,47 @@ function QuizRunner({
                         )
                       }
                     />
-                    <span className="option-letter">{optionLetter(shown)}</span>
-                    <span className="lesson-text">{option.body}</span>
+                    <span
+                      className={`option-letter ${checked ? 'border-primary-600 bg-primary-600 text-white' : ''}`}
+                    >
+                      {optionLetter(shown)}
+                    </span>
+                    <span className="lesson-text min-w-0 flex-1 leading-[1.5]">{option.body}</span>
                   </label>
                 );
               })}
             </div>
             {!question.multiple && question.chosen.length > 0 && (
-              <button className="link-button quiz-clear" onClick={() => void choose(question, [])}>
+              <button className="link-button mt-2" onClick={() => void choose(question, [])}>
                 Bỏ chọn
               </button>
             )}
           </li>
         ))}
       </ol>
-      <aside className="panel quiz-sidebar">
+      <aside className="panel sticky top-18 max-lg:static max-lg:-order-1">
         {left !== null && (
           <p className={`time-left${left < 5 * 60_000 ? ' urgent' : ''}`} role="timer">
             <Icon name="clock" size={13} />
             Còn lại <b>{formatDuration(left)}</b>
           </p>
         )}
-        <p className="quiz-progress">
+        <p className="my-2.5 text-sm text-ink-muted">
           Đã trả lời <b>{answered}</b>/{questions.length} câu
         </p>
-        <nav className="quiz-map" aria-label="Đi tới câu">
+        <nav
+          className="mb-3.5 grid max-h-[40vh] grid-cols-[repeat(auto-fill,minmax(34px,1fr))] gap-1.5 overflow-y-auto"
+          aria-label="Đi tới câu"
+        >
           {questions.map((question, index) => (
             <a
               key={question.id}
               href={`#q-${question.id}`}
-              className={question.chosen.length ? 'is-answered' : undefined}
+              className={`grid h-8 place-items-center rounded-sm border text-[13px] font-semibold tabular-nums transition-colors ${
+                question.chosen.length
+                  ? 'border-primary-600 bg-primary-600 text-white'
+                  : 'border-line-strong text-ink-muted hover:border-primary-600 hover:text-primary-600'
+              }`}
               aria-label={`Câu ${index + 1}${question.chosen.length ? ', đã trả lời' : ''}`}
             >
               {index + 1}
@@ -354,7 +381,7 @@ function QuizRunner({
         <button className="button primary full-width" disabled={pending} onClick={submit}>
           {pending ? 'Đang lưu…' : 'Nộp bài'}
         </button>
-        <p className="admin-hint">
+        <p className="admin-hint mt-2.5">
           Bắt đầu lúc {state.startedAt ? formatDateTime(state.startedAt) : ''}
           {state.deadline && ` · hạn ${formatDateTime(state.deadline)}`}. Hết giờ bài được nộp tự
           động.
@@ -377,7 +404,7 @@ function QuizResultView({
   const { result } = state;
   return (
     <div className="stack">
-      <section className="panel quiz-result">
+      <section className="panel">
         <div className="panel-title">
           <h2>
             <i className="title-icon green">
@@ -418,7 +445,7 @@ function QuizResultView({
             </p>
           )
         )}
-        <Link href={back} className="button">
+        <Link href={back} className="button mt-3">
           Về danh sách {ASSESSMENT_GROUPS[assessment.type].noun}
         </Link>
       </section>

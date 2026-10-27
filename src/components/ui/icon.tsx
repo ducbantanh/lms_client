@@ -21,6 +21,7 @@ const icons = {
   users: 'fas fa-users',
   upload: 'fas fa-file-import',
   back: 'fas fa-arrow-left',
+  arrowRight: 'fas fa-arrow-right',
   signal: 'fas fa-signal',
   cap: 'fas fa-graduation-cap',
   lock: 'fas fa-lock',

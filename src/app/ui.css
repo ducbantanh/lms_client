@@ -1,0 +1,806 @@
+/*
+ * Thành phần dùng chung của mọi trang (nút, ô nhập, panel, bảng, badge, tab…), viết bằng Tailwind theo token ở
+ * @theme của globals.css. Nạp ở layer "ui": class Tailwind trong JSX và CSS theo tính năng (code.css…) chỉnh
+ * được thành phần ở đây.
+ */
+
+/* ---------- Nút ---------- */
+.button {
+  @apply inline-flex h-9 items-center justify-center gap-2 rounded-sm border border-line-strong bg-white px-4 text-sm font-semibold whitespace-nowrap text-ink transition-colors duration-150;
+
+  &:hover:not(:disabled) {
+    @apply border-ink-subtle/60 bg-surface-muted;
+  }
+  &.primary {
+    @apply border-primary-600 bg-primary-600 text-white;
+  }
+  &.primary:hover:not(:disabled) {
+    @apply border-primary-700 bg-primary-700;
+  }
+  &.danger {
+    @apply border-red-600 bg-red-600 text-white;
+  }
+  &.danger:hover:not(:disabled) {
+    @apply border-red-700 bg-red-700;
+  }
+  &.small {
+    @apply h-[30px] px-2.5 text-[13px];
+  }
+}
+.full-width {
+  @apply w-full;
+}
+.icon-button {
+  @apply inline-flex size-8 items-center justify-center rounded-sm text-ink-muted transition-colors duration-150;
+
+  &:hover:not(:disabled) {
+    @apply bg-surface-muted text-ink;
+  }
+}
+.row-action.danger:hover:not(:disabled) {
+  @apply bg-rose-50 text-rose-600;
+}
+.link-button {
+  @apply text-[13px] font-semibold text-ink-muted transition-colors;
+
+  &:hover,
+  &.selected {
+    @apply text-primary-600;
+  }
+}
+.button-row {
+  @apply flex flex-wrap gap-2;
+}
+
+/* ---------- Ô nhập ---------- */
+.input,
+.select {
+  @apply h-9 rounded-sm border border-line-strong bg-white px-3 text-sm transition-[border-color,box-shadow] duration-150;
+
+  &:hover:not(:focus, :disabled) {
+    @apply border-ink-subtle/60;
+  }
+  &:focus {
+    @apply border-primary-600 ring-3 ring-primary-600/15 outline-none;
+  }
+}
+.input {
+  @apply w-full placeholder:text-ink-subtle;
+}
+textarea.input {
+  @apply h-auto px-3 py-2;
+}
+.select {
+  @apply cursor-pointer appearance-none pr-8;
+  background: var(--color-surface)
+    url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23667085' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M4 6l4 4 4-4'/%3e%3c/svg%3e")
+    no-repeat right 10px center / 12px;
+}
+.search-field {
+  @apply relative flex max-w-[380px] flex-1 items-center max-md:max-w-none max-md:basis-full;
+
+  & > .icon {
+    @apply pointer-events-none absolute left-3 text-ink-subtle;
+  }
+  & > .input {
+    @apply pl-[34px];
+  }
+}
+.form-field {
+  @apply mb-4 flex flex-col gap-1.5 text-sm font-semibold text-ink;
+
+  & .input,
+  & .select {
+    @apply font-normal;
+  }
+  & textarea.input {
+    @apply resize-y;
+  }
+}
+.form-row {
+  @apply grid grid-cols-2 gap-x-3 max-md:grid-cols-1;
+}
+.optional {
+  @apply font-normal text-ink-subtle;
+}
+.check-field {
+  @apply mb-4 flex cursor-pointer items-start gap-2 text-sm text-ink-muted;
+
+  & input {
+    @apply mt-1 accent-primary-600;
+  }
+}
+.inline-form {
+  @apply flex gap-2;
+
+  & .input {
+    @apply min-w-0 flex-1;
+  }
+}
+
+/* Ô văn bản dài (dán danh sách, nhập câu hỏi…): chữ đơn cách */
+.admin-textarea {
+  @apply min-h-75 resize-y font-mono text-[13px];
+
+  &.short {
+    @apply min-h-35 w-full;
+  }
+}
+/* Dòng nhãn của trường kèm nút bên phải (vd. "Nội dung" + "Lấy từ file .txt") */
+.field-head {
+  @apply flex flex-wrap items-center justify-between gap-2;
+
+  & .optional {
+    @apply text-[13px];
+  }
+}
+.file-input {
+  @apply px-2 py-1.5;
+}
+/* Kéo thả file (components/ui/drop-zone.tsx): viền nổi bật kèm chữ khi đang kéo file vào vùng */
+.drop-zone {
+  @apply relative;
+
+  &.is-over::after {
+    @apply pointer-events-none absolute -inset-1.5 z-5 grid place-items-center rounded-lg border-2 border-dashed border-primary-600 bg-primary-50/90 text-sm font-semibold text-primary-600;
+    content: attr(data-label);
+  }
+}
+/* Ô chọn file hiện sẵn: khung viền đứt để thấy là kéo thả được */
+.drop-box {
+  @apply flex flex-col gap-1.5 rounded-sm border border-dashed border-line-strong bg-surface-muted p-2.5 font-normal;
+
+  & .file-input {
+    @apply bg-white;
+  }
+  &.is-over::after {
+    @apply -inset-0.5 rounded-sm;
+  }
+}
+.drop-hint {
+  @apply text-[13px] text-ink-subtle;
+}
+
+/* ---------- Danh sách tệp, danh sách chọn ---------- */
+.file-list {
+  @apply m-0 list-none p-0;
+}
+.file-row {
+  @apply flex items-center gap-3 border-b border-line px-5 py-2.5 last:border-b-0;
+}
+.file-icon {
+  @apply text-ink-subtle;
+}
+.file-name {
+  @apply flex min-w-0 flex-1 flex-wrap items-baseline gap-x-2.5 gap-y-1 text-sm;
+
+  & small {
+    @apply text-xs text-ink-subtle;
+  }
+  & .badge {
+    @apply m-0;
+  }
+}
+.file-link {
+  @apply font-semibold wrap-anywhere hover:text-primary-600 hover:underline;
+}
+.file-actions {
+  @apply flex shrink-0 gap-0.5;
+}
+/* Danh sách tệp có khung (tệp đính kèm, bài nộp) */
+.attach-list {
+  @apply rounded-sm border border-line font-normal;
+
+  & .file-row {
+    @apply px-3 py-2;
+  }
+  .panel & + .button,
+  .panel & + .admin-hint {
+    @apply mt-3.5;
+  }
+}
+/* Danh sách có ô chọn (chọn sinh viên, chọn câu từ kho…), cuộn khi dài */
+.pick-list {
+  @apply mx-0 mt-2 mb-3 max-h-65 list-none overflow-y-auto rounded-sm border border-line p-0;
+
+  & li + li {
+    @apply border-t border-line;
+  }
+  & label {
+    @apply flex cursor-pointer items-center gap-2.5 px-3 py-2 text-sm hover:bg-surface-muted;
+  }
+  & label.is-disabled {
+    @apply cursor-default text-ink-subtle hover:bg-transparent;
+  }
+  & input {
+    @apply accent-primary-600;
+  }
+  & .mono {
+    @apply font-mono text-[13px];
+  }
+  & .badge {
+    @apply m-0;
+  }
+}
+.pick-name {
+  @apply min-w-0 flex-1 truncate;
+}
+.input.mono {
+  @apply font-mono text-[13px];
+}
+
+/* Văn bản thuần do người dùng nhập (nội dung bài học, đề, nhận xét): giữ xuống dòng, link bấm được */
+.lesson-text {
+  @apply text-sm leading-[1.6] whitespace-pre-wrap wrap-anywhere;
+
+  & a {
+    @apply text-primary-600 underline;
+  }
+}
+/* Thời gian còn lại khi làm bài; .urgent khi còn dưới 5 phút */
+.time-left {
+  @apply mb-3.5 flex items-center gap-2 rounded-sm bg-surface-muted px-3 py-2.5 text-sm text-ink-muted;
+
+  & b {
+    @apply text-lg text-ink tabular-nums;
+  }
+  &.urgent {
+    @apply bg-red-50 text-red-600;
+  }
+  &.urgent b {
+    @apply text-red-600;
+  }
+}
+/* Trạng thái bài nộp của sinh viên (đã nộp / hết giờ chưa nộp) */
+.submission-note {
+  @apply mb-3.5 flex items-baseline gap-2 rounded-sm px-3 py-2.5 text-sm;
+
+  &.ok {
+    @apply bg-emerald-50 text-emerald-700;
+  }
+  &.locked {
+    @apply bg-red-50 text-red-600;
+  }
+}
+/* Điểm và nhận xét sinh viên nhận được */
+.grade-box {
+  @apply mb-3.5 rounded-sm bg-primary-50 px-3.5 py-3;
+
+  & b {
+    @apply text-[26px] text-primary-600 tabular-nums;
+  }
+  & b small {
+    @apply text-[15px] font-semibold text-ink-muted;
+  }
+  & p {
+    @apply mt-1.5 text-sm whitespace-pre-wrap text-ink;
+  }
+  & .admin-hint {
+    @apply mt-1;
+  }
+}
+
+/* Dòng thông tin nhỏ có icon (thời gian mở/đóng, số câu…) */
+.assessment-meta {
+  @apply mt-1.5 flex flex-wrap items-center gap-1.5 text-[13px] text-ink-muted;
+}
+
+/* ---------- Câu hỏi trắc nghiệm (ngân hàng câu hỏi, làm bài, xem lại bài) ---------- */
+/* Dòng chọn tất cả + thao tác với các mục đã chọn, ngay trên danh sách */
+.selection-bar {
+  @apply mb-3 flex min-h-8 flex-wrap items-center gap-x-4 gap-y-2 text-sm text-ink-muted;
+
+  & .check-field {
+    @apply m-0;
+  }
+}
+.question-list {
+  @apply m-0 flex list-none flex-col gap-3 p-0;
+}
+.question-card {
+  @apply rounded-lg border border-line bg-white px-5 py-4 shadow-card max-md:p-3.5;
+
+  &.is-selected {
+    @apply border-primary-600 ring-3 ring-primary-600/18;
+  }
+}
+.question-head {
+  @apply mb-2 flex flex-wrap items-center gap-2;
+
+  & .file-actions {
+    @apply ml-auto;
+  }
+}
+.question-number {
+  @apply inline-flex cursor-pointer items-center gap-2 text-sm font-bold;
+
+  & input {
+    @apply accent-primary-600;
+  }
+}
+.question-body {
+  @apply mb-2.5;
+}
+.question-options {
+  @apply m-0 flex list-none flex-col gap-1.5 p-0;
+
+  & li {
+    @apply flex items-start gap-2.5 rounded-sm border border-line px-2.5 py-1.5;
+  }
+  & li > .lesson-text {
+    @apply min-w-0 flex-1 leading-[1.5];
+  }
+  & li.is-correct {
+    @apply border-emerald-200 bg-emerald-50;
+  }
+  & li.is-wrong {
+    @apply border-red-200 bg-red-50;
+  }
+  & li .badge {
+    @apply m-0 shrink-0;
+  }
+}
+/* Chữ cái đáp án A, B, C…; đáp án đúng tô xanh */
+.option-letter {
+  @apply grid size-5.5 shrink-0 place-items-center rounded-sm border border-line-strong bg-surface-muted text-xs font-bold text-ink-muted;
+
+  .is-correct & {
+    @apply border-emerald-700 bg-emerald-700 text-white;
+  }
+}
+.option-check {
+  @apply mt-1 text-emerald-700;
+}
+.question-explanation {
+  @apply mt-2.5 border-l-3 border-line-strong bg-surface-muted px-3 py-2 text-[13px] text-ink-muted;
+}
+
+/* Danh sách câu đã chọn (đề đang soạn, bài lập trình đang nhập): số thứ tự, tên, nút di chuyển */
+.exam-picked {
+  @apply m-0 mb-3 max-h-[46vh] list-none overflow-y-auto rounded-sm border border-line p-0;
+
+  & li {
+    @apply flex items-center gap-2 py-1 pr-1 pl-2.5 text-[13px];
+  }
+  & li + li {
+    @apply border-t border-line;
+  }
+  & .icon-button {
+    @apply size-6.5 disabled:cursor-default disabled:opacity-30;
+  }
+}
+.exam-picked-number {
+  @apply min-w-5.5 shrink-0 font-bold text-ink-subtle tabular-nums;
+}
+.exam-picked-text {
+  @apply min-w-0 flex-1 truncate;
+}
+/* Các con số chính của bài (số câu, thời gian, điểm…) */
+.quiz-facts {
+  @apply mb-3 flex list-none flex-wrap gap-x-7 gap-y-2.5 p-0 text-[15px] text-ink-muted;
+
+  & b {
+    @apply text-xl text-ink;
+  }
+}
+/* File đề PDF đã chọn */
+.exam-paper {
+  @apply mb-3 flex items-center gap-2.5 rounded-sm border border-line px-3 py-2.5 text-sm;
+
+  & > span {
+    @apply flex min-w-0 flex-col;
+  }
+  & b {
+    @apply truncate;
+  }
+  & small {
+    @apply text-ink-subtle;
+  }
+}
+/* Điểm chưa công bố (công bố sau giờ đóng bài) */
+.score-pending {
+  @apply my-2.5 flex items-center gap-2 rounded-sm bg-amber-50 px-3 py-2.5 text-sm text-amber-700;
+}
+
+/* ---------- Thông báo trong trang ---------- */
+.notice {
+  @apply mb-4 rounded-sm border border-amber-200 bg-amber-50 px-3.5 py-2.5 text-sm text-amber-800;
+}
+.form-error {
+  @apply mb-4 rounded-sm border border-rose-200 bg-rose-50 px-3 py-2.5 text-sm text-rose-700;
+}
+.flash {
+  @apply mb-4 rounded-sm border px-3.5 py-2.5 text-sm;
+
+  &.success {
+    @apply border-emerald-200 bg-emerald-50 text-emerald-700;
+  }
+  &.error {
+    @apply border-rose-200 bg-rose-50 text-rose-700;
+  }
+}
+.admin-hint {
+  @apply mb-3 text-[13px] text-ink-muted;
+
+  & code {
+    @apply rounded-sm border border-line bg-surface-muted px-[5px] py-px font-mono text-xs text-ink;
+  }
+}
+
+/* ---------- Bố cục trang (giống PageHeading / Card trong components/ui/card.tsx) ---------- */
+.page-heading {
+  @apply mb-6 flex flex-wrap items-end justify-between gap-4 max-md:flex-col max-md:items-start;
+
+  & h1 {
+    @apply text-2xl leading-tight font-semibold text-ink max-md:text-[22px];
+  }
+  & p {
+    @apply mt-1 text-sm text-ink-muted;
+  }
+}
+.back-link {
+  @apply mb-4 inline-flex items-center gap-2 text-sm text-ink-muted transition-colors hover:text-primary-600;
+}
+.panel {
+  @apply rounded-card border border-line bg-white p-5 shadow-card max-md:p-4;
+
+  &.flush {
+    @apply overflow-hidden p-0;
+  }
+  & > .toolbar {
+    @apply mb-3;
+  }
+}
+.panel-title {
+  @apply mb-3 flex items-center justify-between gap-3;
+
+  & h2 {
+    @apply flex items-center gap-2.5 text-[15px] font-semibold text-ink;
+  }
+  & > span {
+    @apply text-[13px] text-ink-subtle;
+  }
+  & > a {
+    @apply text-[13px] font-semibold text-primary-600 hover:text-primary-700;
+  }
+  .panel.flush > & {
+    @apply m-0 border-b border-line px-5 py-4 max-md:px-4;
+  }
+}
+.panel-more {
+  @apply mt-2.5 text-[13px] text-ink-subtle;
+}
+.panel.flush > .empty-cell {
+  @apply border-b border-line;
+}
+.list-row {
+  @apply flex items-center gap-3.5 border-b border-line px-5 py-3 transition-colors max-md:px-4;
+}
+.list-row:hover {
+  @apply bg-surface-muted;
+}
+.list-row-text {
+  @apply flex min-w-0 flex-1 flex-col;
+
+  & b {
+    @apply truncate text-sm font-semibold;
+  }
+  & small {
+    @apply text-[13px] text-ink-muted;
+  }
+}
+.columns {
+  @apply grid grid-cols-[minmax(0,2fr)_minmax(0,1fr)] items-start gap-5 max-lg:grid-cols-1;
+
+  &.even {
+    @apply grid-cols-2 max-lg:grid-cols-1;
+  }
+  & + .panel {
+    @apply mt-5;
+  }
+}
+.stack {
+  @apply flex min-w-0 flex-col gap-5;
+}
+.stats {
+  @apply mb-6 grid grid-cols-3 gap-4 max-md:grid-cols-1 max-md:gap-2.5;
+
+  &.cols-4 {
+    @apply grid-cols-4 max-lg:grid-cols-2;
+  }
+}
+.dialog-actions {
+  @apply mt-5 flex flex-wrap justify-end gap-2;
+}
+
+/* Icon vuông nhỏ cạnh tiêu đề panel; màu theo lớp tông (.blue, .green…) */
+.title-icon {
+  @apply grid size-[26px] shrink-0 place-items-center rounded-sm leading-none not-italic;
+  color: var(--tone);
+  background: var(--tone-soft);
+}
+.green {
+  --tone: var(--color-emerald-600);
+  --tone-soft: var(--color-emerald-50);
+}
+.blue {
+  --tone: var(--color-primary-600);
+  --tone-soft: var(--color-primary-50);
+}
+.violet {
+  --tone: var(--color-violet-600);
+  --tone-soft: var(--color-violet-50);
+}
+.red {
+  --tone: var(--color-rose-600);
+  --tone-soft: var(--color-rose-50);
+}
+.orange {
+  --tone: var(--color-amber-600);
+  --tone-soft: var(--color-amber-50);
+}
+
+/* Màu bìa theo mã môn (lib/course-utils coverFor): lớp cover-* đặt biến --cover cho thẻ, ô chữ viết tắt, lịch */
+.cover-rose {
+  --cover: #c4607d;
+}
+.cover-slate {
+  --cover: #6b7a8f;
+}
+.cover-amber {
+  --cover: #c48a2f;
+}
+.cover-sand {
+  --cover: #a48a5e;
+}
+.cover-violet {
+  --cover: #7668b3;
+}
+.cover-emerald {
+  --cover: #2f8a6e;
+}
+.cover-aqua {
+  --cover: #3a8b96;
+}
+.cover-blue {
+  --cover: #4a71a5;
+}
+.cover-pink {
+  --cover: #ad5b8b;
+}
+.cover-ink {
+  --cover: #4b5768;
+}
+.cover-sage {
+  --cover: #6d8a4f;
+}
+.cover-orange {
+  --cover: #c0693f;
+}
+
+/* Danh sách nhãn – giá trị (<dl>): mỗi cặp một dòng, kẻ ngang giữa các dòng */
+.info-list {
+  & > div {
+    @apply flex justify-between gap-3 border-t border-line py-2.5 text-sm;
+  }
+  & dt {
+    @apply font-normal text-ink-muted;
+  }
+  & dd {
+    @apply text-right font-semibold wrap-anywhere;
+  }
+  & dd.mono {
+    @apply font-mono;
+  }
+}
+
+/* ---------- Tab, thanh công cụ, công tắc ---------- */
+.tabs {
+  @apply mb-5 flex gap-6 overflow-x-auto border-b border-line;
+  /* Gạch chân tab (margin -1px) làm tràn 1px theo chiều dọc: ẩn thanh cuộn, vẫn vuốt ngang được */
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  & button {
+    @apply -mb-px flex items-center gap-1.5 border-b-2 border-transparent py-2.5 text-sm font-semibold whitespace-nowrap text-ink-muted transition-colors hover:text-ink;
+  }
+  & button.selected {
+    @apply border-primary-600 text-ink;
+  }
+  & .count {
+    @apply min-w-5 rounded-full bg-surface-muted px-1.5 text-center text-xs text-ink-muted ring-1 ring-line;
+  }
+  & button.selected .count {
+    @apply bg-primary-50 text-primary-600 ring-primary-100;
+  }
+}
+.toolbar {
+  @apply mb-5 flex flex-wrap items-center gap-3;
+}
+.toolbar-right {
+  @apply ml-auto flex flex-wrap items-center gap-2 max-md:ml-0 max-md:w-full;
+
+  & .select {
+    @apply max-md:min-w-0 max-md:flex-1;
+  }
+}
+.view-toggle {
+  @apply flex overflow-hidden rounded-sm border border-line-strong bg-white;
+
+  & button {
+    @apply grid size-[34px] place-items-center text-ink-subtle transition-colors hover:text-ink;
+  }
+  & button + button {
+    @apply border-l border-line-strong;
+  }
+  & button.selected {
+    @apply bg-surface-muted text-ink;
+  }
+}
+.segmented {
+  @apply mb-3 flex rounded-sm border border-line bg-surface-muted p-[3px];
+
+  & button {
+    @apply h-[30px] flex-1 rounded-[2px] text-[13px] font-semibold text-ink-muted transition-colors hover:text-ink;
+  }
+  & button.selected {
+    @apply bg-white text-ink shadow-[0_1px_2px_rgb(16_24_40/0.08)];
+  }
+  &.compact {
+    @apply m-0;
+  }
+  &.compact button {
+    @apply px-3;
+  }
+}
+
+/* ---------- Trạng thái rỗng, chấm trạng thái, tiến độ ---------- */
+.empty-state {
+  @apply px-4 py-14 text-center text-sm text-ink-muted;
+
+  & h1,
+  & h3 {
+    @apply mb-1.5 text-lg font-semibold text-ink;
+  }
+  & .button {
+    @apply mt-5;
+  }
+}
+.error-code {
+  @apply mb-2 text-[13px] font-bold text-primary-600;
+}
+.empty-cell {
+  @apply text-center text-sm text-ink-subtle;
+  padding: 32px 12px !important;
+}
+.status-dot {
+  @apply inline-block size-2 shrink-0 rounded-full bg-line-strong;
+
+  &.online {
+    @apply bg-emerald-500;
+  }
+}
+.progress-track {
+  @apply mt-2 h-1 overflow-hidden rounded-full bg-surface-muted ring-1 ring-line;
+
+  & > span {
+    @apply block h-full bg-primary-600;
+  }
+}
+
+/* ---------- Bảng ---------- */
+.table {
+  @apply w-full;
+}
+.table-responsive {
+  @apply overflow-x-auto;
+}
+.admin-table {
+  @apply m-0 text-sm text-ink;
+
+  & th,
+  & td {
+    @apply border-t border-line px-3 py-2.5 align-middle;
+  }
+  & thead th {
+    @apply border-t-0 border-b border-line pt-0 text-xs font-medium whitespace-nowrap text-ink-subtle;
+  }
+  & tbody tr {
+    @apply transition-colors hover:bg-surface-muted/70;
+  }
+  & th:first-child,
+  & td:first-child {
+    @apply pl-0;
+  }
+  & th:last-child,
+  & td:last-child {
+    @apply pr-0;
+  }
+  &.is-loading tbody {
+    @apply opacity-55;
+  }
+  & .mono {
+    @apply font-mono text-[13px];
+  }
+  & .numeric {
+    @apply tabular-nums;
+  }
+  & .actions {
+    @apply text-right whitespace-nowrap;
+  }
+  & .actions .row-action + .row-action {
+    @apply ml-0.5;
+  }
+}
+.table-sub,
+.cell-sub {
+  @apply block text-xs text-ink-subtle;
+}
+.cell-sub {
+  @apply mt-0.5;
+}
+.table-link {
+  @apply font-semibold transition-colors hover:text-primary-600;
+}
+.table-summary {
+  @apply mb-3 flex items-center gap-1.5 text-[13px] text-ink-muted;
+}
+.pager {
+  @apply mt-4 flex items-center justify-between gap-3 text-[13px] text-ink-muted max-md:flex-col max-md:items-stretch;
+
+  & > div {
+    @apply flex items-center gap-3 max-md:justify-between;
+  }
+}
+.hide-sm {
+  @apply max-md:hidden;
+}
+
+/* ---------- Nhãn ---------- */
+.badge {
+  @apply mr-1.5 inline-block rounded-sm px-2 py-px text-xs font-semibold whitespace-nowrap;
+
+  &.ok {
+    @apply bg-emerald-50 text-emerald-700;
+  }
+  &.locked {
+    @apply bg-rose-50 text-rose-700;
+  }
+  &.warn {
+    @apply bg-amber-50 text-amber-700;
+  }
+  &.muted {
+    @apply ml-2 bg-surface-muted text-ink-muted ring-1 ring-line ring-inset;
+  }
+  &.muted-solid {
+    @apply bg-primary-50 text-primary-700;
+  }
+}
+
+/* ---------- Menu thả xuống (details) ---------- */
+.dropdown {
+  @apply relative;
+}
+.dropdown-panel {
+  @apply absolute top-[calc(100%+6px)] right-0 z-30 hidden min-w-[220px] rounded-lg border border-line-strong bg-white p-1 shadow-float;
+
+  .dropdown[open] > & {
+    @apply block animate-scale-in;
+  }
+  & > a,
+  & > button {
+    @apply block w-full rounded-sm px-3 py-2 text-left text-sm text-ink transition-colors hover:bg-surface-muted;
+  }
+}
+.dropdown-heading {
+  @apply mb-1 flex flex-col border-b border-line px-3 pt-2 pb-2.5;
+
+  & b {
+    @apply text-sm font-semibold;
+  }
+  & small {
+    @apply text-xs text-ink-muted;
+  }
+}

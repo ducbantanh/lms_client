@@ -1,0 +1,509 @@
+/*
+ * Bài lập trình chấm tự động: ô soạn code (CodeMirror), bộ test, kết quả chấm, ma trận sinh viên × câu,
+ * kho bài lập trình (components/code-*, app/teacher/code-problems, trang làm bài và chấm bài lập trình).
+ * Viết bằng Tailwind (@apply + token của @theme), nạp ở layer "features" (globals.css).
+ */
+.code-language-picks {
+  @apply flex flex-wrap gap-y-1.5 gap-x-5 font-normal;
+}
+.code-text,
+.code-editor-loading,
+.code-output pre,
+.code-case pre,
+.code-sample pre,
+.code-cell {
+  @apply font-mono text-[13px] leading-[1.5];
+  tab-size: 4;
+}
+/* Ô soạn code CodeMirror: viền và nền như ô nhập; số dòng nền xám nhạt. Dòng dài cuộn ngang trong ô,
+   không đẩy rộng trang (khung chứa là flex/grid nên cần min-width: 0) */
+.code-columns > *,
+.code-review-columns > *,
+.code-detail,
+.code-output,
+.code-editor {
+  @apply min-w-0 max-w-full;
+}
+.code-editor {
+  @apply overflow-hidden border border-line-strong rounded-sm bg-white;
+}
+.code-editor:focus-within {
+  @apply border-primary-600;
+  @apply ring-3 ring-primary-600/18;
+}
+.code-editor.readonly,
+.code-editor.readonly .cm-gutters {
+  @apply bg-surface-muted;
+}
+.code-editor .cm-editor.cm-focused {
+  @apply outline-none;
+}
+.code-editor .cm-gutters {
+  @apply border-r border-line bg-surface-muted text-ink-subtle;
+}
+.code-editor .cm-activeLine,
+.code-editor .cm-activeLineGutter {
+  @apply bg-primary-600/6;
+}
+.code-editor-loading {
+  @apply m-0 py-1.5 px-3 whitespace-pre overflow-auto text-ink-muted;
+}
+.code-output .code-editor {
+  @apply mt-1.5;
+}
+.code-tests {
+  @apply flex flex-col gap-3;
+}
+/* Bộ test: mỗi test một dòng gọn, mở ra để sửa; danh sách dài thì cuộn trong khung */
+.code-test-list {
+  @apply m-0 p-0 max-h-160 overflow-y-auto list-none border border-line rounded-sm;
+}
+.code-test {
+  @apply min-w-0 py-1.5 px-3;
+}
+.code-test + .code-test {
+  @apply border-t border-line;
+}
+.code-test.open {
+  @apply bg-surface-muted;
+}
+.code-test-toggle {
+  @apply inline-flex flex-1 flex-wrap items-baseline gap-y-1 gap-x-2.5 min-w-45 py-1 px-0 text-left text-sm;
+}
+.code-test-toggle small {
+  @apply text-ink-subtle;
+}
+.code-test-io {
+  @apply grid grid-cols-2 gap-3 mt-2;
+}
+.code-test-io .admin-hint {
+  @apply m-0;
+  @apply col-span-full;
+}
+.code-test-io small {
+  @apply block mb-1 text-xs font-semibold text-ink-muted;
+}
+.code-test-io .code-cell {
+  @apply max-w-none py-2 px-2.5 border border-line rounded-sm bg-white;
+}
+.code-archive {
+  @apply p-3 border border-line-strong border-dashed rounded-sm bg-surface-muted;
+}
+.code-archive-head {
+  @apply flex items-center gap-2 mb-1.5 text-sm;
+}
+.code-archive .admin-hint code {
+  @apply text-xs;
+}
+.code-archive .exam-paper {
+  @apply bg-white;
+}
+.code-archive .exam-paper > span {
+  @apply flex-1;
+}
+.code-archive-problems {
+  @apply mt-0 mx-0 mb-2.5 pl-4.5;
+}
+.code-tests-summary {
+  @apply flex flex-wrap justify-between gap-y-1.5 gap-x-4 mt-3 mx-0 mb-2 text-sm text-ink-muted;
+}
+.code-tests-summary .file-link {
+  @apply font-semibold text-primary-600;
+}
+.code-tests-table {
+  @apply max-h-130 overflow-y-auto;
+}
+.code-test-io .form-field {
+  @apply mb-2;
+}
+.code-test-bar {
+  @apply flex flex-wrap items-center gap-y-2 gap-x-4;
+}
+.code-test-bar .check-field {
+  @apply items-center m-0;
+}
+.code-test-bar .file-actions {
+  @apply ml-auto;
+}
+.code-test-weight {
+  @apply inline-flex items-center gap-2 text-sm;
+}
+.code-test-weight .input {
+  @apply w-18 h-8;
+}
+.code-tests-footer {
+  @apply flex flex-wrap items-center gap-y-2 gap-x-3;
+}
+.code-tests-footer .admin-hint {
+  @apply m-0;
+}
+.code-facts {
+  @apply my-3.5 mx-0 p-0 list-none;
+}
+.code-facts b {
+  @apply text-base;
+}
+.code-sample {
+  @apply grid grid-cols-2 gap-3 mb-3;
+}
+.code-sample small,
+.code-case small {
+  @apply block mt-1.5 mx-0 mb-1 text-xs font-semibold text-ink-muted;
+}
+.code-sample pre,
+.code-case pre,
+.code-output pre {
+  @apply m-0 py-2 px-2.5 max-h-65 overflow-auto border border-line rounded-sm bg-surface-muted whitespace-pre;
+}
+.code-cell {
+  @apply m-0 max-w-80 max-h-30 overflow-auto whitespace-pre;
+}
+.panel-title .code-language {
+  @apply w-auto h-8;
+}
+.code-actions {
+  @apply flex flex-wrap items-center gap-y-2 gap-x-3 mt-3;
+}
+.code-actions .admin-hint {
+  @apply m-0;
+}
+.code-subtitle {
+  @apply mt-5 mx-0 mb-2 text-[15px];
+}
+.code-attempts {
+  @apply mt-0 mx-0 mb-3 p-0 max-h-65 overflow-y-auto list-none border border-line rounded-sm;
+}
+.code-attempts li + li {
+  @apply border-t border-line;
+}
+.code-attempts button {
+  @apply flex flex-wrap items-center gap-y-1 gap-x-2.5 w-full py-2 px-3 text-left text-sm;
+}
+.code-attempts button:hover {
+  @apply bg-surface-muted;
+}
+.code-attempts button.selected {
+  @apply bg-primary-50;
+}
+.code-attempt-kind {
+  @apply font-semibold;
+}
+.code-attempt-meta {
+  @apply flex-1 min-w-35 text-[13px] text-ink-muted;
+}
+.code-attempt-score {
+  @apply tabular-nums;
+}
+.code-detail {
+  @apply flex flex-col gap-2.5;
+}
+.code-detail-head {
+  @apply flex flex-wrap items-center gap-y-1.5 gap-x-2.5 m-0 text-sm text-ink-muted;
+}
+.code-detail-head b {
+  @apply ml-auto text-lg text-ink;
+}
+.code-detail-head b small {
+  @apply text-[13px] font-normal text-ink-muted;
+}
+.code-output > summary,
+.code-case > summary {
+  @apply text-[13px] font-semibold text-primary-600;
+}
+.code-output[open] > summary {
+  @apply mb-1.5;
+}
+/* Nhãn "mẫu" cạnh số thứ tự test */
+.code-results td:first-child .badge {
+  @apply ml-1.5;
+}
+.code-case pre {
+  @apply max-w-105;
+}
+@media (max-width: 720px) {
+  .code-test-io,
+  .code-sample {
+    @apply grid-cols-[minmax(0,1fr)];
+  }
+  .code-problem-row {
+    @apply grid-cols-[auto_minmax(0,1fr)];
+  }
+  .code-problem-result {
+    grid-column: 2;
+  }
+  .code-problem-row > .icon {
+    @apply hidden;
+  }
+}
+
+/* Danh sách câu (sinh viên): xanh đúng hết, đỏ chưa đúng, vàng đang chấm, xanh dương nhạt đã nộp (chưa công bố) */
+.code-problem-rows {
+  @apply flex flex-col gap-2 mt-0 mx-0 mb-3 p-0 list-none;
+}
+.code-problem-row {
+  @apply grid grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-y-1.5 gap-x-4 py-3 px-4 border border-line rounded-sm bg-white;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+.code-problem-row:hover {
+  @apply border-line-strong shadow-card;
+}
+.code-problem-number {
+  @apply font-bold text-ink-muted;
+}
+.code-problem-title {
+  @apply flex flex-col min-w-0;
+}
+.code-problem-title b {
+  @apply overflow-hidden text-ellipsis whitespace-nowrap;
+}
+.code-problem-title small {
+  @apply text-xs text-ink-subtle;
+}
+.code-problem-result {
+  @apply inline-flex items-center gap-1.5 font-semibold text-sm text-ink-muted whitespace-nowrap;
+}
+.code-problem-row.accepted,
+.code-cell-button.accepted,
+.code-status-chip.accepted {
+  @apply border-emerald-300 bg-emerald-50;
+}
+.code-problem-row.accepted .code-problem-result,
+.code-problem-row.accepted .code-problem-number,
+.code-cell-button.accepted,
+.code-status-chip.accepted {
+  @apply text-emerald-700;
+}
+.code-problem-row.rejected,
+.code-cell-button.rejected,
+.code-status-chip.rejected {
+  @apply border-red-300 bg-red-50;
+}
+.code-problem-row.rejected .code-problem-result,
+.code-problem-row.rejected .code-problem-number,
+.code-cell-button.rejected,
+.code-status-chip.rejected {
+  @apply text-red-600;
+}
+.code-problem-row.pending,
+.code-cell-button.pending,
+.code-status-chip.pending {
+  @apply border-amber-300 bg-amber-50;
+}
+.code-problem-row.pending .code-problem-result,
+.code-cell-button.pending,
+.code-status-chip.pending {
+  @apply text-amber-700;
+}
+.code-problem-row.submitted,
+.code-cell-button.submitted,
+.code-status-chip.submitted {
+  @apply border-primary-200 bg-primary-50;
+}
+.code-problem-row.submitted .code-problem-result,
+.code-cell-button.submitted,
+.code-status-chip.submitted {
+  @apply text-primary-700;
+}
+.code-status-chip {
+  @apply py-0.5 px-2.5 border border-line rounded-sm text-[13px] font-semibold text-ink-muted whitespace-nowrap;
+}
+.code-problem-nav {
+  @apply flex items-center justify-between gap-3 mb-4;
+}
+.code-problem-nav > span {
+  @apply inline-flex items-center gap-2 text-[13px] text-ink-muted;
+}
+.code-toolbar {
+  @apply inline-flex items-center gap-2;
+}
+.code-font {
+  @apply inline-flex;
+}
+.code-font .icon-button {
+  @apply w-auto py-0 px-1.5 text-xs font-semibold;
+}
+
+/* Soạn bài nhiều câu (giảng viên) */
+.code-fields > .button,
+.code-fields-actions {
+  @apply mt-3;
+}
+/* Câu lấy từ kho bài lập trình: bộ test chỉ đọc */
+.code-source-note {
+  @apply flex items-start gap-2 py-2.5 px-3 rounded-sm bg-surface-muted text-[13px] text-ink-muted;
+}
+.code-source-note .icon {
+  @apply mt-[3px] text-primary-600;
+}
+
+/* Kho bài lập trình (/teacher/code-problems/) */
+.library-import {
+  @apply mb-5;
+}
+.library-import .code-import {
+  @apply mb-0;
+}
+.library-staged {
+  @apply mt-4;
+}
+.library-staged-list {
+  @apply flex flex-col gap-1.5 max-h-90 mt-0 mx-0 mb-3 p-0 overflow-y-auto list-none;
+}
+.library-staged-list li {
+  @apply flex items-center gap-1.5;
+}
+.library-staged-item {
+  @apply flex flex-1 items-center gap-2.5 min-w-0 py-1.5 px-2.5 border border-line rounded-sm text-sm text-left;
+}
+.library-staged-item:hover {
+  @apply border-line-strong bg-surface-muted;
+}
+.library-staged-item b {
+  @apply overflow-hidden text-ellipsis whitespace-nowrap font-semibold;
+}
+.library-staged-item small {
+  @apply text-ink-subtle;
+}
+.library-staged-item .badge {
+  @apply mt-0 mr-0 mb-0 ml-auto;
+}
+.library-staged-actions {
+  @apply flex flex-wrap items-end gap-3;
+}
+.library-staged-actions .form-field {
+  @apply flex-1 min-w-55 mb-0;
+}
+.library-table tr.selected td {
+  @apply bg-primary-50;
+}
+.library-table td:first-child {
+  @apply w-7;
+}
+.library-table .table-link {
+  @apply text-left;
+}
+.library-pick-list {
+  @apply max-h-105 mt-0 mx-0 mb-3 p-0 overflow-y-auto border border-line rounded-sm list-none;
+}
+.library-pick-list li + li {
+  @apply border-t border-line;
+}
+.library-pick-list label {
+  @apply flex items-start gap-2.5 py-2.5 px-3 cursor-pointer;
+}
+.library-pick-list label:hover,
+.library-pick-list label.selected {
+  @apply bg-surface-muted;
+}
+.library-pick-list input {
+  @apply mt-[3px];
+}
+.library-pick-text {
+  @apply flex flex-col min-w-0 text-sm;
+}
+.library-pick-text small {
+  @apply text-xs text-ink-muted;
+}
+.dialog-note {
+  @apply mr-auto text-[13px] text-ink-muted;
+}
+/* Nhập nhanh bài lập trình từ thư mục / ZIP (components/code-import.tsx) */
+.code-import {
+  @apply mb-4 py-3 px-3.5 border border-line-strong border-dashed rounded-sm bg-surface-muted;
+}
+.code-import-head {
+  @apply flex items-start gap-2.5 mb-2.5;
+}
+.code-import-head b {
+  @apply text-sm;
+}
+.code-import-head .admin-hint {
+  @apply mt-0.5 mx-0 mb-0;
+}
+.code-import > .admin-hint,
+.code-import > .form-error {
+  @apply mt-2.5 mx-0 mb-0;
+}
+.code-import-report {
+  @apply mt-2.5 text-[13px] text-emerald-700;
+}
+.code-import-report.warn {
+  @apply mt-0 mx-0 mb-3 text-amber-700;
+}
+.code-import-report ul {
+  @apply mt-1.5 mx-0 mb-0 pl-4.5 text-amber-700;
+}
+.code-problem-list {
+  @apply flex flex-col gap-2.5 m-0 p-0 list-none;
+}
+.code-problem-card {
+  @apply border border-line rounded-sm;
+}
+.code-problem-card.open {
+  @apply border-line-strong;
+}
+.code-problem-head {
+  @apply flex items-center gap-2 py-2 px-3 bg-surface-muted rounded-sm;
+}
+.code-problem-card.open .code-problem-head {
+  @apply border-b border-line;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+}
+.code-problem-head .file-actions {
+  @apply ml-auto;
+}
+.code-problem-body {
+  @apply pt-3.5 px-3 pb-3;
+}
+.code-tests-title {
+  @apply mt-1 mx-0 mb-2 text-sm;
+}
+
+/* Bảng kết quả sinh viên × câu (giảng viên) */
+.code-legend {
+  @apply inline-flex items-center gap-1.5 text-xs;
+}
+.code-legend i {
+  @apply inline-block w-2.5 h-2.5 ml-1.5 rounded-[3px];
+}
+.code-legend i.accepted {
+  @apply bg-emerald-700;
+}
+.code-legend i.rejected {
+  @apply bg-red-600;
+}
+.code-legend i.pending {
+  @apply bg-amber-500;
+}
+.code-matrix-col {
+  @apply w-18 text-center;
+}
+.code-cell-button {
+  @apply min-w-14 py-1 px-2 border border-line rounded-sm text-[13px] font-semibold tabular-nums text-ink-subtle;
+}
+.code-cell-button:hover {
+  @apply shadow-card;
+}
+.code-matrix-total td {
+  @apply font-semibold text-ink-muted;
+}
+.code-review-columns {
+  @apply grid-cols-[minmax(240px,1fr)_minmax(0,2fr)];
+}
+.code-problem-view {
+  @apply border-t border-line py-2.5 px-0;
+}
+.code-problem-view > summary {
+  @apply flex flex-wrap items-baseline gap-y-1 gap-x-2.5;
+}
+.code-problem-view > summary small {
+  @apply text-ink-subtle;
+}
+.code-problem-view[open] > summary .icon {
+  @apply rotate-90;
+}
+.code-problem-view > .lesson-text {
+  @apply mt-2.5 mx-0 mb-0;
+}

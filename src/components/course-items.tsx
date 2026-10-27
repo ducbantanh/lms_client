@@ -20,6 +20,19 @@ import {
 } from '@/lib/teaching';
 import { Icon, type IconName } from '@/components/ui/icon';
 
+/** Danh sách bài học (LessonItem), bài kiểm tra (AssessmentItem). */
+export const LESSON_LIST = 'm-0 list-none p-0 last:[&>li:last-child]:border-b-0';
+export const ASSESSMENT_LIST = 'm-0 list-none p-0';
+/** Lưới các mục/tuần (SectionCard), thu còn 2 cột trên điện thoại. */
+export const SECTION_GRID =
+  'grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-4 max-md:grid-cols-2 max-md:gap-2.5';
+/** Khung thẻ mục/tuần; thẻ "Thêm mục" của giảng viên dùng cùng kích thước. */
+export const SECTION_CARD_FRAME =
+  'flex min-h-42 min-w-0 flex-col gap-2 rounded-lg p-4 text-left max-md:min-h-0 max-md:p-3';
+/** Dòng trên lưới mục: số mục/bài/tài liệu hoặc nút quay lại, nút đổi dạng xem. */
+export const CONTENT_TOOLBAR =
+  '-mb-2 flex min-h-9.5 items-center justify-between gap-3 text-sm text-ink-muted';
+
 /** PDF mở ở tab mới (server trả inline), DOCX/PPTX tải về. */
 export function FileLink({
   id,
@@ -107,18 +120,38 @@ export function LessonItem({
   }, [initiallyOpen]);
   const done = completion?.done ?? false;
   return (
-    <li ref={itemRef} className={`lesson-item${open ? ' open' : ''}${done ? ' done' : ''}`}>
-      <div className="lesson-head">
-        <button className="lesson-toggle" aria-expanded={open} onClick={() => setOpen(!open)}>
-          <Icon name="chevron" size={10} className="lesson-chevron" />
-          <Icon name={done ? 'check' : 'book'} size={14} className="file-icon" />
-          <span className="lesson-title">{lesson.title}</span>
-          {files.length > 0 && <small>{files.length} tài liệu</small>}
-          {lesson.hidden && <span className="badge warn">Đang ẩn</span>}
+    <li ref={itemRef} className="border-b border-line">
+      <div className="flex items-center gap-3 pr-5 max-md:pr-4">
+        <button
+          className="group/toggle flex min-w-0 flex-1 flex-wrap items-center gap-x-2.5 gap-y-1 py-3 pl-5 text-left text-sm max-md:pl-4"
+          aria-expanded={open}
+          onClick={() => setOpen(!open)}
+        >
+          <Icon
+            name="chevron"
+            size={10}
+            className={`text-ink-subtle transition-transform ${open ? 'rotate-90' : ''}`}
+          />
+          <Icon
+            name={done ? 'check' : 'book'}
+            size={14}
+            className={done ? 'text-emerald-700' : 'text-ink-subtle'}
+          />
+          <span className="font-semibold wrap-anywhere group-hover/toggle:text-primary-600">
+            {lesson.title}
+          </span>
+          {files.length > 0 && (
+            <small className="text-xs text-ink-subtle">{files.length} tài liệu</small>
+          )}
+          {lesson.hidden && <span className="badge warn m-0">Đang ẩn</span>}
         </button>
         {completion && (
           <button
-            className={`lesson-check${done ? ' done' : ''}`}
+            className={`inline-flex h-7 shrink-0 items-center gap-1.5 rounded-sm border px-2.5 text-xs font-semibold whitespace-nowrap transition-colors disabled:opacity-60 ${
+              done
+                ? 'border-transparent bg-emerald-50 text-emerald-700'
+                : 'border-line-strong text-ink-muted hover:enabled:border-emerald-700 hover:enabled:text-emerald-700'
+            }`}
             aria-pressed={done}
             disabled={completion.busy}
             onClick={completion.onToggle}
@@ -131,14 +164,16 @@ export function LessonItem({
         {actions && <span className="file-actions">{actions}</span>}
       </div>
       {open && (
-        <div className="lesson-body">
+        <div className="pr-5 pb-3.5 pl-14 max-md:px-4">
           {lesson.body ? (
             <LessonText text={lesson.body} />
           ) : (
-            !files.length && <p className="lesson-empty">Bài học chưa có nội dung.</p>
+            !files.length && (
+              <p className="text-[13px] text-ink-subtle">Bài học chưa có nội dung.</p>
+            )
           )}
           {files.length > 0 && (
-            <ul className="file-list">
+            <ul className="file-list attach-list mt-2.5">
               {files.map((file) => (
                 <FileRow key={file.id} file={file} actions={fileActions?.(file)} />
               ))}
@@ -187,23 +222,32 @@ export function SectionCard({
     completed && group.lessons.length > 0 && `${learned}/${group.lessons.length} đã học`,
   ].filter(Boolean);
   return (
-    <button className="section-card" onClick={onOpen}>
-      <span className="section-card-head">
+    <button
+      className={`group/card ${SECTION_CARD_FRAME} border border-line bg-white shadow-card transition-colors hover:border-primary-600`}
+      onClick={onOpen}
+    >
+      <span className="flex items-center gap-2.5">
         <i className="title-icon blue">
           <Icon name="layers" size={12} />
         </i>
-        <b>{title}</b>
+        <b className="min-w-0 text-base font-bold wrap-anywhere group-hover/card:text-primary-600">
+          {title}
+        </b>
       </span>
-      <small>{counts.length ? counts.join(' · ') : 'Chưa có nội dung'}</small>
+      <small className="text-[13px] text-ink-muted">
+        {counts.length ? counts.join(' · ') : 'Chưa có nội dung'}
+      </small>
       {items.length > 0 && (
-        <ul>
+        <ul className="mt-1 flex list-none flex-col gap-1.5 border-t border-line p-0 pt-2.5">
           {items.slice(0, 3).map((item) => (
-            <li key={item.id}>
+            <li key={item.id} className="flex min-w-0 items-center gap-2 text-[13px] text-ink">
               <Icon name={item.icon} size={12} className="file-icon" />
-              <span>{item.name}</span>
+              <span className="truncate">{item.name}</span>
             </li>
           ))}
-          {items.length > 3 && <li className="more">+ {items.length - 3} mục khác</li>}
+          {items.length > 3 && (
+            <li className="text-[13px] text-ink-subtle">+ {items.length - 3} mục khác</li>
+          )}
         </ul>
       )}
     </button>
@@ -223,23 +267,33 @@ export function AssessmentItem({
 }) {
   const status = ASSESSMENT_STATUS[assessment.status];
   return (
-    <li className="assessment-item">
-      <div className="assessment-head">
+    <li className="border-t border-line py-3.5 first:border-t-0 first:pt-0 last:pb-0">
+      <div className="flex items-start justify-between gap-3">
         <div>
           <span className="badge muted-solid">{ASSESSMENT_TYPES[assessment.type]}</span>
           <span className={`badge ${status.tone}`}>{status.label}</span>
           {assessment.proctored && <span className="badge warn">Có giám sát</span>}
-          <h3>{href ? <Link href={href}>{assessment.title}</Link> : assessment.title}</h3>
+          <h3 className="mt-1.5 text-[15px] font-semibold">
+            {href ? (
+              <Link href={href} className="hover:text-primary-600 hover:underline">
+                {assessment.title}
+              </Link>
+            ) : (
+              assessment.title
+            )}
+          </h3>
         </div>
         {actions}
         {href && (
-          <Link href={href} className="button small">
+          <Link href={href} className="button small shrink-0 gap-1.5">
             {assessment.status === 'open' ? 'Vào làm bài' : 'Xem'}
             <Icon name="chevron" size={10} />
           </Link>
         )}
       </div>
-      {assessment.description && <p className="assessment-desc">{assessment.description}</p>}
+      {assessment.description && (
+        <p className="mt-1 text-sm text-ink-muted">{assessment.description}</p>
+      )}
       <p className="assessment-meta">
         <Icon name="calendar" size={12} />
         Mở: {assessment.opensAt ? formatDateTime(assessment.opensAt) : 'ngay'} · Đóng:{' '}

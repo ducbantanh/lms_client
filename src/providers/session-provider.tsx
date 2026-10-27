@@ -275,7 +275,10 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       }}
     >
       {error && checking === false && !session ? (
-        <main id="main-content" className="page-width main-content">
+        <main
+          id="main-content"
+          className="mx-auto w-[min(1200px,calc(100%-48px))] max-md:w-[calc(100%-32px)] pt-8 pb-12 max-md:pt-6 max-md:pb-10"
+        >
           <div className="empty-state" role="alert">
             <p>{error}</p>
             <button className="button primary" onClick={() => void refresh()}>
@@ -284,7 +287,10 @@ export function SessionProvider({ children }: { children: ReactNode }) {
           </div>
         </main>
       ) : waiting ? (
-        <main id="main-content" className="page-width main-content">
+        <main
+          id="main-content"
+          className="mx-auto w-[min(1200px,calc(100%-48px))] max-md:w-[calc(100%-32px)] pt-8 pb-12 max-md:pt-6 max-md:pb-10"
+        >
           <p className="empty-state" role="status">
             Đang kiểm tra phiên đăng nhập…
           </p>

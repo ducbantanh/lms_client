@@ -192,7 +192,7 @@ export function QuestionBankView() {
       </Link>
       <div className="page-heading">
         <div>
-          <p className="detail-code">
+          <p className="text-[13px] font-semibold text-ink-subtle">
             {bank.subjectCode
               ? subjectLabel(bank.subjectCode, bank.subjectName)
               : 'Chưa gắn môn học'}{' '}

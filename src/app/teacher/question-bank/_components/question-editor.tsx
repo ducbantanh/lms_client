@@ -156,8 +156,8 @@ export function QuestionEditor({
             </select>
           </label>
         </div>
-        <fieldset className="option-editor">
-          <legend>
+        <fieldset className="m-0 mb-4 border-0 p-0">
+          <legend className="mb-1.5 text-sm font-semibold text-ink">
             Đáp án{' '}
             <span className="optional">
               — đánh dấu {draft.multiple ? 'các đáp án đúng' : 'đáp án đúng'}
@@ -166,8 +166,12 @@ export function QuestionEditor({
           {draft.options.map((option, index) => {
             const letter = optionLetter(index);
             return (
-              <div key={index} className={`option-row${option.correct ? ' is-correct' : ''}`}>
+              <div
+                key={index}
+                className={`mb-2 flex items-center gap-2 ${option.correct ? 'is-correct' : ''}`}
+              >
                 <input
+                  className="size-4 shrink-0 cursor-pointer accent-emerald-700"
                   type={draft.multiple ? 'checkbox' : 'radio'}
                   name={radioName}
                   checked={option.correct}
@@ -176,7 +180,7 @@ export function QuestionEditor({
                 />
                 <span className="option-letter">{letter}</span>
                 <input
-                  className="input"
+                  className={`input h-9 min-w-0 flex-1 ${option.correct ? 'border-emerald-700 bg-emerald-50' : ''}`}
                   value={option.body}
                   onChange={(event) => setOption(index, event.target.value)}
                   maxLength={MAX_OPTION}
@@ -185,7 +189,7 @@ export function QuestionEditor({
                 />
                 <button
                   type="button"
-                  className="icon-button row-action danger"
+                  className="icon-button row-action danger disabled:cursor-default disabled:opacity-35"
                   title="Xóa đáp án"
                   aria-label={`Xóa đáp án ${letter}`}
                   disabled={draft.options.length <= MIN_OPTIONS}

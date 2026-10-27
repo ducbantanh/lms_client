@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { apiRequest } from '@/lib/api';
 import {
@@ -11,7 +10,7 @@ import {
   upcomingMeetings,
   type ScheduleFeed,
 } from '@/lib/schedule';
-import { Icon } from '@/components/ui/icon';
+import { Card, EmptyHint, Skeleton } from '@/components/ui/card';
 import { MeetingRow } from './week-schedule';
 
 const SHOWN = 5;
@@ -20,9 +19,13 @@ const SHOWN = 5;
 export function UpcomingPanel({
   href,
   title = 'Lịch học sắp tới',
+  delay = 0,
+  className = '',
 }: {
   href: string;
   title?: string;
+  delay?: number;
+  className?: string;
 }) {
   const [feed, setFeed] = useState<ScheduleFeed | null>(null);
   const [failed, setFailed] = useState(false);
@@ -41,30 +44,37 @@ export function UpcomingPanel({
   const meetings = feed ? upcomingMeetings(feed.meetings).slice(0, SHOWN) : [];
   const today = toIsoDate(new Date());
   return (
-    <section className="panel flush upcoming-panel">
-      <div className="panel-title">
-        <h2>{title}</h2>
-      </div>
+    <Card
+      title={title}
+      info="Các buổi học trong 7 ngày tới, buổi đang diễn ra tính là sắp tới."
+      href={href}
+      hrefLabel="Xem lịch tuần"
+      delay={delay}
+      className={className}
+    >
       {failed ? (
-        <p className="empty-cell">Không tải được lịch học.</p>
+        <EmptyHint>Không tải được lịch học.</EmptyHint>
       ) : !feed ? (
-        <p className="empty-cell">Đang tải…</p>
+        <div className="space-y-3">
+          <Skeleton className="h-10" />
+          <Skeleton className="h-10" />
+          <Skeleton className="h-10" />
+        </div>
       ) : meetings.length === 0 ? (
-        <p className="empty-cell">Không có buổi học nào trong 7 ngày tới.</p>
+        <EmptyHint>Không có buổi học nào trong 7 ngày tới.</EmptyHint>
       ) : (
-        meetings.map((meeting) => (
-          <div key={meeting.id}>
-            <small className="upcoming-day">
-              {meeting.date === today ? 'Hôm nay' : dayLabel(meeting.date)}
-            </small>
-            <MeetingRow meeting={meeting} config={feed.periods} />
-          </div>
-        ))
+        // Dòng buổi học (list-row) có lề riêng: kéo ra sát mép thẻ
+        <div className="-mx-5 -mb-5 overflow-hidden rounded-b-card">
+          {meetings.map((meeting) => (
+            <div key={meeting.id}>
+              <small className="upcoming-day">
+                {meeting.date === today ? 'Hôm nay' : dayLabel(meeting.date)}
+              </small>
+              <MeetingRow meeting={meeting} config={feed.periods} />
+            </div>
+          ))}
+        </div>
       )}
-      <Link href={href} className="panel-footer-link">
-        Xem lịch tuần
-        <Icon name="chevron" size={9} />
-      </Link>
-    </section>
+    </Card>
   );
 }
