@@ -7,6 +7,7 @@ import { initials } from '@/lib/course-utils';
 import { courseHref } from '@/lib/teaching';
 import { Icon } from '@/components/ui/icon';
 import { StatCard } from '@/components/ui/stat-card';
+import { UpcomingPanel } from '@/components/schedule/upcoming-panel';
 
 export function StudentDashboard() {
   const { user } = useSession();
@@ -58,6 +59,7 @@ export function StudentDashboard() {
               href="/"
             />
           </div>
+          <UpcomingPanel href="/schedule/" />
           <div className="columns">
             <section className="panel flush">
               <div className="panel-title">

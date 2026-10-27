@@ -3,8 +3,10 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import { apiRequest } from '@/lib/api';
 import {
+  JUDGE_FALLBACK_POLL_MS,
   PROBLEM_STATUS,
   codeBody,
+  codeResultsCsvUrl,
   codeDraftProblem,
   codeRequest,
   draftFromTeacher,
@@ -21,6 +23,7 @@ import {
   type TestView,
 } from '@/lib/code';
 import { formatSize } from '@/lib/teaching';
+import { useCodeJudged } from '@/hooks/use-code-judged';
 import { ConfirmDialog, type ConfirmRequest, type Flash } from '@/components/admin-ui';
 import { AttemptDetail, AttemptList } from '@/components/code-attempt';
 import { CodeFields } from '@/components/code-problem-editor';
@@ -86,11 +89,15 @@ export function CodeResultsPage({
     void load();
   }, [load]);
 
-  // Còn lần nộp đang chấm thì hỏi lại định kỳ
+  // Sinh viên nộp bài và chấm xong: server báo qua WebSocket, bảng cập nhật ngay
+  useCodeJudged(assessmentId, (event) => {
+    if (event.kind === 'submit') void load();
+  });
+  // Dự phòng khi mất kết nối WebSocket: còn lần nộp đang chấm thì thỉnh thoảng hỏi lại
   const pending = !!data?.rows.some((row) => row.cells.some((cell) => cell.status === 'pending'));
   useEffect(() => {
     if (!pending) return;
-    const timer = setTimeout(() => void load(), 3000);
+    const timer = setTimeout(() => void load(), JUDGE_FALLBACK_POLL_MS);
     return () => clearTimeout(timer);
   }, [pending, data, load]);
 
@@ -146,6 +153,13 @@ export function CodeResultsPage({
             <i className="accepted" /> Đúng hết <i className="rejected" /> Chưa đúng{' '}
             <i className="pending" /> Đang chấm
           </span>
+          {data.rows.length > 0 && (
+            // Server trả file CSV (Content-Disposition: attachment) nên link thường là đủ
+            <a className="button small" href={codeResultsCsvUrl(courseId, assessmentId)} download>
+              <Icon name="download" size={12} />
+              Xuất CSV
+            </a>
+          )}
         </div>
         {data.rows.length ? (
           <div className="table-responsive">
@@ -194,6 +208,7 @@ export function CodeResultsPage({
       </section>
       <ProblemsPanel
         courseId={courseId}
+        assessmentId={assessmentId}
         base={base}
         canEdit={canEdit}
         notify={notify}
@@ -367,12 +382,14 @@ function StudentAttempts({
  */
 function ProblemsPanel({
   courseId,
+  assessmentId,
   base,
   canEdit,
   notify,
   onRegraded,
 }: {
   courseId: string;
+  assessmentId: string;
   base: string;
   canEdit: boolean;
   notify: (flash: Flash) => void;
@@ -402,13 +419,16 @@ function ProblemsPanel({
     return () => controller.abort();
   }, [load]);
 
-  // Đang chấm lại: hỏi tiến độ, xong thì tải lại bảng kết quả
+  // Đang chấm lại: mỗi lần nộp chấm xong (code.judged) thì cập nhật tiến độ; xong hết thì tải lại bảng kết quả
   const pending = code?.pending ?? 0;
+  useCodeJudged(assessmentId, () => {
+    if (pending > 0) void load();
+  });
   const wasPending = useRef(false);
   useEffect(() => {
     if (pending > 0) {
       wasPending.current = true;
-      const timer = setTimeout(() => void load(), 2000);
+      const timer = setTimeout(() => void load(), JUDGE_FALLBACK_POLL_MS);
       return () => clearTimeout(timer);
     }
     if (wasPending.current) {

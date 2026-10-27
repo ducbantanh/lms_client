@@ -37,12 +37,27 @@ const MESSAGES: Record<string, string> = {
   QUESTION_LIMIT: 'Mỗi lần nhập tối đa 500 câu, mỗi ngân hàng tối đa 2000 câu hỏi.',
   JUDGE_BUSY: 'Lần chạy trước vẫn đang được chấm. Đợi có kết quả rồi chạy hoặc nộp tiếp.',
   ATTEMPT_LIMIT: 'Bạn đã dùng hết số lần nộp bài giảng viên cho phép.',
+  SCHEDULE_CONFLICT: 'Lịch bị trùng với buổi học khác (cùng phòng, cùng giảng viên hoặc cùng lớp).',
+  ROOM_NAME_TAKEN: 'Danh mục đã có phòng cùng tên.',
+  ROOM_IN_USE:
+    'Phòng đã được xếp lịch nên không xóa được. Chuyển phòng sang "Ngừng dùng" thay vì xóa.',
+  ROOM_INACTIVE: 'Phòng đã ngừng dùng, không xếp được lịch mới.',
+  MEETING_HAS_ATTENDANCE: 'Buổi học đã được điểm danh nên không dời, hủy hay xóa được.',
+  MEETING_CANCELLED: 'Buổi học này đã bị hủy.',
+  MEETING_NOT_STARTED: 'Chưa đến ngày học của buổi này.',
+  LEAVE_DEADLINE_PASSED: 'Đã quá hạn gửi đơn xin nghỉ cho buổi này.',
+  LEAVE_ALREADY_REQUESTED: 'Bạn đã gửi đơn xin nghỉ cho buổi này.',
+  LEAVE_ALREADY_REVIEWED: 'Đơn đã được giảng viên duyệt nên không rút được.',
   INTERNAL_ERROR: 'Máy chủ gặp lỗi. Vui lòng thử lại sau.',
   NETWORK_ERROR: 'Không kết nối được máy chủ. Kiểm tra mạng LAN và thử lại.',
 };
 
 export class ApiError extends Error {
-  constructor(public code: string) {
+  /** details của lỗi, vd. danh sách buổi trùng của SCHEDULE_CONFLICT. */
+  constructor(
+    public code: string,
+    public details?: unknown,
+  ) {
     super(MESSAGES[code] ?? 'Không thể xử lý yêu cầu. Vui lòng thử lại.');
   }
 }
@@ -83,6 +98,7 @@ export async function apiRequest<T>(
     if (!response.ok || envelope?.success !== true)
       throw new ApiError(
         envelope?.error?.code ?? (response.status === 401 ? 'UNAUTHENTICATED' : 'NETWORK_ERROR'),
+        envelope?.error?.details,
       );
     return envelope.data as T;
   } catch (error) {

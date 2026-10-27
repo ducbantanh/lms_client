@@ -36,6 +36,7 @@ const MANAGE_ROUTES: { prefix: string; permission: string }[] = [
   { prefix: `${ADMIN_PATH}/users`, permission: 'users.manage' },
   { prefix: `${ADMIN_PATH}/import`, permission: 'users.manage' },
   { prefix: `${ADMIN_PATH}/audit`, permission: 'audit.view' },
+  { prefix: `${ADMIN_PATH}/schedule`, permission: 'schedules.manage' },
   { prefix: ADMIN_PATH, permission: 'presence.view' },
   { prefix: TEACHER_PATH, permission: 'courses.manage' },
 ];

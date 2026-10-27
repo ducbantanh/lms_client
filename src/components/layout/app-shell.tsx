@@ -28,7 +28,7 @@ interface NavGroup {
 }
 
 /**
- * Menu theo khu vực, cố ý chỉ vài mục: Tổng quan, Khóa học, Hồ sơ, Cài đặt (sinh viên và giảng viên);
+ * Menu theo khu vực, cố ý chỉ vài mục: Tổng quan, Khóa học, Lịch, Hồ sơ, Cài đặt (sinh viên và giảng viên);
  * giảng viên có thêm Ngân hàng câu hỏi, Kho bài lập trình và Tạo bài thi.
  * Thông báo đã có chuông trên thanh trên; người online của lớp xem ở tab Sinh viên của khóa học.
  * Admin có thêm các trang quản trị; khu quản lý lọc theo permission giống MANAGE_ROUTES trong lib/auth.ts.
@@ -49,6 +49,12 @@ function navFor(area: Area, user: User | null): NavGroup[] {
             label: 'Khóa học',
             icon: 'book',
             active: (path) => path === '/' || path.startsWith('/course'),
+          },
+          {
+            href: '/schedule/',
+            label: 'Lịch học',
+            icon: 'calendar',
+            active: (path) => path === '/schedule',
           },
           {
             href: '/profile/',
@@ -86,6 +92,13 @@ function navFor(area: Area, user: User | null): NavGroup[] {
     icon: 'code',
     active: (path) => path === `${TEACHER_PATH}/code-problems`,
   };
+  // /teacher/schedule: lịch dạy do admin xếp, mở điểm danh từ buổi học
+  const schedule: NavLink = {
+    href: `${TEACHER_PATH}/schedule/`,
+    label: 'Lịch dạy',
+    icon: 'calendar',
+    active: (path) => path === `${TEACHER_PATH}/schedule`,
+  };
   const createExam: NavLink = {
     href: `${TEACHER_PATH}/create-exam/`,
     label: 'Tạo bài thi',
@@ -104,7 +117,7 @@ function navFor(area: Area, user: User | null): NavGroup[] {
             active: (path) => path === TEACHER_PATH,
           },
           ...(hasPermission(user, 'courses.manage')
-            ? [courses, banks, codeLibrary, createExam]
+            ? [courses, schedule, banks, codeLibrary, createExam]
             : []),
           {
             href: `${TEACHER_PATH}/profile/`,
@@ -141,6 +154,16 @@ function navFor(area: Area, user: User | null): NavGroup[] {
             label: 'Tạo tài khoản',
             icon: 'upload' as const,
             active: (path: string) => path === `${ADMIN_PATH}/import`,
+          },
+        ]
+      : []),
+    ...(hasPermission(user, 'schedules.manage')
+      ? [
+          {
+            href: `${ADMIN_PATH}/schedule/`,
+            label: 'Lịch học',
+            icon: 'calendar' as const,
+            active: (path: string) => path === `${ADMIN_PATH}/schedule`,
           },
         ]
       : []),

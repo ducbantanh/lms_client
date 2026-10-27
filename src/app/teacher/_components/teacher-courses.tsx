@@ -30,6 +30,7 @@ import { TeacherSelect } from '@/components/teacher-select';
 import { GroupField } from '@/components/course-group-field';
 import { TeacherCourseCard } from './teacher-course-card';
 import { ViewToggle } from '@/components/ui/view-toggle';
+import { UpcomingPanel } from '@/components/schedule/upcoming-panel';
 
 /** Còn dưới 24 giờ tới giờ đóng thì tô đỏ, giống trang sinh viên. */
 const URGENT_MS = 24 * 3600_000;
@@ -106,6 +107,9 @@ export function TeacherOverviewView() {
           <GradingPanel tasks={data.toGrade} more={data.toGradeMore} />
           <SchedulePanel items={data.schedule} more={data.scheduleMore} now={now} />
         </div>
+      )}
+      {data && data.stats.courses > 0 && (
+        <UpcomingPanel href={`${TEACHER_PATH}/schedule/`} title="Lịch dạy sắp tới" />
       )}
     </main>
   );

@@ -1,7 +1,14 @@
 import type { IconName } from '@/components/ui/icon';
 
 /** Khớp NotificationViews.CATEGORIES của server (lms.notification). */
-export type NotificationCategory = 'exam' | 'lab' | 'practice' | 'content' | 'announcement';
+export type NotificationCategory =
+  | 'exam'
+  | 'lab'
+  | 'practice'
+  | 'content'
+  | 'announcement'
+  | 'schedule'
+  | 'leave';
 
 export interface AppNotification {
   id: string;
@@ -48,6 +55,8 @@ export const NOTIFICATION_CATEGORIES: NotificationCategory[] = [
   'practice',
   'content',
   'announcement',
+  'schedule',
+  'leave',
 ];
 
 export const CATEGORY_INFO: Record<
@@ -59,6 +68,8 @@ export const CATEGORY_INFO: Record<
   practice: { label: 'Bài tập', icon: 'file', tone: 'blue' },
   content: { label: 'Nội dung', icon: 'book', tone: 'green' },
   announcement: { label: 'Giảng viên', icon: 'bell', tone: 'orange' },
+  schedule: { label: 'Lịch học', icon: 'calendar', tone: 'blue' },
+  leave: { label: 'Xin nghỉ', icon: 'check', tone: 'green' },
 };
 
 /**
@@ -69,9 +80,13 @@ export function unreadBannerKey(userId: string) {
   return `lms.ui.unread-banner.${userId}`;
 }
 
-/** Trang mở khi bấm thông báo: bài kiểm tra → trang làm bài; bài khác → tab của loại; còn lại → khóa học. */
+/**
+ * Trang mở khi bấm thông báo: bài kiểm tra → trang làm bài; bài khác → tab của loại; lịch học → trang lịch;
+ * còn lại → khóa học.
+ */
 export function notificationHref(notification: AppNotification) {
   const course = notification.course;
+  if (notification.category === 'schedule' || notification.category === 'leave') return '/schedule/';
   if (!course) return '/';
   const courseHref = `/course/?id=${encodeURIComponent(course.id)}`;
   if (notification.category === 'exam' && notification.assessmentId)
