@@ -228,6 +228,7 @@ export function AssessmentItem({
         <div>
           <span className="badge muted-solid">{ASSESSMENT_TYPES[assessment.type]}</span>
           <span className={`badge ${status.tone}`}>{status.label}</span>
+          {assessment.proctored && <span className="badge warn">Có giám sát</span>}
           <h3>{href ? <Link href={href}>{assessment.title}</Link> : assessment.title}</h3>
         </div>
         {actions}

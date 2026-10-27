@@ -150,8 +150,9 @@ export function CodeEditor({
     });
   }, [language, readOnly, fontSize, minHeight, ready]);
 
+  // data-exam-allow-copy: trong giờ thi có giám sát vẫn chép / dán được bên trong ô soạn code (useExamGuard)
   return (
-    <div className={`code-editor${readOnly ? ' readonly' : ''}`} ref={host}>
+    <div className={`code-editor${readOnly ? ' readonly' : ''}`} ref={host} data-exam-allow-copy="">
       {!ready && (
         <pre className="code-editor-loading" style={{ minHeight }} aria-label={label}>
           {value}

@@ -11,6 +11,7 @@ import type { User } from '@/lib/types';
 import { AccountMenu, ConnectionChip } from '@/components/layout/account-menu';
 import { Icon, type IconName } from '@/components/ui/icon';
 import { Modal } from '@/components/ui/modal';
+import { InExamNotice } from '@/components/layout/in-exam-notice';
 import { NotificationBell } from '@/components/layout/notification-bell';
 import { UnreadBanner } from '@/components/layout/unread-banner';
 
@@ -306,6 +307,8 @@ function Shell({ area, children }: { area: Area; children: ReactNode }) {
           {children}
         </div>
       </div>
+      {/* Sinh viên đang thi có giám sát mở trang khác: đưa về trang làm bài */}
+      {area === 'learn' && <InExamNotice />}
       {helpOpen && (
         <Modal title="Hướng dẫn sử dụng" onClose={() => setHelpOpen(false)}>
           <ol className="help-steps">

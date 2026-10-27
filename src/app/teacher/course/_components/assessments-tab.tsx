@@ -63,6 +63,16 @@ export function AssessmentsTab(props: AssessmentTabProps) {
                 assessment={assessment}
                 actions={
                   <span className="file-actions">
+                    {assessment.type === 2 && (
+                      <Link
+                        href={`${TEACHER_PATH}/course/proctor/?course=${encodeURIComponent(content.course.id)}&id=${encodeURIComponent(assessment.id)}`}
+                        className="button small"
+                        title="Phòng thi: mã phòng, sinh viên đang làm, vi phạm, khóa / mở khóa"
+                      >
+                        <Icon name="shield" size={11} />
+                        Giám sát
+                      </Link>
+                    )}
                     <Link
                       href={`${TEACHER_PATH}/course/submissions/?course=${encodeURIComponent(content.course.id)}&id=${encodeURIComponent(assessment.id)}`}
                       className="button small"

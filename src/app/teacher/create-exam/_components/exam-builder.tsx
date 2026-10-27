@@ -12,6 +12,14 @@ import {
   type FormEvent,
 } from 'react';
 import { apiRequest } from '@/lib/api';
+import {
+  DEFAULT_PROCTOR_FORM,
+  proctorBoardPath,
+  proctorFormProblem,
+  proctorRequest,
+  type ProctorForm,
+} from '@/lib/proctor';
+import { ProctorSettingsFields } from '@/components/proctor-settings';
 import { TEACHER_PATH } from '@/lib/auth';
 import { courseLabel } from '@/lib/course-utils';
 import {
@@ -44,6 +52,7 @@ import {
   moveId,
   SCORE_RELEASES,
   uploadProblem,
+  type Assessment,
   type AssessmentType,
   type ScoreRelease,
   type TeacherCourse,
@@ -131,6 +140,8 @@ export function ExamBuilder() {
     /** Chỉ bài tập mới hỏi; bài thực hành và bài kiểm tra luôn thông báo (như form trong khóa học). */
     notify: false,
   });
+  /** Giám sát (chống gian lận), chỉ bài kiểm tra: lưu sau khi tạo bài (PUT .../proctor/settings). */
+  const [proctor, setProctor] = useState<ProctorForm>(DEFAULT_PROCTOR_FORM);
   const [bankId, setBankId] = useState('');
   const [details, setDetails] = useState<Record<string, QuestionBankDetail>>({});
   const [bankError, setBankError] = useState('');
@@ -188,21 +199,40 @@ export function ExamBuilder() {
     }
   }
 
+  /** Bài kiểm tra bật giám sát: lưu cài đặt cho bài vừa tạo; lỗi thì trả về thông báo (bài vẫn đã được tạo). */
+  async function saveProctor(assessmentId: string): Promise<string | null> {
+    if (form.type !== 2 || !proctor.enabled) return null;
+    try {
+      await apiRequest(`${proctorBoardPath(form.courseId, assessmentId)}/settings`, {
+        method: 'PUT',
+        body: proctorRequest(proctor),
+      });
+      return null;
+    } catch (reason) {
+      return reason instanceof Error ? reason.message : 'lỗi không xác định';
+    }
+  }
+
   /** Tạo lần lượt từng bài; lỗi giữa chừng thì bỏ các bài đã tạo khỏi danh sách để sửa rồi tạo tiếp. */
   async function createBatch(items: BatchItem[], common: Record<string, unknown>) {
     const course = encodeURIComponent(form.courseId);
     const done = new Set<string>();
+    const unguarded: string[] = [];
     for (const item of items) {
       try {
         const request = codeRequest(item.draft);
-        await apiRequest(`/teacher/courses/${course}/code-assessments`, {
-          method: 'POST',
-          body: codeBody(
-            { ...common, title: item.title.trim(), notifyStudents, code: request.code },
-            request.files,
-          ),
-        });
+        const created = await apiRequest<Assessment>(
+          `/teacher/courses/${course}/code-assessments`,
+          {
+            method: 'POST',
+            body: codeBody(
+              { ...common, title: item.title.trim(), notifyStudents, code: request.code },
+              request.files,
+            ),
+          },
+        );
         done.add(item.key);
+        if (await saveProctor(created.id)) unguarded.push(item.title.trim());
       } catch (reason) {
         setBatch(items.filter((other) => !done.has(other.key)));
         setError(
@@ -213,6 +243,14 @@ export function ExamBuilder() {
         setBusy(false);
         return;
       }
+    }
+    if (unguarded.length) {
+      setBatch(null);
+      setBusy(false);
+      setError(
+        `Đã tạo ${items.length} bài nhưng chưa bật được giám sát cho: ${unguarded.join(', ')}. Bật ở trang Giám sát của từng bài (tab Bài kiểm tra của khóa học).`,
+      );
+      return;
     }
     router.push(
       `${TEACHER_PATH}/course/?id=${encodeURIComponent(form.courseId)}&tab=${ASSESSMENT_TAB_PARAM[form.type]}`,
@@ -389,7 +427,8 @@ export function ExamBuilder() {
     });
     const invalid =
       problem ??
-      (batchMode ? batchProblem(batch!) : mode === 'code' ? codeDraftProblem(code) : null);
+      (batchMode ? batchProblem(batch!) : mode === 'code' ? codeDraftProblem(code) : null) ??
+      (form.type === 2 ? proctorFormProblem(proctor, closesAt) : null);
     if (invalid) {
       setError(invalid);
       return;
@@ -410,8 +449,9 @@ export function ExamBuilder() {
       return;
     }
     try {
+      let created: Assessment;
       if (mode === 'quiz') {
-        await apiRequest(`/teacher/courses/${course}/quizzes`, {
+        created = await apiRequest<Assessment>(`/teacher/courses/${course}/quizzes`, {
           method: 'POST',
           body: {
             ...common,
@@ -424,7 +464,7 @@ export function ExamBuilder() {
       } else if (mode === 'code') {
         // Mỗi câu có file ZIP bộ test thì gửi multipart, mỗi file một part
         const request = codeRequest(code);
-        await apiRequest(`/teacher/courses/${course}/code-assessments`, {
+        created = await apiRequest<Assessment>(`/teacher/courses/${course}/code-assessments`, {
           method: 'POST',
           body: codeBody({ ...common, notifyStudents, code: request.code }, request.files),
         });
@@ -439,7 +479,17 @@ export function ExamBuilder() {
           multipart.append('paper', paper);
           body = multipart;
         }
-        await apiRequest(`/teacher/courses/${course}/assessments`, { method: 'POST', body });
+        created = await apiRequest<Assessment>(`/teacher/courses/${course}/assessments`, {
+          method: 'POST',
+          body,
+        });
+      }
+      // Chưa lưu được cài đặt giám sát: sang trang Giám sát của bài để bật lại
+      if (await saveProctor(created.id)) {
+        router.push(
+          `${TEACHER_PATH}/course/proctor/?course=${encodeURIComponent(form.courseId)}&id=${encodeURIComponent(created.id)}&unsaved=1`,
+        );
+        return;
       }
       router.push(
         `${TEACHER_PATH}/course/?id=${encodeURIComponent(form.courseId)}&tab=${ASSESSMENT_TAB_PARAM[form.type]}`,
@@ -754,6 +804,20 @@ export function ExamBuilder() {
               </label>
             )}
           </section>
+
+          {form.type === 2 && (
+            <section className="panel">
+              <div className="panel-title">
+                <h2>
+                  <i className="title-icon red">
+                    <Icon name="shield" size={12} />
+                  </i>
+                  Giám sát thi
+                </h2>
+              </div>
+              <ProctorSettingsFields value={proctor} onChange={setProctor} />
+            </section>
+          )}
 
           {batchMode ? (
             <section className="panel">

@@ -37,12 +37,15 @@ import {
 import { DropZone } from '@/components/ui/drop-zone';
 import { Icon } from '@/components/ui/icon';
 import { CodePanel } from './code-panel';
+import { ExamEntry, ExamShell, useProctorRefresh } from './exam-gate';
 import { QuizPanel } from './quiz-panel';
 import { PdfViewer } from '@/components/pdf-viewer';
+import { inExamMode, type StudentProctor } from '@/lib/proctor';
 
 /**
  * Trang /course/assessment/?id=...: đếm ngược khi chưa mở; khi mở thì xem đề và nộp file bài làm,
- * làm bài trắc nghiệm (QuizPanel) hoặc bài lập trình (CodePanel).
+ * làm bài trắc nghiệm (QuizPanel) hoặc bài lập trình (CodePanel). Bài kiểm tra có giám sát: vào phòng thi
+ * (ExamEntry) rồi làm bài trong chế độ thi phủ kín màn hình (ExamShell).
  */
 export function AssessmentView() {
   const id = useSearchParams().get('id') ?? '';
@@ -132,6 +135,61 @@ function AssessmentPage({
     offset,
     reload,
   );
+  const proctor = data.proctor;
+  const exam = inExamMode(data);
+  useProctorRefresh(assessment.id, !!proctor, reload);
+  // Nhịp của phòng thi trả về số vi phạm mới; đổi trạng thái (bị khóa...) thì tải lại cả bài
+  function onProctorState(next: StudentProctor) {
+    if (next.status !== proctor?.status) reload();
+    else setData({ ...data, proctor: next });
+  }
+
+  const workArea =
+    assessment.answerMode === 1 ? (
+      <QuizPanel assessment={assessment} back={back} onPhaseChange={reload} />
+    ) : assessment.answerMode === 2 ? (
+      <CodePanel assessment={assessment} back={back} onSubmitted={reload} />
+    ) : (
+      <div className="columns exam-columns">
+        <section className="panel flush">
+          <div className="panel-title">
+            <h2>
+              <i className="title-icon red">
+                <Icon name="filePdf" size={12} />
+              </i>
+              Đề bài
+            </h2>
+            {assessment.paperFileId && !exam && (
+              <a href={fileUrl(assessment.paperFileId)} target="_blank" rel="noopener">
+                Mở trong tab mới
+              </a>
+            )}
+          </div>
+          {assessment.paperFileId ? (
+            <PdfViewer
+              url={fileUrl(assessment.paperFileId)}
+              title={`Đề bài: ${assessment.paperFileName ?? assessment.title}`}
+            />
+          ) : (
+            <p className="empty-cell">Bài này không có file đề.</p>
+          )}
+        </section>
+        <SubmissionPanel
+          data={data}
+          offset={offset}
+          back={back}
+          reload={reload}
+          onChange={(next) => setData({ ...data, submission: next })}
+        />
+      </div>
+    );
+
+  if (exam && proctor && (proctor.status === 'active' || proctor.status === 'locked'))
+    return (
+      <ExamShell data={data} offset={offset} reload={reload} onState={onProctorState}>
+        {workArea}
+      </ExamShell>
+    );
 
   return (
     <main id="main-content" className="shell-main">
@@ -150,6 +208,7 @@ function AssessmentPage({
             {quizSummary(assessment) && (
               <span className="badge muted">{quizSummary(assessment)}</span>
             )}
+            {assessment.proctored && <span className="badge warn">Có giám sát</span>}
           </p>
           <h1>{assessment.title}</h1>
           {assessment.description && <p>{assessment.description}</p>}
@@ -170,43 +229,10 @@ function AssessmentPage({
             </p>
           )}
         </section>
-      ) : assessment.answerMode === 1 ? (
-        <QuizPanel assessment={assessment} back={back} onPhaseChange={reload} />
-      ) : assessment.answerMode === 2 ? (
-        <CodePanel assessment={assessment} back={back} onSubmitted={reload} />
+      ) : exam ? (
+        <ExamEntry data={data} reload={reload} />
       ) : (
-        <div className="columns exam-columns">
-          <section className="panel flush">
-            <div className="panel-title">
-              <h2>
-                <i className="title-icon red">
-                  <Icon name="filePdf" size={12} />
-                </i>
-                Đề bài
-              </h2>
-              {assessment.paperFileId && (
-                <a href={fileUrl(assessment.paperFileId)} target="_blank" rel="noopener">
-                  Mở trong tab mới
-                </a>
-              )}
-            </div>
-            {assessment.paperFileId ? (
-              <PdfViewer
-                url={fileUrl(assessment.paperFileId)}
-                title={`Đề bài: ${assessment.paperFileName ?? assessment.title}`}
-              />
-            ) : (
-              <p className="empty-cell">Bài này không có file đề.</p>
-            )}
-          </section>
-          <SubmissionPanel
-            data={data}
-            offset={offset}
-            back={back}
-            reload={reload}
-            onChange={(next) => setData({ ...data, submission: next })}
-          />
-        </div>
+        workArea
       )}
     </main>
   );

@@ -91,6 +91,17 @@ trong README này để tra đường dẫn hiện tại.
 - Hook dữ liệu: `src/hooks/use-courses.ts`.
 - Hook yêu thích/ẩn/kiểu hiển thị: `src/hooks/use-course-preferences.ts`, `src/hooks/use-view-mode.ts`,
   cùng đọc/ghi localStorage qua `src/hooks/use-local-storage.ts` (`useSyncExternalStore`).
+- Giám sát bài kiểm tra (chống gian lận), kiểu dữ liệu và hàm thuần ở `src/lib/proctor.ts`:
+  - Sinh viên: trang làm bài `src/app/(learn)/course/assessment/_components/assessment-view.tsx` chuyển sang
+    `exam-gate.tsx`. `ExamEntry` là màn vào phòng thi (quy định, mã phòng thi, toàn màn hình). `ExamShell` là chế
+    độ thi phủ kín màn hình.
+  - Theo dõi trình duyệt: `src/hooks/use-exam-guard.ts` (rời trang, thoát toàn màn hình, chặn chép / dán, phím
+    tắt, nhịp 15 giây). Ô soạn code có `data-exam-allow-copy` nên vẫn chép / dán bên trong được.
+  - Đang thi mà mở trang khác: server trả `PROCTOR_IN_EXAM`, `src/lib/api.ts` phát sự kiện
+    `PROCTOR_ERROR_EVENT`, `src/components/layout/in-exam-notice.tsx` đưa về trang làm bài.
+  - Giảng viên: form cài đặt `src/components/proctor-settings.tsx` (trang Tạo bài thi và trang Giám sát). Trang
+    `/teacher/course/proctor/` (`proctor-board.tsx`) có mã phòng thi để chiếu, bảng sinh viên cập nhật qua
+    WebSocket `proctor.updated`, nhật ký, khóa / mở khóa / cho đổi máy.
 - Login, phiên và WebSocket: `src/components/auth-form.tsx`, `src/providers/session-provider.tsx`.
 - API/CSRF: `src/lib/api.ts`. Token chỉ giữ trong RAM; session thật dùng cookie HttpOnly.
 - Bảo vệ route (giống `requirePage` của client cũ): `src/providers/session-provider.tsx`. Chưa đăng nhập →
