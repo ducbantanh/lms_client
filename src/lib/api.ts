@@ -48,9 +48,22 @@ const MESSAGES: Record<string, string> = {
   LEAVE_DEADLINE_PASSED: 'Đã quá hạn gửi đơn xin nghỉ cho buổi này.',
   LEAVE_ALREADY_REQUESTED: 'Bạn đã gửi đơn xin nghỉ cho buổi này.',
   LEAVE_ALREADY_REVIEWED: 'Đơn đã được giảng viên duyệt nên không rút được.',
+  PROCTOR_REQUIRED: 'Bạn cần vào phòng thi trước khi làm bài.',
+  PROCTOR_LOCKED: 'Bài thi đang bị khóa. Chờ giám thị mở khóa để làm tiếp.',
+  PROCTOR_OTHER_DEVICE: 'Bài thi đang được làm trên máy khác. Báo giám thị nếu bạn cần đổi máy.',
+  PROCTOR_NETWORK_DENIED: 'Máy của bạn không thuộc mạng phòng thi. Hãy dùng máy trong phòng thi.',
+  PROCTOR_CODE_INVALID: 'Mã phòng thi chưa đúng hoặc đã đổi. Nhập mã giám thị đang hiển thị.',
+  PROCTOR_FINISHED: 'Bạn đã kết thúc bài thi này.',
+  PROCTOR_IN_EXAM: 'Bạn đang trong giờ thi: chỉ mở được trang làm bài.',
   INTERNAL_ERROR: 'Máy chủ gặp lỗi. Vui lòng thử lại sau.',
   NETWORK_ERROR: 'Không kết nối được máy chủ. Kiểm tra mạng LAN và thử lại.',
 };
+
+/**
+ * Lỗi PROCTOR_* (giám sát thi) phát thêm sự kiện này trên window với detail = ApiError: trang làm bài tải lại
+ * trạng thái phòng thi (bị khóa, máy khác...), khung trang đưa sinh viên đang thi về trang làm bài.
+ */
+export const PROCTOR_ERROR_EVENT = 'lms:proctor-error';
 
 export class ApiError extends Error {
   /** details của lỗi, vd. danh sách buổi trùng của SCHEDULE_CONFLICT. */
@@ -95,11 +108,15 @@ export async function apiRequest<T>(
       body: body === undefined ? undefined : isForm ? body : JSON.stringify(body),
     });
     const envelope = await response.json().catch(() => null);
-    if (!response.ok || envelope?.success !== true)
-      throw new ApiError(
+    if (!response.ok || envelope?.success !== true) {
+      const error = new ApiError(
         envelope?.error?.code ?? (response.status === 401 ? 'UNAUTHENTICATED' : 'NETWORK_ERROR'),
         envelope?.error?.details,
       );
+      if (error.code.startsWith('PROCTOR_'))
+        window.dispatchEvent(new CustomEvent(PROCTOR_ERROR_EVENT, { detail: error }));
+      throw error;
+    }
     return envelope.data as T;
   } catch (error) {
     if (error instanceof ApiError) throw error;

@@ -1,3 +1,4 @@
+import type { StudentProctor } from './proctor';
 import type { IconName } from '@/components/ui/icon';
 import { courseLabel, normalizeSearch } from './course-utils.ts';
 
@@ -82,6 +83,8 @@ export interface Assessment {
   questionCount: number;
   /** 0 sinh viên thấy điểm ngay khi có điểm, 1 sau giờ đóng bài, 2 không bao giờ (khớp Assessment.SCORE_*). */
   scoreRelease: ScoreRelease;
+  /** Bài kiểm tra có giám sát: sinh viên vào phòng thi mới xem được đề (lib/proctor.ts). */
+  proctored: boolean;
 }
 
 export interface CourseContent {
@@ -414,6 +417,8 @@ export interface StudentAssessment {
   submission: Submission;
   /** Giờ server lúc trả về, để đếm ngược không lệ thuộc đồng hồ máy sinh viên. */
   serverTime: string;
+  /** Trạng thái phòng thi của bài kiểm tra có giám sát; null với bài khác. */
+  proctor: StudentProctor | null;
 }
 
 export const SUBMISSION_STATUS: Record<SubmissionStatus, { label: string; tone: string }> = {
