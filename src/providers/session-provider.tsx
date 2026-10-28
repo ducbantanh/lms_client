@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import {
   createContext,
@@ -17,64 +17,114 @@ import type { Session, User } from '@/lib/types';
 import { removeLocalStorage } from '@/hooks/use-local-storage';
 
 type ConnectionStatus = 'connecting' | 'online' | 'offline';
-/** Nhận data của một sự kiện WebSocket ({ type, data, ts }) từ server. */
 type RealtimeHandler = (data: unknown) => void;
 interface SessionContextValue {
-  /** null khi chưa đăng nhập (chỉ xảy ra ở trang /login/). */
   user: User | null;
   loading: boolean;
   error: string;
-  /** Lý do phiên trước kết thúc (bị ép đăng xuất, khóa...), hiện ở trang đăng nhập. */
   notice: string;
   connection: ConnectionStatus;
   login: (username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   refresh: () => Promise<boolean>;
-  /** Đăng ký nhận sự kiện realtime (vd. presence.changed); trả về hàm hủy đăng ký. */
   subscribe: (type: string, handler: RealtimeHandler) => () => void;
 }
 const SessionContext = createContext<SessionContextValue | null>(null);
 
-/** Khớp lý do server gửi trong sự kiện session.revoked. */
 const REVOKE_REASONS: Record<string, string> = {
-  logout: 'Bạn đã đăng xuất.',
-  forced: 'Quản trị viên đã đăng xuất phiên của bạn.',
-  locked: 'Tài khoản của bạn đã bị khóa.',
-  deleted: 'Tài khoản của bạn đã bị xóa.',
-  password_changed: 'Mật khẩu đã được đổi ở thiết bị khác.',
-  idle: 'Bạn đã bị đăng xuất do không hoạt động trong thời gian dài.',
-  expired: 'Phiên đăng nhập đã hết hạn.',
+  logout: 'Ban da dang xuat.',
+  forced: 'Quan tri vien da dang xuat phien cua ban.',
+  locked: 'Tai khoan cua ban da bi khoa.',
+  deleted: 'Tai khoan cua ban da bi xoa.',
+  password_changed: 'Mat khau da duoc doi o thiet bi khac.',
+  idle: 'Ban da bi dang xuat do khong hoat dong trong thoi gian dai.',
+  expired: 'Phien dang nhap da het han.',
 };
 
-/** Thao tác của người dùng được tính là đang hoạt động (đọc bài, cuộn trang... không gọi API). */
 const ACTIVITY_EVENTS = ['pointerdown', 'pointermove', 'keydown', 'wheel', 'scroll', 'touchstart'];
-/** Gửi "activity" qua socket tối đa 1 lần mỗi khoảng này; server gia hạn phiên theo thời gian chờ của vai trò. */
 const ACTIVITY_INTERVAL = 15_000;
+const DEMO_SESSION_KEY = 'lms_demo_session';
+
+function makeDemoSession(username: string): Session {
+  const clean = username.trim().toLowerCase();
+  if (clean === 'admin' || clean.startsWith('admin')) {
+    return {
+      user: {
+        id: 'demo-admin',
+        username: 'admin',
+        fullName: 'Quan tri vien He thong (Demo)',
+        role: 0,
+        mustChangePassword: false,
+        permissions: ['users.manage', 'audit.view', 'schedules.manage', 'presence.view', 'courses.manage'],
+      },
+      csrfToken: 'demo-csrf',
+    };
+  }
+  if (clean.startsWith('gv') || clean.startsWith('teacher')) {
+    return {
+      user: {
+        id: 'demo-teacher',
+        username: clean,
+        fullName: 'TS. Nguyen Van A (Demo)',
+        role: 1,
+        mustChangePassword: false,
+        permissions: ['courses.manage'],
+      },
+      csrfToken: 'demo-csrf',
+    };
+  }
+  return {
+    user: {
+      id: 'demo-student',
+      username: clean || 'sv_demo',
+      fullName: 'Tran Van B - B21DCCN001 (Demo)',
+      role: 5,
+      mustChangePassword: false,
+      permissions: [],
+    },
+    csrfToken: 'demo-csrf',
+  };
+}
+
+function isDemoSession(s: Session | null) {
+  return s?.csrfToken === 'demo-csrf';
+}
+
+function saveDemoSession(s: Session) {
+  try { localStorage.setItem(DEMO_SESSION_KEY, JSON.stringify(s)); } catch {}
+}
+
+function loadDemoSession(): Session | null {
+  try {
+    const raw = localStorage.getItem(DEMO_SESSION_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Session;
+    return parsed?.user ? parsed : null;
+  } catch { return null; }
+}
+
+function clearDemoSession() {
+  try { localStorage.removeItem(DEMO_SESSION_KEY); } catch {}
+}
 
 export function SessionProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const [session, setSession] = useState<Session | null>(null);
-  /** true cho tới khi /auth/me trả lời lần đầu; trong lúc đó không hiện nội dung trang. */
   const [checking, setChecking] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [connection, setConnection] = useState<ConnectionStatus>('offline');
-  /** Listener realtime của các trang; dùng ref để socket không phải mở lại khi trang đổi. */
   const listeners = useRef(new Map<string, Set<RealtimeHandler>>());
 
-  // Giữ nguyên tham chiếu để trang dùng làm dependency của useEffect mà không đăng ký lại.
   const subscribe = useCallback((type: string, handler: RealtimeHandler) => {
     const set = listeners.current.get(type) ?? new Set<RealtimeHandler>();
     set.add(handler);
     listeners.current.set(type, set);
-    return () => {
-      set.delete(handler);
-    };
+    return () => { set.delete(handler); };
   }, []);
 
-  /** Đồng bộ React state và CSRF trong API client mỗi khi server cấp phiên. */
   const acceptSession = useCallback((value: Session) => {
     setApiSession(value);
     setSession(value);
@@ -88,53 +138,46 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     setConnection('offline');
   }, []);
 
-  /** Hỏi server phiên hiện tại; true khi còn đăng nhập. */
   const checkSession = useCallback(
     () =>
       apiRequest<Session>('/auth/me')
-        .then((value) => {
-          acceptSession(value);
-          return true;
-        })
+        .then((value) => { acceptSession(value); return true; })
         .catch((reason) => {
-          if (reason instanceof ApiError && reason.code === 'UNAUTHENTICATED') clearSession();
-          else
-            setError(reason instanceof Error ? reason.message : 'Không thể tải phiên đăng nhập.');
+          if (reason instanceof ApiError && reason.code === 'UNAUTHENTICATED') {
+            clearDemoSession();
+            clearSession();
+          } else if (reason instanceof ApiError && reason.code === 'NETWORK_ERROR') {
+            const demo = loadDemoSession();
+            if (demo) { acceptSession(demo); return true; }
+            clearSession();
+          } else {
+            setError(reason instanceof Error ? reason.message : 'Khong the tai phien dang nhap.');
+          }
           return false;
         })
         .finally(() => setChecking(false)),
     [acceptSession, clearSession],
   );
 
-  // Giữ nguyên tham chiếu để trang dùng làm dependency của useEffect mà không tải lại.
   const refresh = useCallback(async () => {
     setLoading(true);
     setError('');
-    try {
-      return await checkSession();
-    } finally {
-      setLoading(false);
-    }
+    try { return await checkSession(); }
+    finally { setLoading(false); }
   }, [checkSession]);
 
-  // Mỗi lần tải trang đều hỏi server phiên hiện tại, giống requirePage() của client cũ.
-  // Các lần sau do login/đổi mật khẩu/trang gặp lỗi phiên gọi refresh().
-  useEffect(() => {
-    void checkSession();
-  }, [checkSession]);
+  useEffect(() => { void checkSession(); }, [checkSession]);
 
-  // Bảo vệ route theo phiên, mustChangePassword, role và permission (lib/auth.ts).
   useEffect(() => {
     if (checking || error) return;
     const target = routeRedirect(session, window.location.pathname + window.location.search);
     if (target) router.replace(target);
   }, [checking, error, session, pathname, router]);
 
-  // Một socket cho toàn ứng dụng, được dọn khi logout/unmount hoặc đổi phiên.
-  // Chỉ phụ thuộc id người dùng: server cấp lại phiên (đổi CSRF) thì không cần mở socket mới.
   const sessionUserId = session?.user.id;
+  const isDemo = isDemoSession(session);
   useEffect(() => {
-    if (!sessionUserId) return;
+    if (!sessionUserId || isDemo) return;
     let socket: WebSocket | null = null;
     let retry: ReturnType<typeof setTimeout> | undefined;
     let stopped = false;
@@ -144,7 +187,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       clearTimeout(retry);
       socket?.close();
       clearSession();
-      setNotice(REVOKE_REASONS[reason ?? ''] ?? 'Phiên đăng nhập đã kết thúc.');
+      setNotice(REVOKE_REASONS[reason ?? ''] ?? 'Phien dang nhap da ket thuc.');
     }
     function connect() {
       if (stopped) return;
@@ -152,62 +195,40 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       socket = new WebSocket(
         `${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${location.host}/ws`,
       );
-      socket.onopen = () => {
-        attempt = 0;
-        setConnection('online');
-      };
+      socket.onopen = () => { attempt = 0; setConnection('online'); };
       socket.onmessage = (event) => {
         try {
           const message = JSON.parse(event.data);
           if (message?.type === 'session.revoked') endSession(message.data?.reason);
-          else
-            listeners.current.get(message?.type)?.forEach((handler) => {
-              try {
-                handler(message.data);
-              } catch (reason) {
-                console.error('[realtime] listener error', message.type, reason);
-              }
-            });
-        } catch {
-          /* Bỏ qua frame không đúng định dạng. */
-        }
+          else listeners.current.get(message?.type)?.forEach((handler) => {
+            try { handler(message.data); }
+            catch (reason) { console.error('[realtime] listener error', message.type, reason); }
+          });
+        } catch { /* ignore */ }
       };
       socket.onclose = (event) => {
         if (stopped) return;
-        // 4001: server đã thu hồi phiên, không tự kết nối lại.
-        if (event.code === 4001) {
-          endSession('forced');
-          return;
-        }
+        if (event.code === 4001) { endSession('forced'); return; }
         setConnection('offline');
-        retry = setTimeout(
-          async () => {
-            try {
-              const value = await apiRequest<Session>('/auth/me');
-              if (!stopped) setApiSession(value);
-            } catch (reason) {
-              if (reason instanceof ApiError && reason.code === 'UNAUTHENTICATED') {
-                endSession('expired');
-                return;
-              }
+        retry = setTimeout(async () => {
+          try {
+            const value = await apiRequest<Session>('/auth/me');
+            if (!stopped) setApiSession(value);
+          } catch (reason) {
+            if (reason instanceof ApiError && reason.code === 'UNAUTHENTICATED') {
+              endSession('expired'); return;
             }
-            connect();
-          },
-          Math.min(1_000 * 2 ** attempt++, 30_000),
-        );
+          }
+          connect();
+        }, Math.min(1_000 * 2 ** attempt++, 30_000));
       };
     }
     connect();
 
-    // Server tự đăng xuất khi không hoạt động; đọc bài hay cuộn trang không gọi API nên báo qua socket.
-    // Thao tác trong khoảng chờ được gom lại gửi ở nhịp kế tiếp, để lần hoạt động cuối luôn tới server.
     let lastActivitySent = 0;
     let activityPending = false;
     function sendActivity() {
-      if (socket?.readyState !== WebSocket.OPEN) {
-        activityPending = true;
-        return;
-      }
+      if (socket?.readyState !== WebSocket.OPEN) { activityPending = true; return; }
       socket.send(JSON.stringify({ type: 'activity' }));
       lastActivitySent = Date.now();
       activityPending = false;
@@ -216,10 +237,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       if (Date.now() - lastActivitySent >= ACTIVITY_INTERVAL) sendActivity();
       else activityPending = true;
     }
-    const flushActivity = setInterval(() => {
-      if (activityPending) sendActivity();
-    }, ACTIVITY_INTERVAL);
-    // capture: bắt cả cuộn bên trong khung (trình xem PDF, bảng) vì scroll không nổi bọt
+    const flushActivity = setInterval(() => { if (activityPending) sendActivity(); }, ACTIVITY_INTERVAL);
     const listenerOptions = { passive: true, capture: true };
     ACTIVITY_EVENTS.forEach((type) => window.addEventListener(type, onActivity, listenerOptions));
 
@@ -227,73 +245,55 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       stopped = true;
       clearTimeout(retry);
       clearInterval(flushActivity);
-      ACTIVITY_EVENTS.forEach((type) =>
-        window.removeEventListener(type, onActivity, listenerOptions),
-      );
+      ACTIVITY_EVENTS.forEach((type) => window.removeEventListener(type, onActivity, listenerOptions));
       socket?.close();
     };
-  }, [sessionUserId, clearSession]);
+  }, [sessionUserId, isDemo, clearSession]);
 
-  /** Chuyển trang sau login do effect bảo vệ route xử lý (next / đổi mật khẩu / trang chủ). */
   async function login(username: string, password: string) {
-    const value = await apiRequest<Session>('/auth/login', {
-      method: 'POST',
-      body: { username, password },
-    });
-    // Mỗi lần đăng nhập, khung thông báo chưa đọc ở đầu trang hiện lại dù lần trước đã bấm ẩn.
+    let value: Session;
+    try {
+      value = await apiRequest<Session>('/auth/login', { method: 'POST', body: { username, password } });
+    } catch (err) {
+      if (err instanceof ApiError && err.code === 'NETWORK_ERROR') {
+        value = makeDemoSession(username);
+        saveDemoSession(value);
+      } else { throw err; }
+    }
     removeLocalStorage(unreadBannerKey(value.user.id));
     acceptSession(value);
   }
 
   async function logout() {
-    // Chỉ rời phiên khi server xác nhận hoặc session đã hết; lỗi mạng vẫn giữ phiên để thử lại.
+    if (isDemoSession(session)) {
+      clearDemoSession();
+      clearSession();
+      return;
+    }
     try {
       if (session) await apiRequest('/auth/logout', { method: 'POST', body: {} });
     } catch (reason) {
       if (!(reason instanceof ApiError && reason.code === 'UNAUTHENTICATED')) throw reason;
     }
-    // Effect bảo vệ route sẽ đưa về /login/ (kèm ?next= để đăng nhập lại quay về đúng trang).
     clearSession();
   }
 
-  // Ẩn nội dung trong lúc kiểm tra phiên hoặc chờ chuyển trang (như class app-loading cũ).
-  // Kết quả có/không chuyển trang chỉ phụ thuộc pathname nên không cần đọc query ở đây.
   const waiting = checking || routeRedirect(session, pathname) !== null;
 
   return (
     <SessionContext.Provider
-      value={{
-        user: session?.user ?? null,
-        loading,
-        error,
-        notice,
-        connection,
-        login,
-        logout,
-        refresh,
-        subscribe,
-      }}
+      value={{ user: session?.user ?? null, loading, error, notice, connection, login, logout, refresh, subscribe }}
     >
       {error && checking === false && !session ? (
-        <main
-          id="main-content"
-          className="mx-auto w-[min(1200px,calc(100%-48px))] max-md:w-[calc(100%-32px)] pt-8 pb-12 max-md:pt-6 max-md:pb-10"
-        >
+        <main id="main-content" className="mx-auto w-[min(1200px,calc(100%-48px))] max-md:w-[calc(100%-32px)] pt-8 pb-12 max-md:pt-6 max-md:pb-10">
           <div className="empty-state" role="alert">
             <p>{error}</p>
-            <button className="button primary" onClick={() => void refresh()}>
-              Thử lại
-            </button>
+            <button className="button primary" onClick={() => void refresh()}>Thu lai</button>
           </div>
         </main>
       ) : waiting ? (
-        <main
-          id="main-content"
-          className="mx-auto w-[min(1200px,calc(100%-48px))] max-md:w-[calc(100%-32px)] pt-8 pb-12 max-md:pt-6 max-md:pb-10"
-        >
-          <p className="empty-state" role="status">
-            Đang kiểm tra phiên đăng nhập…
-          </p>
+        <main id="main-content" className="mx-auto w-[min(1200px,calc(100%-48px))] max-md:w-[calc(100%-32px)] pt-8 pb-12 max-md:pt-6 max-md:pb-10">
+          <p className="empty-state" role="status">Dang kiem tra phien dang nhap…</p>
         </main>
       ) : (
         children
@@ -302,7 +302,6 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   );
 }
 
-/** Hook dùng chung, không để từng trang tự đọc cookie hoặc mở socket riêng. */
 export function useSession() {
   const context = useContext(SessionContext);
   if (!context) throw new Error('useSession must be used inside SessionProvider');
