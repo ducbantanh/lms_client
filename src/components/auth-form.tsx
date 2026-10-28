@@ -6,20 +6,6 @@ import { useSession } from '@/providers/session-provider';
 import { apiRequest } from '@/lib/api';
 import { Icon } from '@/components/ui/icon';
 
-interface DemoAccount {
-  role: string;
-  name: string;
-  username: string;
-  badge: string;
-  icon: 'shield' | 'teach' | 'cap';
-}
-
-const DEMO_ACCOUNTS: DemoAccount[] = [
-  { role: 'Quản trị viên', name: 'Admin', username: 'admin', badge: 'Admin', icon: 'shield' },
-  { role: 'Giảng viên', name: 'Thầy Tuấn', username: 'gv_nguyenvana', badge: 'Teacher', icon: 'teach' },
-  { role: 'Sinh viên', name: 'Sinh viên An', username: 'sv_tranvanb', badge: 'Student', icon: 'cap' },
-];
-
 /** Form xác thực thật dùng API Spring. Chuyển trang sau khi thành công do SessionProvider lo. */
 export function AuthForm({ changePassword = false }: { changePassword?: boolean }) {
   const { login, refresh, notice } = useSession();
@@ -29,12 +15,6 @@ export function AuthForm({ changePassword = false }: { changePassword?: boolean 
   const [error, setError] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-
-  function handleFillDemo(acc: DemoAccount) {
-    setUsername(acc.username);
-    setPassword('password123');
-    setError('');
-  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -71,7 +51,7 @@ export function AuthForm({ changePassword = false }: { changePassword?: boolean 
   if (changePassword) {
     return (
       <main id="main-content" className="grid min-h-[calc(100vh-140px)] place-items-center px-4 py-12">
-        <section className="w-[min(420px,100%)] rounded-2xl border border-line bg-white p-8 shadow-lift animate-fade-up">
+        <section className="w-[min(420px,100%)] rounded-2xl border border-line bg-surface p-8 shadow-lift animate-fade-up">
           <div className="mb-6 flex items-center gap-3">
             <span className="grid size-11 place-items-center rounded-xl bg-primary-50 text-primary-600">
               <Icon name="key" size={20} />
@@ -155,97 +135,9 @@ export function AuthForm({ changePassword = false }: { changePassword?: boolean 
         <div className="absolute -bottom-10 right-1/4 size-[450px] rounded-full bg-indigo-200/30 blur-3xl" />
       </div>
 
-      <div className="grid w-[min(1080px,100%)] overflow-hidden rounded-3xl border border-line/80 bg-white shadow-float md:grid-cols-[1.12fr,0.88fr] animate-fade-up">
-        {/* Left Hero Showcase */}
-        <section className="relative flex flex-col justify-between overflow-hidden bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 p-8 text-white md:p-12">
-          {/* Subtle glowing radial background */}
-          <div className="pointer-events-none absolute -top-24 -right-24 size-80 rounded-full bg-primary-500/20 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-24 -left-24 size-80 rounded-full bg-indigo-500/20 blur-3xl" />
-
-          {/* Top Brand & Tag */}
-          <div className="relative z-10">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-medium text-primary-200 backdrop-blur-md">
-              <span className="size-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]" />
-              Cổng học tập & khảo thí thế hệ mới
-            </div>
-
-            <div className="mt-6 flex items-center gap-3">
-              <span className="grid size-12 place-items-center rounded-2xl bg-gradient-to-br from-primary-500 to-indigo-600 text-2xl font-black text-white shadow-glow">
-                F
-              </span>
-              <div>
-                <h2 className="text-2xl font-bold tracking-tight text-white md:text-3xl">
-                  F LMS Portal
-                </h2>
-                <p className="text-xs text-slate-300">Khoa Công nghệ Thông tin</p>
-              </div>
-            </div>
-
-            <p className="mt-4 text-sm leading-relaxed text-slate-300 md:text-[15px]">
-              Nền tảng tích hợp toàn diện: Quản lý học phần, tổ chức thi trắc nghiệm & lập trình trực tuyến, kiểm soát gian lận thông minh.
-            </p>
-
-            {/* Feature highlights */}
-            <div className="mt-8 space-y-3.5">
-              <div className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/5 p-3 backdrop-blur-xs transition hover:bg-white/10">
-                <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-emerald-500/20 text-emerald-400">
-                  <Icon name="shield" size={15} />
-                </span>
-                <div>
-                  <h3 className="text-xs font-semibold text-white">Chế độ thi giám sát (Proctoring)</h3>
-                  <p className="text-[11px] text-slate-300">Khóa toàn màn hình, phát hiện rời tab và theo dõi phiên thi thời gian thực.</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/5 p-3 backdrop-blur-xs transition hover:bg-white/10">
-                <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-blue-500/20 text-blue-400">
-                  <Icon name="code" size={15} />
-                </span>
-                <div>
-                  <h3 className="text-xs font-semibold text-white">Chấm code trực tuyến (Judge)</h3>
-                  <p className="text-[11px] text-slate-300">Hỗ trợ C++, Java, Python với trình soạn thảo CodeMirror chuyên sâu.</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/5 p-3 backdrop-blur-xs transition hover:bg-white/10">
-                <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-amber-500/20 text-amber-400">
-                  <Icon name="qrcode" size={15} />
-                </span>
-                <div>
-                  <h3 className="text-xs font-semibold text-white">Điểm danh mã QR thông minh</h3>
-                  <p className="text-[11px] text-slate-300">Quét mã QR động hiển thị trên máy chiếu, xác thực IP thiết bị chính xác.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Quick Demo Accounts Helper */}
-          <div className="relative z-10 mt-8 rounded-2xl border border-white/10 bg-black/25 p-4 backdrop-blur-md">
-            <div className="mb-2.5 flex items-center justify-between text-xs font-semibold text-slate-300">
-              <span className="flex items-center gap-1.5">
-                <Icon name="info" size={12} className="text-primary-400" />
-                Thử nghiệm nhanh (Chọn tài khoản mẫu):
-              </span>
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              {DEMO_ACCOUNTS.map((acc) => (
-                <button
-                  key={acc.username}
-                  type="button"
-                  onClick={() => handleFillDemo(acc)}
-                  className="flex flex-col items-center gap-1 rounded-xl border border-white/10 bg-white/5 py-2 px-1 text-center transition hover:border-primary-400 hover:bg-primary-500/20 active:scale-95"
-                >
-                  <Icon name={acc.icon} size={14} className="text-primary-300" />
-                  <span className="text-[11px] font-semibold text-white">{acc.name}</span>
-                  <span className="text-[10px] text-slate-400">{acc.badge}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Right Form Card */}
-        <section className="flex flex-col justify-center p-8 md:p-12">
+      <div className="w-[min(460px,100%)] overflow-hidden rounded-3xl border border-line/80 bg-surface shadow-float animate-fade-up">
+        {/* Form Card */}
+        <section className="flex flex-col justify-center p-8 sm:p-10">
           <div className="mb-6">
             <h1 className="text-2xl font-bold tracking-tight text-ink">Đăng nhập</h1>
             <p className="mt-1 text-sm text-ink-muted">
@@ -262,9 +154,8 @@ export function AuthForm({ changePassword = false }: { changePassword?: boolean 
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <label className="form-field">
-              <span className="flex items-center justify-between text-xs font-medium text-ink">
-                <span>Tên đăng nhập / Mã sinh viên</span>
-                <span className="text-[11px] text-ink-subtle">VD: admin, sv_tranvanb</span>
+              <span className="text-xs font-medium text-ink">
+                Tên đăng nhập / Mã sinh viên
               </span>
               <div className="relative mt-1">
                 <input
@@ -338,11 +229,6 @@ export function AuthForm({ changePassword = false }: { changePassword?: boolean 
               )}
             </button>
           </form>
-
-          <div className="mt-8 border-t border-line pt-4 text-center text-xs text-ink-subtle">
-            Cần hỗ trợ đăng nhập hoặc quên mật khẩu?{' '}
-            <span className="font-medium text-primary-600">Liên hệ phòng Đào tạo</span>
-          </div>
         </section>
       </div>
     </main>
