@@ -9,14 +9,14 @@ hiển thị và gửi thao tác qua HTTP/WebSocket cùng origin.
 
 ## Các tài liệu đã đối chiếu
 
-- `readme (1).md`: mẫu Python nhận bài qua LAN, xem đề, upload multipart, nhiều kết nối,
+- `SUBMISSION_SERVER.md`: mẫu Python nhận bài qua LAN, xem đề, upload multipart, nhiều kết nối,
   tên file duy nhất và giới hạn upload. Đây là bài toán đầu vào; không phải hợp đồng API
   của Spring. Không gửi form tới `/submit` trong base client Spring.
-- `sercli.md` (tên thực tế, không phải `serclie.md`): kiến trúc mục tiêu modular monolith,
+- `SERVER_CLIENT.md`: kiến trúc mục tiêu modular monolith,
   numeric roles 0–6, MySQL, opaque session, CSRF, realtime presence/revoke, asset offline,
   import và roadmap course/submission/grading. Mô tả Python/Next là phương án cũ so với
   lựa chọn hiện tại; các ranh giới trách nhiệm và yêu cầu nghiệp vụ vẫn được giữ.
-- `design.md`: dùng lớp CSS trên AdminLTE, token, focus, responsive và reduced motion.
+- `DESIGN.md`: dùng lớp CSS trên AdminLTE, token, focus, responsive và reduced motion.
   Base mới thêm nền tảng chung; chưa triển khai toàn bộ thiết kế chi tiết từng trang.
 - `lms_server/README.md`, controller/DTO, enum `Role`, migration V2 và realtime hub:
   hợp đồng được dùng cho tích hợp hiện tại.

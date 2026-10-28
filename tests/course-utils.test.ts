@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { selectCourses, normalizeSearch, initials } from '../lib/course-utils.ts';
-import type { Course } from '../lib/types.ts';
+import { selectCourses, normalizeSearch, initials, courseLabel } from '../src/lib/course-utils.ts';
+import type { Course } from '../src/lib/types.ts';
 
 // Fixture nhỏ để kiểm tra phối hợp bộ lọc, không sao chép thuật toán triển khai.
 const courses: Course[] = [
@@ -15,6 +15,7 @@ const courses: Course[] = [
     semesterLabel: '',
     status: 'current',
     progress: 40,
+    nextLesson: null,
     lessons: 10,
     cover: 'blue',
     updatedAt: '2026-10-15',
@@ -29,6 +30,7 @@ const courses: Course[] = [
     semesterLabel: '',
     status: 'completed',
     progress: 100,
+    nextLesson: null,
     lessons: 10,
     cover: 'rose',
     updatedAt: '2025-10-15',
@@ -43,6 +45,7 @@ const courses: Course[] = [
     semesterLabel: '',
     status: 'current',
     progress: 20,
+    nextLesson: null,
     lessons: 10,
     cover: 'slate',
     updatedAt: '2026-10-16',
@@ -94,4 +97,11 @@ test('semester/status filters combine and sorting does not mutate source', () =>
     ['a', 'b', 'c'],
   );
   assert.equal(initials('Nguyễn Văn Quang'), 'VQ');
+});
+
+test('course label shows the group only when the course has one', () => {
+  // Cùng định dạng Course.displayCode() của server
+  assert.equal(courseLabel('INT1340', '01'), 'INT1340 · Nhóm 01');
+  assert.equal(courseLabel('INT1340', null), 'INT1340');
+  assert.equal(courseLabel('INT1340', ''), 'INT1340');
 });
