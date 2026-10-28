@@ -43,7 +43,7 @@ export function NotificationRow({
 }) {
   const info = CATEGORY_INFO[category];
   const className = `flex items-start gap-3 transition-colors ${compact ? 'px-3.5 py-2.5' : 'px-5 py-3'} ${
-    href ? (unread ? 'bg-primary-50 hover:bg-primary-100/70' : 'hover:bg-surface-muted') : ''
+    href ? (unread ? 'bg-primary-50 hover:bg-primary-100/70' : 'rounded-xl transition-all duration-150 hover:bg-surface-muted hover:shadow-xs') : ''
   }`;
   const content = (
     <>

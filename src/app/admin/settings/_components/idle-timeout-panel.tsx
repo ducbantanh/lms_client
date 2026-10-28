@@ -57,7 +57,7 @@ export function IdleTimeoutPanel() {
 
   if (!allowed) return null;
   return (
-    <section className="panel">
+    <section className="panel rounded-2xl shadow-card border border-line/80 bg-white/95 backdrop-blur-xs">
       <div className="panel-title">
         <h2>
           <i className="title-icon orange">

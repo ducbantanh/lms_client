@@ -14,6 +14,7 @@ body.exam-open {
   @apply fixed inset-0 z-[900] flex flex-col bg-canvas;
 }
 .exam-bar {
+  @apply backdrop-blur-md shadow-md;
   @apply flex flex-wrap items-center justify-between gap-y-2 gap-x-4 py-2.5 px-6 bg-sidebar text-white;
 }
 .exam-bar-title {
@@ -125,7 +126,7 @@ body.exam-open {
   font: 700 48px/1 var(--font-mono);
 }
 .proctor-code-bar {
-  @apply w-65 max-w-full h-1.5 mb-1.5 rounded-sm bg-line overflow-hidden;
+  @apply w-65 max-w-full h-1.5 mb-1.5 rounded-xl bg-line overflow-hidden;
 }
 .proctor-code-bar span {
   @apply block h-full bg-primary-600;

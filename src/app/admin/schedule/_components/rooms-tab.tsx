@@ -34,7 +34,7 @@ export function RoomsTab({ context }: { context: ScheduleAdminContext }) {
   }
 
   return (
-    <section className="panel">
+    <section className="panel rounded-2xl shadow-card border border-line/80 bg-white/95 backdrop-blur-xs">
       <div className="toolbar">
         <p className="table-summary">
           {rooms.length} phòng · {rooms.filter((room) => room.active).length} đang dùng

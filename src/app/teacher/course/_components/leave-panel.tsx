@@ -52,7 +52,7 @@ export function LeavePanel({ content, notify, canTeach }: TabProps) {
   const shown = [...pending, ...(showAll ? reviewed : reviewed.slice(0, REVIEWED_SHOWN))];
 
   return (
-    <section className="panel leave-panel">
+    <section className="panel leave-panel rounded-2xl shadow-card border border-line/80 bg-white/95 backdrop-blur-xs">
       <div className="panel-title">
         <h2>
           Đơn xin nghỉ

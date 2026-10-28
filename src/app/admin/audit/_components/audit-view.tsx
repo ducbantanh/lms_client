@@ -103,8 +103,8 @@ export function AuditView() {
           Tải lại
         </button>
       </AdminHeading>
-      <section className="panel">
-        <div className="toolbar">
+      <section className="panel rounded-2xl shadow-card border border-line/80 bg-white/95 backdrop-blur-xs">
+        <div className="toolbar rounded-2xl bg-white/70 p-2.5 border border-line/80 shadow-xs backdrop-blur-xs">
           <label className="search-field">
             <Icon name="search" size={14} />
             <span className="sr-only">Tìm theo người thực hiện, đối tượng hoặc nội dung</span>

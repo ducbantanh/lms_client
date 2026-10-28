@@ -367,7 +367,7 @@ export function TeacherCourseList() {
         ))}
       </div>
 
-      <div className="toolbar">
+      <div className="toolbar rounded-2xl bg-white/70 p-2.5 border border-line/80 shadow-xs backdrop-blur-xs">
         <label className="search-field">
           <Icon name="search" size={14} />
           <span className="sr-only">Tìm khóa học</span>
@@ -416,7 +416,7 @@ export function TeacherCourseList() {
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="empty-state">
+        <div className="empty-state rounded-2xl border border-line/80 bg-white/90 p-12 text-center shadow-card backdrop-blur-xs">
           <h3>{courses.length ? 'Không có khóa học phù hợp' : 'Chưa có khóa học nào'}</h3>
           <p>
             {courses.length

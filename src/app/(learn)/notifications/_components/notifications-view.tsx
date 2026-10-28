@@ -99,7 +99,7 @@ export function NotificationsView() {
           </button>
         )}
       </div>
-      <div className="tabs" role="tablist" aria-label="Loại thông báo">
+      <div className="tabs p-1 bg-surface-muted/60 rounded-2xl border border-line/60 backdrop-blur-xs shadow-xs" role="tablist" aria-label="Loại thông báo">
         {tabs.map((tab) => (
           <button
             key={tab.value}
@@ -115,7 +115,7 @@ export function NotificationsView() {
           </button>
         ))}
       </div>
-      <section className="panel flush">
+      <section className="panel flush rounded-2xl shadow-card border border-line/80 bg-white/95 backdrop-blur-xs overflow-hidden">
         <div className="panel-title">
           <h2>{tabs.find((tab) => tab.value === category)?.label}</h2>
           <label className="check-field m-0 font-normal">

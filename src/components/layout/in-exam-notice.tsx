@@ -44,7 +44,7 @@ export function InExamNotice() {
         làm bài; các trang khác tạm khóa tới khi bạn nộp bài hoặc hết giờ.
       </p>
       <div className="dialog-actions">
-        <Link href={examHref(exam)} className="button primary" onClick={() => setExam(null)}>
+        <Link href={examHref(exam)} className="button primary shadow-sm hover:shadow-md transition-all active:scale-[0.98]" onClick={() => setExam(null)}>
           <Icon name="exam" size={13} />
           Về trang làm bài
         </Link>

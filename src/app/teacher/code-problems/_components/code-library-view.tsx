@@ -296,7 +296,7 @@ export function CodeLibraryView() {
           </p>
         </div>
       ) : (
-        <section className="panel">
+        <section className="panel rounded-2xl shadow-card border border-line/80 bg-white/95 backdrop-blur-xs">
           <div className="toolbar">
             <label className="search-field">
               <Icon name="search" size={14} />

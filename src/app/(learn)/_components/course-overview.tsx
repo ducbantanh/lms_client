@@ -77,14 +77,14 @@ export function CourseOverview() {
     <main id="main-content" className="shell-main">
       <div className="page-heading">
         <h1>Khóa học của tôi</h1>
-        <button className="button" onClick={() => setJoining(true)}>
+        <button className="button primary shadow-sm hover:shadow-md transition-all active:scale-[0.98]" onClick={() => setJoining(true)}>
           <Icon name="join" size={13} />
           Tham gia bằng mã
         </button>
       </div>
       <FlashMessage flash={flash} onDone={clearFlash} />
 
-      <div className="tabs" aria-label="Trạng thái khóa học">
+      <div className="tabs p-1 bg-surface-muted/60 rounded-2xl border border-line/60 backdrop-blur-xs shadow-xs" aria-label="Trạng thái khóa học">
         {FILTERS.map((item) => (
           <button
             key={item.value}
@@ -101,7 +101,7 @@ export function CourseOverview() {
         ))}
       </div>
 
-      <div className="toolbar">
+      <div className="toolbar rounded-2xl bg-white/70 p-2.5 border border-line/80 shadow-xs backdrop-blur-xs">
         <label className="search-field">
           <Icon name="search" size={14} />
           <span className="sr-only">Tìm kiếm khóa học</span>
@@ -176,7 +176,7 @@ export function CourseOverview() {
           </button>
         </div>
       ) : filteredCourses.length === 0 ? (
-        <div className="empty-state">
+        <div className="empty-state rounded-2xl border border-line/80 bg-white/90 p-12 text-center shadow-card backdrop-blur-xs">
           <h3>
             {courses.length === 0 ? 'Bạn chưa có khóa học nào' : 'Không tìm thấy khóa học phù hợp'}
           </h3>

@@ -70,7 +70,7 @@ export function WeekSchedule({
 
   return (
     <section className="panel week-schedule">
-      <div className="toolbar">
+      <div className="toolbar rounded-2xl bg-white/70 p-2.5 border border-line/80 shadow-xs backdrop-blur-xs">
         <div className="week-nav">
           <button
             className="icon-button"

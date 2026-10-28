@@ -120,7 +120,7 @@ export function AssessmentsTab(props: AssessmentTabProps) {
       </section>
       {/* Mọi loại bài tạo ở trang Tạo bài thi, chọn sẵn khóa học và loại bài của tab */}
       {canTeach && (
-        <aside className="panel">
+        <aside className="panel rounded-2xl shadow-card border border-line/80 bg-white/95 backdrop-blur-xs">
           <div className="panel-title">
             <h2>
               <i className="title-icon red">

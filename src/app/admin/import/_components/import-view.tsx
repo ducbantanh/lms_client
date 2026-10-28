@@ -153,7 +153,7 @@ export function ImportView() {
       >
         {/* Nút chuyển loại tài khoản; rê chuột để xem mô tả */}
         <div
-          className="inline-flex shrink-0 gap-1 rounded-sm border border-line bg-surface-muted p-1"
+          className="inline-flex shrink-0 gap-1 rounded-xl border border-line bg-surface-muted p-1"
           role="radiogroup"
           aria-label="Loại tài khoản"
         >
@@ -236,7 +236,7 @@ export function ImportView() {
           </DropZone>
           <SingleAccount key={role} role={role} onSubmit={send} />
         </div>
-        <section className="panel">
+        <section className="panel rounded-2xl shadow-card border border-line/80 bg-white/95 backdrop-blur-xs">
           <div className="panel-title">
             <h2>Kết quả</h2>
             {report && <span>{report.totalLines} dòng đã đọc</span>}
@@ -293,7 +293,7 @@ function SingleAccount({
   }
 
   return (
-    <section className="panel">
+    <section className="panel rounded-2xl shadow-card border border-line/80 bg-white/95 backdrop-blur-xs">
       <div className="panel-title">
         <h2>
           <i className="title-icon green">

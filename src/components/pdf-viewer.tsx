@@ -75,7 +75,7 @@ export function PdfViewer({ url, title }: { url: string; title: string }) {
             <Icon name="minus" size={12} />
           </button>
           <button
-            className="h-7 min-w-14 rounded-sm font-semibold text-ink tabular-nums hover:bg-surface-muted"
+            className="h-7 min-w-14 rounded-xl font-semibold text-ink tabular-nums hover:bg-surface-muted"
             title="Vừa khung"
             onClick={() => setZoom(2)}
           >

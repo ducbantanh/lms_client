@@ -313,7 +313,7 @@ export function AdminOverview() {
           ) : (
             <ul className="m-0 list-none p-0 max-h-80 space-y-1 overflow-y-auto">
               {feed.map((item) => (
-                <li key={item.key} className="flex items-center gap-3 rounded-sm px-2 py-2 text-sm">
+                <li key={item.key} className="flex items-center gap-3 rounded-xl px-2 py-2 text-sm">
                   <span
                     className={`size-2 shrink-0 rounded-full ${item.online ? 'bg-emerald-500' : 'bg-line-strong'}`}
                   />

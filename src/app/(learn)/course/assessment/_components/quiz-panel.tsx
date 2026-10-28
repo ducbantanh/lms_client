@@ -312,7 +312,7 @@ function QuizRunner({
                 return (
                   <label
                     key={option.position}
-                    className={`flex cursor-pointer items-start gap-2.5 rounded-sm border px-3 py-2 ${
+                    className={`flex cursor-pointer items-start gap-2.5 rounded-xl border px-3 py-2 ${
                       checked
                         ? 'border-primary-600 bg-primary-50'
                         : 'border-line hover:bg-surface-muted'
@@ -366,7 +366,7 @@ function QuizRunner({
             <a
               key={question.id}
               href={`#q-${question.id}`}
-              className={`grid h-8 place-items-center rounded-sm border text-[13px] font-semibold tabular-nums transition-colors ${
+              className={`grid h-8 place-items-center rounded-xl border text-[13px] font-semibold tabular-nums transition-colors ${
                 question.chosen.length
                   ? 'border-primary-600 bg-primary-600 text-white'
                   : 'border-line-strong text-ink-muted hover:border-primary-600 hover:text-primary-600'

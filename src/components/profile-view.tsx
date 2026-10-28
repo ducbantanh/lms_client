@@ -52,9 +52,9 @@ export function ProfileView() {
         </p>
       ) : (
         <>
-          <section className="panel mb-6 flex items-center gap-5 max-md:gap-3.5">
+          <section className="panel mb-6 rounded-2xl shadow-card backdrop-blur-xs bg-white/95 border border-line/80 flex items-center gap-5 max-md:gap-3.5">
             <span
-              className="grid size-18 shrink-0 place-items-center rounded-full bg-primary-50 text-[26px] font-bold text-primary-600 max-md:size-14 max-md:text-xl"
+              className="grid size-18 shrink-0 place-items-center rounded-2xl bg-linear-to-br from-blue-600 via-indigo-600 to-purple-600 text-[26px] font-bold text-white shadow-md max-md:size-14 max-md:text-xl"
               aria-hidden="true"
             >
               {initials(profile.fullName)}

@@ -10,7 +10,7 @@ export function ViewToggle({
   onChange: (view: ViewMode) => void;
 }) {
   return (
-    <div className="view-toggle" aria-label="Kiểu hiển thị">
+    <div className="view-toggle shadow-xs" aria-label="Kiểu hiển thị">
       <button
         className={value === 'grid' ? 'selected' : ''}
         aria-label="Hiển thị dạng lưới"

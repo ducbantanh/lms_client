@@ -182,8 +182,8 @@ export function UsersView() {
         description="Tìm kiếm, khóa, mở khóa, xóa tài khoản và đăng xuất người dùng."
       />
       <FlashMessage flash={flash} onDone={clearFlash} />
-      <section className="panel">
-        <div className="toolbar">
+      <section className="panel rounded-2xl shadow-card border border-line/80 bg-white/95 backdrop-blur-xs">
+        <div className="toolbar rounded-2xl bg-white/70 p-2.5 border border-line/80 shadow-xs backdrop-blur-xs">
           <label className="search-field">
             <Icon name="search" size={14} />
             <span className="sr-only">Tìm theo tài khoản hoặc họ tên</span>
@@ -465,7 +465,7 @@ function EditUserDialog({
           </p>
         )}
         {!self && (
-          <div className="mt-4 mb-1 flex flex-wrap items-center justify-between gap-x-4 gap-y-2.5 rounded-sm border border-line bg-surface-muted px-3.5 py-3 text-[13px] text-ink-muted">
+          <div className="mt-4 mb-1 flex flex-wrap items-center justify-between gap-x-4 gap-y-2.5 rounded-xl border border-line bg-surface-muted px-3.5 py-3 text-[13px] text-ink-muted">
             {confirmReset ? (
               <>
                 <span>

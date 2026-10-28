@@ -35,7 +35,7 @@ export function JoinCourseDialog({
 
   return (
     <Modal title="Tham gia khóa học" onClose={() => !busy && onClose()}>
-      <form onSubmit={submit}>
+      <form onSubmit={submit} className="space-y-4">
         {error && (
           <p className="form-error" role="alert">
             {error}
@@ -44,7 +44,7 @@ export function JoinCourseDialog({
         <label className="form-field">
           Mã tham gia
           <input
-            className="input mono"
+            className="input mono tracking-widest text-center text-lg font-bold uppercase rounded-xl border-line/80 focus:ring-4 focus:ring-primary-600/20"
             value={key}
             onChange={(event) => setKey(event.target.value)}
             placeholder="Mã do giảng viên cung cấp"

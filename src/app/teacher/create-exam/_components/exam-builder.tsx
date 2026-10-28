@@ -536,7 +536,7 @@ export function ExamBuilder() {
       )}
       <form className="columns" onSubmit={submit}>
         <div className="stack">
-          <section className="panel">
+          <section className="panel rounded-2xl shadow-card border border-line/80 bg-white/95 backdrop-blur-xs">
             <div className="panel-title">
               <h2>
                 <i className="title-icon blue">
@@ -809,7 +809,7 @@ export function ExamBuilder() {
           </section>
 
           {form.type === 2 && (
-            <section className="panel">
+            <section className="panel rounded-2xl shadow-card border border-line/80 bg-white/95 backdrop-blur-xs">
               <div className="panel-title">
                 <h2>
                   <i className="title-icon red">
@@ -823,7 +823,7 @@ export function ExamBuilder() {
           )}
 
           {batchMode ? (
-            <section className="panel">
+            <section className="panel rounded-2xl shadow-card border border-line/80 bg-white/95 backdrop-blur-xs">
               <div className="panel-title">
                 <h2>
                   <i className="title-icon violet">
@@ -926,7 +926,7 @@ export function ExamBuilder() {
             </section>
           ) : (
             mode === 'code' && (
-              <section className="panel">
+              <section className="panel rounded-2xl shadow-card border border-line/80 bg-white/95 backdrop-blur-xs">
                 <div className="panel-title">
                   <h2>
                     <i className="title-icon violet">
@@ -951,7 +951,7 @@ export function ExamBuilder() {
             )
           )}
           {mode === 'quiz' && (
-            <section className="panel">
+            <section className="panel rounded-2xl shadow-card border border-line/80 bg-white/95 backdrop-blur-xs">
               <div className="panel-title">
                 <h2>
                   <i className="title-icon violet">
@@ -1024,7 +1024,7 @@ export function ExamBuilder() {
                     </label>
                   </div>
                   <div
-                    className="mb-3 flex flex-wrap items-center gap-x-3.5 gap-y-2 rounded-sm border border-dashed border-line-strong bg-surface-muted px-3 py-2.5 text-sm text-ink-muted"
+                    className="mb-3 flex flex-wrap items-center gap-x-3.5 gap-y-2 rounded-xl border border-dashed border-line-strong bg-surface-muted px-3 py-2.5 text-sm text-ink-muted"
                     role="group"
                     aria-label="Bốc câu ngẫu nhiên"
                   >
@@ -1097,7 +1097,7 @@ export function ExamBuilder() {
                         </label>
                       </div>
                       <ul
-                        className="m-0 max-h-130 list-none divide-y divide-line overflow-y-auto rounded-sm border border-line p-0"
+                        className="m-0 max-h-130 list-none divide-y divide-line overflow-y-auto rounded-xl border border-line p-0"
                         aria-label="Câu hỏi trong ngân hàng"
                       >
                         {shown.map((question) => {

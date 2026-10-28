@@ -67,7 +67,7 @@ export function SettingsView({
       <AdminHeading title="Cài đặt" description={description} />
       <FlashMessage flash={flash} onDone={clearFlash} />
       <div className="columns even">
-        <section className="panel">
+        <section className="panel rounded-2xl shadow-card border border-line/80 bg-white/95 backdrop-blur-xs">
           <div className="panel-title">
             <h2>
               <i className="title-icon blue">
@@ -92,7 +92,7 @@ export function SettingsView({
           </dl>
           <p className="admin-hint">Cần sửa họ tên hoặc tài khoản, liên hệ quản trị viên.</p>
         </section>
-        <section className="panel">
+        <section className="panel rounded-2xl shadow-card border border-line/80 bg-white/95 backdrop-blur-xs">
           <div className="panel-title">
             <h2>
               <i className="title-icon violet">

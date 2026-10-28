@@ -76,7 +76,7 @@ export function StudentDashboard() {
                     {courses.slice(0, 5).map((course, index) => (
                       <tr
                         key={course.id}
-                        className="group border-t border-line transition-colors hover:bg-surface-muted"
+                        className="group border-t border-line/70 transition-colors hover:bg-primary-50/40"
                         style={{ animationDelay: `${120 + index * 50}ms` }}
                       >
                         <td className="max-w-[240px] px-5 py-3">
@@ -93,7 +93,7 @@ export function StudentDashboard() {
                         <td className="px-3 py-3">
                           {course.teacher ? (
                             <span className="flex items-center gap-2">
-                              <span className="grid size-7 shrink-0 place-items-center rounded-full bg-primary-50 text-[10px] font-bold text-primary-600 ring-2 ring-white">
+                              <span className="grid size-7 shrink-0 place-items-center rounded-full bg-linear-to-br from-blue-500 to-indigo-600 text-[10px] font-bold text-white shadow-xs">
                                 {initials(course.teacher)}
                               </span>
                               <span className="max-w-[140px] truncate text-ink-muted">

@@ -226,7 +226,7 @@ export function CourseManager() {
         </div>
       </div>
       <FlashMessage flash={flash} onDone={clearFlash} />
-      <div className="tabs" role="tablist" aria-label="Quản lý khóa học">
+      <div className="tabs p-1 bg-surface-muted/60 rounded-2xl border border-line/60 backdrop-blur-xs shadow-xs" role="tablist" aria-label="Quản lý khóa học">
         {tabs.map((item) => (
           <button
             key={item.value}

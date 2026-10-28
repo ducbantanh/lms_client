@@ -9,13 +9,7 @@ body {
   margin: 0;
   color: var(--color-ink);
   background: var(--color-canvas);
-  font:
-    14px/1.55 'Segoe UI Variable Text',
-    'Segoe UI',
-    'Inter Variable',
-    'Source Sans Pro',
-    system-ui,
-    sans-serif;
+  font: 14px/1.6 'Inter Variable', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 a,

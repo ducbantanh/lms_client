@@ -147,7 +147,7 @@ export function LessonItem({
         </button>
         {completion && (
           <button
-            className={`inline-flex h-7 shrink-0 items-center gap-1.5 rounded-sm border px-2.5 text-xs font-semibold whitespace-nowrap transition-colors disabled:opacity-60 ${
+            className={`inline-flex h-7 shrink-0 items-center gap-1.5 rounded-xl border px-2.5 text-xs font-semibold whitespace-nowrap transition-colors disabled:opacity-60 ${
               done
                 ? 'border-transparent bg-emerald-50 text-emerald-700'
                 : 'border-line-strong text-ink-muted hover:enabled:border-emerald-700 hover:enabled:text-emerald-700'
@@ -223,7 +223,7 @@ export function SectionCard({
   ].filter(Boolean);
   return (
     <button
-      className={`group/card ${SECTION_CARD_FRAME} border border-line bg-white shadow-card transition-colors hover:border-primary-600`}
+      className={`group/card ${SECTION_CARD_FRAME} border border-line/80 bg-white rounded-xl shadow-xs transition-all duration-150 hover:shadow-sm shadow-card transition-colors hover:border-primary-600`}
       onClick={onOpen}
     >
       <span className="flex items-center gap-2.5">

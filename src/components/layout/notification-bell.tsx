@@ -31,7 +31,7 @@ export function NotificationBell() {
           </span>
         )}
       </summary>
-      <div className="dropdown-panel w-[min(380px,calc(100vw-32px))] p-0">
+      <div className="dropdown-panel w-[min(400px,calc(100vw-32px))] rounded-2xl shadow-xl border border-line/80 p-0">
         <div className="flex items-center justify-between gap-3 border-b border-line px-3.5 py-3">
           <b className="text-[15px]">Thông báo</b>
           {summary.unread > 0 && (

@@ -142,7 +142,7 @@ export function CodeResultsPage({
         <StatCard label="Số câu" value={data.problems.length} icon="list" tone="violet" />
         <StatCard label="Đúng hết các câu" value={allAccepted} icon="check" tone="red" />
       </div>
-      <section className="panel">
+      <section className="panel rounded-2xl shadow-card border border-line/80 bg-white/95 backdrop-blur-xs">
         <div className="panel-title">
           <h2>
             <i className="title-icon blue">
@@ -322,7 +322,7 @@ function StudentAttempts({
     }),
   );
   return (
-    <section className="panel">
+    <section className="panel rounded-2xl shadow-card border border-line/80 bg-white/95 backdrop-blur-xs">
       <div className={GRADER_NAV}>
         <button className="button small" onClick={onBack}>
           <Icon name="list" size={11} />
@@ -488,7 +488,7 @@ function ProblemsPanel({
   }
 
   return (
-    <section className="panel">
+    <section className="panel rounded-2xl shadow-card border border-line/80 bg-white/95 backdrop-blur-xs">
       <div className="panel-title">
         <h2>
           <i className="title-icon violet">

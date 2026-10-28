@@ -29,7 +29,7 @@ interface Props {
 export function CourseCard({ course, starred, hidden, onStar, onHide }: Props) {
   const href = `/course/?id=${encodeURIComponent(course.id)}`;
   return (
-    <article className={`${TILE} ${hidden ? 'opacity-60' : ''}`}>
+    <article className={`${TILE} ${hidden ? 'opacity-60' : ''} group/card transition-all duration-200 hover:-translate-y-1 hover:shadow-lift`}>
       <Link
         href={href}
         className={`${TILE_COVER} cover-${course.cover}`}
@@ -76,7 +76,7 @@ export function CourseCard({ course, starred, hidden, onStar, onHide }: Props) {
           {course.status === 'completed' ? (
             <b className={`${TILE_FOOTER_VALUE} text-emerald-700`}>Đã hoàn thành</b>
           ) : (
-            course.progress !== null && <b className={TILE_FOOTER_VALUE}>{course.progress}%</b>
+            course.progress !== null && <b className={`${TILE_FOOTER_VALUE} bg-blue-50 text-primary-600 px-2 py-0.5 rounded-full ring-1 ring-blue-600/20`}>{course.progress}%</b>
           )}
         </div>
         {course.progress !== null && (

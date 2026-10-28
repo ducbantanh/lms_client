@@ -97,7 +97,7 @@ export function QuestionBankView() {
   if (!id || error)
     return (
       <main id="main-content" className="shell-main">
-        <div className="empty-state">
+        <div className="empty-state rounded-2xl border border-line/80 bg-white/90 p-12 text-center shadow-card backdrop-blur-xs">
           <h1>{error ? 'Chưa mở được ngân hàng câu hỏi' : 'Thiếu mã ngân hàng câu hỏi'}</h1>
           <p>{error || 'Đường dẫn không có mã ngân hàng câu hỏi.'}</p>
           <Link href={BANKS_PATH} className="button">
@@ -213,7 +213,7 @@ export function QuestionBankView() {
         </div>
       </div>
       <FlashMessage flash={flash} onDone={clearFlash} />
-      <div className="toolbar">
+      <div className="toolbar rounded-2xl bg-white/70 p-2.5 border border-line/80 shadow-xs backdrop-blur-xs">
         <label className="search-field">
           <Icon name="search" size={14} />
           <span className="sr-only">Tìm câu hỏi</span>

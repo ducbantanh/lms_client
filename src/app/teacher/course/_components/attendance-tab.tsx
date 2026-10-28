@@ -78,7 +78,7 @@ export function AttendanceTab(props: TabProps) {
   return (
     <>
       <LeavePanel {...props} />
-      <section className="panel">
+      <section className="panel rounded-2xl shadow-card border border-line/80 bg-white/95 backdrop-blur-xs">
         <div className="toolbar">
           <p className="table-summary">
             {overview
@@ -323,7 +323,7 @@ function SessionView({
 
   if (!detail)
     return (
-      <section className="panel">
+      <section className="panel rounded-2xl shadow-card border border-line/80 bg-white/95 backdrop-blur-xs">
         <p className="empty-cell">Đang tải buổi điểm danh…</p>
       </section>
     );
@@ -370,7 +370,7 @@ function SessionView({
         <Icon name="back" size={12} />
         Tất cả buổi điểm danh
       </button>
-      <section className="panel">
+      <section className="panel rounded-2xl shadow-card border border-line/80 bg-white/95 backdrop-blur-xs">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h2 className="flex items-center text-lg">
@@ -429,7 +429,7 @@ function SessionView({
           <span className="table-summary m-0">/ {students} sinh viên</span>
         </div>
       </section>
-      <section className="panel">
+      <section className="panel rounded-2xl shadow-card border border-line/80 bg-white/95 backdrop-blur-xs">
         <div className="toolbar">
           <label className="search-field">
             <Icon name="search" size={14} />
@@ -570,7 +570,7 @@ function StatusPicker({
 }) {
   return (
     <div
-      className="inline-flex divide-x divide-line-strong overflow-hidden rounded-sm border border-line-strong"
+      className="inline-flex divide-x divide-line-strong overflow-hidden rounded-xl border border-line-strong"
       role="group"
       aria-label={`Trạng thái của ${row.username}`}
     >

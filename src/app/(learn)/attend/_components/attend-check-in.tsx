@@ -40,14 +40,14 @@ export function AttendCheckIn() {
 
   return (
     <main id="main-content" className="shell-main">
-      <section className="panel mx-auto my-6 max-w-120">
+      <section className="panel mx-auto my-6 max-w-120 rounded-2xl shadow-xl border border-line/80 bg-white/95 backdrop-blur-md p-6">
         {waiting ? (
           <p className="py-8 text-center text-ink-muted" role="status">
             Đang điểm danh…
           </p>
         ) : result ? (
           <div className="grid justify-items-center gap-2.5 px-1 py-4 text-center" role="status">
-            <i className="grid size-16 place-items-center rounded-full not-italic bg-emerald-50 text-emerald-700">
+            <i className="grid size-16 place-items-center rounded-full not-italic bg-emerald-50 text-emerald-700 shadow-sm ring-4 ring-emerald-50">
               <Icon name="check" size={28} />
             </i>
             <h1 className="text-[22px]">

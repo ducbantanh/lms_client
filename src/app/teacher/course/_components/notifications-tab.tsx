@@ -29,7 +29,7 @@ export function NotificationsTab(props: TabProps) {
 
   return (
     <div className={canTeach ? 'columns' : undefined}>
-      <section className="panel flush">
+      <section className="panel flush rounded-2xl shadow-card border border-line/80 bg-white/95 backdrop-blur-xs overflow-hidden">
         <div className="panel-title">
           <h2>Đã gửi</h2>
         </div>
@@ -141,7 +141,7 @@ function Compose({ content, base, notify, onSent }: TabProps & { onSent: () => P
   }
 
   return (
-    <aside className="panel">
+    <aside className="panel rounded-2xl shadow-card border border-line/80 bg-white/95 backdrop-blur-xs">
       <div className="panel-title">
         <h2>
           <i className="title-icon blue">

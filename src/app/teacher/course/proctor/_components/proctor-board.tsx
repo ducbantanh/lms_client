@@ -309,7 +309,7 @@ export function ProctorBoardView() {
           duyệt hoặc mất mạng).
         </p>
       )}
-      <section className="panel">
+      <section className="panel rounded-2xl shadow-card border border-line/80 bg-white/95 backdrop-blur-xs">
         <div className="segmented" role="tablist" aria-label="Lọc sinh viên">
           {filters.map((item) => (
             <button

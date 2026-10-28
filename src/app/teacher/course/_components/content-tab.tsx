@@ -201,7 +201,7 @@ export function ContentTab(props: TabProps) {
       : -1;
     const lessonIds = lessons.map((group) => group.lesson.id);
     return (
-      <section className="panel flush" key={section?.id ?? 'loose'}>
+      <section className="panel flush rounded-2xl shadow-card border border-line/80 bg-white/95 backdrop-blur-xs overflow-hidden" key={section?.id ?? 'loose'}>
         <div className="panel-title">
           <h2>{section ? section.title : format === 2 ? 'Tài liệu' : 'Chưa phân mục'}</h2>
           {section && canTeach && (
@@ -564,7 +564,7 @@ function AddSection({
         className={`group/add ${SECTION_CARD_FRAME} items-center justify-center gap-1.5 border-[1.5px] border-dashed border-line-strong text-center text-ink-muted transition-colors hover:border-primary-600 hover:bg-primary-50 hover:text-primary-600`}
         onClick={() => setEditing(true)}
       >
-        <i className="mb-1 grid size-9.5 place-items-center rounded-sm bg-surface-muted transition-colors group-hover/add:bg-white">
+        <i className="mb-1 grid size-9.5 place-items-center rounded-xl bg-surface-muted transition-colors group-hover/add:bg-white">
           <Icon name="plus" size={14} />
         </i>
         <b className="text-[15px] font-bold">Thêm {unit}</b>

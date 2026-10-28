@@ -136,7 +136,7 @@ export function QuestionBanksView() {
       </AdminHeading>
       <FlashMessage flash={flash} onDone={clearFlash} />
       {banks && banks.length > 0 && (
-        <div className="toolbar">
+        <div className="toolbar rounded-2xl bg-white/70 p-2.5 border border-line/80 shadow-xs backdrop-blur-xs">
           <label className="search-field">
             <Icon name="search" size={14} />
             <span className="sr-only">Tìm ngân hàng câu hỏi</span>
@@ -180,7 +180,7 @@ export function QuestionBanksView() {
           Đang tải ngân hàng câu hỏi…
         </p>
       ) : !banks.length ? (
-        <div className="empty-state">
+        <div className="empty-state rounded-2xl border border-line/80 bg-white/90 p-12 text-center shadow-card backdrop-blur-xs">
           <h3>Chưa có ngân hàng câu hỏi nào</h3>
           <p>
             Tạo ngân hàng cho môn học bạn dạy, có thể chia theo chương (vd. &quot;Chương 1 – Giới
@@ -276,7 +276,7 @@ function BankCard({
     action();
   };
   return (
-    <article className={TILE}>
+    <article className={`${TILE} group/card transition-all duration-200 hover:-translate-y-1 hover:shadow-lift`}>
       <Link
         href={href}
         className={`${TILE_COVER} cover-${coverFor(bank.subjectCode ?? bank.name)}`}

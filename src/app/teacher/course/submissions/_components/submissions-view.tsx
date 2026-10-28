@@ -223,7 +223,7 @@ export function SubmissionsView() {
               tone="red"
             />
           </div>
-          <section className="panel">
+          <section className="panel rounded-2xl shadow-card border border-line/80 bg-white/95 backdrop-blur-xs">
             <div className="segmented" role="tablist" aria-label="Lọc bài nộp">
               {FILTERS.map((item) => (
                 <button
@@ -417,7 +417,7 @@ function Grader({
                   key={item.id}
                   role="tab"
                   aria-selected={index === fileIndex}
-                  className={`flex h-7.5 shrink-0 items-center gap-1.5 rounded-sm border px-2.5 text-[13px] ${
+                  className={`flex h-7.5 shrink-0 items-center gap-1.5 rounded-xl border px-2.5 text-[13px] ${
                     index === fileIndex
                       ? 'border-primary-600 bg-primary-50 font-semibold text-primary-600'
                       : 'border-line text-ink-muted hover:bg-surface-muted'
@@ -509,7 +509,7 @@ function Grader({
           </p>
         )}
         {!canGrade ? (
-          <div className="mt-3.5 rounded-sm border border-line bg-surface-muted px-4 py-3.5">
+          <div className="mt-3.5 rounded-xl border border-line bg-surface-muted px-4 py-3.5">
             {row.grade ? (
               <>
                 <b className="text-[26px] font-bold tabular-nums">

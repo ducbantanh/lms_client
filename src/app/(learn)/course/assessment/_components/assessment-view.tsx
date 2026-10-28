@@ -255,7 +255,7 @@ function Countdown({ ms }: { ms: number }) {
     >
       {units.map(([value, label]) => (
         <span
-          className="min-w-21 rounded-sm border border-line bg-surface-muted px-2 pt-3.5 pb-2.5 text-center"
+          className="min-w-21 rounded-xl border border-line bg-surface-muted px-2 pt-3.5 pb-2.5 text-center"
           key={label}
         >
           <b className="block text-[34px] leading-[1.1] font-bold text-primary-600 tabular-nums">

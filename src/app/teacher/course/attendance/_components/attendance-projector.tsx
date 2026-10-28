@@ -155,7 +155,7 @@ export function AttendanceProjector() {
     );
 
   return (
-    <main id="main-content" className="fixed inset-0 z-[200] overflow-auto bg-white">
+    <main id="main-content" className="fixed inset-0 z-[200] overflow-auto bg-white/95 backdrop-blur-md">
       <div className="flex min-h-full flex-col bg-white px-8 py-6 max-md:p-4" ref={stageRef}>
         <header className="mb-4 flex flex-wrap items-start justify-between gap-4">
           <div>

@@ -115,7 +115,7 @@ export function StudentsTab(props: TabProps) {
 
   return (
     <div className="columns">
-      <section className="panel">
+      <section className="panel rounded-2xl shadow-card border border-line/80 bg-white/95 backdrop-blur-xs">
         {students && students.length > 0 && (
           <p className="table-summary">
             {students.length} sinh viên
@@ -286,7 +286,7 @@ function AddStudents({
   }
 
   return (
-    <section className="panel">
+    <section className="panel rounded-2xl shadow-card border border-line/80 bg-white/95 backdrop-blur-xs">
       <div className="panel-title">
         <h2>
           <i className="title-icon green">
@@ -462,7 +462,7 @@ function EnrollKeyPanel({ content, base, reload, notify, confirm }: TabProps) {
   }
 
   return (
-    <section className="panel">
+    <section className="panel rounded-2xl shadow-card border border-line/80 bg-white/95 backdrop-blur-xs">
       <div className="panel-title">
         <h2>
           <i className="title-icon violet">
@@ -471,7 +471,7 @@ function EnrollKeyPanel({ content, base, reload, notify, confirm }: TabProps) {
           Mã tham gia
         </h2>
       </div>
-      <div className="mb-2 flex h-11 items-center justify-between gap-2 rounded-sm border border-dashed border-line-strong bg-surface-muted pr-1.5 pl-3.5 text-sm text-ink-subtle">
+      <div className="mb-2 flex h-11 items-center justify-between gap-2 rounded-xl border border-dashed border-line-strong bg-surface-muted pr-1.5 pl-3.5 text-sm text-ink-subtle">
         {key ? (
           <>
             <code className="font-mono text-lg font-bold tracking-[0.12em] text-ink">{key}</code>

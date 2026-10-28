@@ -131,7 +131,7 @@ export function AttemptDetail({
                         <td className="numeric">{result.timeMs} ms</td>
                         <td>
                           {hasDetail ? (
-                            <details className="code-case">
+                            <details className="code-case rounded-xl shadow-xs border border-line/80">
                               <summary>Xem</summary>
                               {shown && (
                                 <>

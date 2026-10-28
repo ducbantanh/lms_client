@@ -30,7 +30,7 @@ export function TeacherCourseCard({
   const href = `${TEACHER_PATH}/course/?id=${encodeURIComponent(course.id)}`;
   const progress = course.averageProgress;
   return (
-    <article className={TILE}>
+    <article className={`${TILE} group/card transition-all duration-200 hover:-translate-y-1 hover:shadow-lift`}>
       <Link
         href={href}
         className={`${TILE_COVER} cover-${coverFor(course.code)}`}

@@ -224,11 +224,11 @@ export function ColumnChart({
       {columns.map((column, index) => (
         <div key={index} className="group flex min-w-0 flex-1 flex-col items-center gap-1.5">
           <div className="relative flex w-full flex-1 items-end justify-center" style={{ height }}>
-            <span className="pointer-events-none absolute -top-1 left-1/2 z-10 -translate-x-1/2 -translate-y-full rounded-sm bg-sidebar px-1.5 py-0.5 text-[11px] font-semibold whitespace-nowrap text-white opacity-0 transition group-hover:opacity-100">
+            <span className="pointer-events-none absolute -top-1 left-1/2 z-10 -translate-x-1/2 -translate-y-full rounded-lg bg-slate-900 shadow-md px-1.5 py-0.5 text-[11px] font-semibold whitespace-nowrap text-white opacity-0 transition group-hover:opacity-100">
               {column.hint ?? column.value}
             </span>
             <span
-              className="block w-full max-w-7 origin-bottom animate-grow-y rounded-t-sm transition-[filter] group-hover:brightness-95"
+              className="block w-full max-w-7 origin-bottom animate-grow-y rounded-t-md transition-[filter] group-hover:brightness-95"
               style={{
                 height: `${Math.max(column.value ? 6 : 2, (column.value / max) * height)}px`,
                 background: index === peak ? color : `color-mix(in srgb, ${color} 55%, white)`,

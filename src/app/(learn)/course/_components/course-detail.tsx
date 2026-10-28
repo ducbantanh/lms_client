@@ -182,7 +182,7 @@ export function CourseDetail() {
 
   /** Một mục/tuần với bài học (mở rộng tại chỗ) và tài liệu. */
   const renderSection = (group: ContentGroup) => (
-    <section className="panel flush" key={groupKey(group)}>
+    <section className="panel flush rounded-2xl shadow-card border border-line/80 bg-white/95 backdrop-blur-xs overflow-hidden" key={groupKey(group)}>
       <div className="panel-title">
         <h2>{groupTitle(group)}</h2>
       </div>
