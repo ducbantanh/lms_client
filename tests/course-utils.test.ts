@@ -97,6 +97,10 @@ test('semester/status filters combine and sorting does not mutate source', () =>
     ['a', 'b', 'c'],
   );
   assert.equal(initials('Nguyễn Văn Quang'), 'VQ');
+  assert.equal(initials('Nguyễn Đức Nghĩa'), 'ĐN');
+  assert.equal(initials('Nghĩa'), 'N');
+  assert.equal(initials(''), 'U');
+  assert.equal(initials('   '), 'U');
 });
 
 test('course label shows the group only when the course has one', () => {

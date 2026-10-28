@@ -35,8 +35,13 @@ export function SettingsView({
     const form = new FormData(formElement);
     const current = String(form.get('current') ?? '');
     const next = String(form.get('password') ?? '');
+    const confirm = String(form.get('confirm') ?? '');
     setError('');
-    if (next !== form.get('confirm')) {
+    if (next.length < MIN_PASSWORD) {
+      setError(`Mật khẩu mới phải có ít nhất ${MIN_PASSWORD} ký tự.`);
+      return;
+    }
+    if (next !== confirm) {
       setError('Mật khẩu xác nhận chưa khớp.');
       return;
     }

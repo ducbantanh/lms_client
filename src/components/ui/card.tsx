@@ -11,7 +11,7 @@ export function InfoDot({ text }: { text: string }) {
       </span>
       <span
         role="tooltip"
-        className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 w-max max-w-[240px] -translate-x-1/2 translate-y-1 rounded-lg bg-sidebar px-2.5 py-1.5 text-xs leading-snug font-normal text-white opacity-0 shadow-float transition group-hover/info:translate-y-0 group-hover/info:opacity-100 group-focus/info:translate-y-0 group-focus/info:opacity-100"
+        className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 w-max max-w-[240px] -translate-x-1/2 translate-y-1 rounded-xl bg-sidebar px-3 py-1.5 text-xs leading-snug font-normal text-white opacity-0 shadow-float border border-slate-700/60 transition group-hover/info:translate-y-0 group-hover/info:opacity-100 group-focus/info:translate-y-0 group-focus/info:opacity-100"
       >
         {text}
       </span>

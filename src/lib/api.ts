@@ -70,8 +70,9 @@ export class ApiError extends Error {
   constructor(
     public code: string,
     public details?: unknown,
+    message?: string,
   ) {
-    super(MESSAGES[code] ?? 'Không thể xử lý yêu cầu. Vui lòng thử lại.');
+    super(message || MESSAGES[code] || 'Không thể xử lý yêu cầu. Vui lòng thử lại.');
   }
 }
 
@@ -109,10 +110,18 @@ export async function apiRequest<T>(
     });
     const envelope = await response.json().catch(() => null);
     if (!response.ok || envelope?.success !== true) {
-      const error = new ApiError(
-        envelope?.error?.code ?? (response.status === 401 ? 'UNAUTHENTICATED' : 'NETWORK_ERROR'),
-        envelope?.error?.details,
-      );
+      let code = envelope?.error?.code;
+      if (!code) {
+        if (response.status === 401) code = 'UNAUTHENTICATED';
+        else if (response.status === 403) code = 'FORBIDDEN';
+        else if (response.status === 404) code = 'NOT_FOUND';
+        else if (response.status === 413) code = 'PAYLOAD_TOO_LARGE';
+        else if (response.status === 429) code = 'TOO_MANY_ATTEMPTS';
+        else if (response.status >= 500) code = 'INTERNAL_ERROR';
+        else code = 'NETWORK_ERROR';
+      }
+      const message = envelope?.error?.message || envelope?.message;
+      const error = new ApiError(code, envelope?.error?.details, message);
       if (error.code.startsWith('PROCTOR_'))
         window.dispatchEvent(new CustomEvent(PROCTOR_ERROR_EVENT, { detail: error }));
       throw error;
@@ -120,6 +129,9 @@ export async function apiRequest<T>(
     return envelope.data as T;
   } catch (error) {
     if (error instanceof ApiError) throw error;
+    if (controller.signal.aborted && !signal?.aborted) {
+      throw new ApiError('NETWORK_ERROR', undefined, 'Yêu cầu quá thời gian chờ (timeout). Vui lòng thử lại.');
+    }
     throw new ApiError('NETWORK_ERROR');
   } finally {
     clearTimeout(timer);

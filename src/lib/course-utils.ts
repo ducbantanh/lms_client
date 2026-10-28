@@ -51,11 +51,11 @@ export function courseLabel(code: string, group: string | null | undefined): str
 
 /** Avatar không cần ảnh cá nhân; lấy chữ đầu của hai từ cuối trong họ tên. */
 export function initials(name: string): string {
-  return name
-    .trim()
-    .split(/\s+/)
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return 'U';
+  return parts
     .slice(-2)
-    .map((part) => part[0])
+    .map((part) => part[0] ?? '')
     .join('')
     .toUpperCase();
 }

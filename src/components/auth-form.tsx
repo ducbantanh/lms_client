@@ -20,13 +20,29 @@ export function AuthForm({ changePassword = false }: { changePassword?: boolean 
     const form = new FormData(event.currentTarget);
     const password = String(form.get('password') ?? '');
     setError('');
-    if (changePassword && password !== form.get('confirm')) {
-      setError('Mật khẩu xác nhận chưa khớp.');
-      return;
-    }
-    if (changePassword && password === form.get('current')) {
-      setError('Mật khẩu mới phải khác mật khẩu hiện tại.');
-      return;
+    if (changePassword) {
+      if (password.length < 8) {
+        setError('Mật khẩu mới phải có ít nhất 8 ký tự.');
+        return;
+      }
+      if (password !== form.get('confirm')) {
+        setError('Mật khẩu xác nhận chưa khớp.');
+        return;
+      }
+      if (password === form.get('current')) {
+        setError('Mật khẩu mới phải khác mật khẩu hiện tại.');
+        return;
+      }
+    } else {
+      const username = String(form.get('username') ?? '').trim();
+      if (!username) {
+        setError('Vui lòng nhập tên đăng nhập.');
+        return;
+      }
+      if (!password) {
+        setError('Vui lòng nhập mật khẩu.');
+        return;
+      }
     }
     setBusy(true);
     try {
@@ -36,7 +52,9 @@ export function AuthForm({ changePassword = false }: { changePassword?: boolean 
           body: { currentPassword: form.get('current'), newPassword: password },
         });
         if (await refresh()) router.push('/');
-      } else await login(String(form.get('username') ?? '').trim(), password);
+      } else {
+        await login(String(form.get('username') ?? '').trim(), password);
+      }
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'Không thể hoàn tất. Vui lòng thử lại.');
     } finally {

@@ -28,7 +28,7 @@ export const SECTION_GRID =
   'grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-4 max-md:grid-cols-2 max-md:gap-2.5';
 /** Khung thẻ mục/tuần; thẻ "Thêm mục" của giảng viên dùng cùng kích thước. */
 export const SECTION_CARD_FRAME =
-  'flex min-h-42 min-w-0 flex-col gap-2 rounded-lg p-4 text-left max-md:min-h-0 max-md:p-3';
+  'flex min-h-42 min-w-0 flex-col gap-2 rounded-2xl p-5 text-left max-md:min-h-0 max-md:p-4';
 /** Dòng trên lưới mục: số mục/bài/tài liệu hoặc nút quay lại, nút đổi dạng xem. */
 export const CONTENT_TOOLBAR =
   '-mb-2 flex min-h-9.5 items-center justify-between gap-3 text-sm text-ink-muted';
@@ -223,7 +223,7 @@ export function SectionCard({
   ].filter(Boolean);
   return (
     <button
-      className={`group/card ${SECTION_CARD_FRAME} border border-line/80 bg-white rounded-xl shadow-xs transition-all duration-150 hover:shadow-sm shadow-card transition-colors hover:border-primary-600`}
+      className={`group/card ${SECTION_CARD_FRAME} border border-line/80 bg-white/95 rounded-2xl shadow-card backdrop-blur-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift hover:border-primary-400`}
       onClick={onOpen}
     >
       <span className="flex items-center gap-2.5">
@@ -273,9 +273,9 @@ export function AssessmentItem({
           <span className="badge muted-solid">{ASSESSMENT_TYPES[assessment.type]}</span>
           <span className={`badge ${status.tone}`}>{status.label}</span>
           {assessment.proctored && <span className="badge warn">Có giám sát</span>}
-          <h3 className="mt-1.5 text-[15px] font-semibold">
+          <h3 className="mt-1.5 text-[15px] font-semibold text-ink">
             {href ? (
-              <Link href={href} className="hover:text-primary-600 hover:underline">
+              <Link href={href} className="transition-colors hover:text-primary-600 hover:underline">
                 {assessment.title}
               </Link>
             ) : (

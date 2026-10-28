@@ -29,7 +29,7 @@ interface Props {
 export function CourseCard({ course, starred, hidden, onStar, onHide }: Props) {
   const href = `/course/?id=${encodeURIComponent(course.id)}`;
   return (
-    <article className={`${TILE} ${hidden ? 'opacity-60' : ''} group/card transition-all duration-200 hover:-translate-y-1 hover:shadow-lift`}>
+    <article className={`${TILE} ${hidden ? 'opacity-60' : ''} group/card`}>
       <Link
         href={href}
         className={`${TILE_COVER} cover-${course.cover}`}

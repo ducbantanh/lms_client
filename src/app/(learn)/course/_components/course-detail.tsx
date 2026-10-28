@@ -242,7 +242,7 @@ export function CourseDetail() {
       </Link>
       <div className="mb-6 flex items-center gap-4">
         <span
-          className={`grid size-16 shrink-0 place-items-center rounded-lg bg-(--cover) text-xl font-bold text-white cover-${coverFor(course.code)}`}
+          className={`grid size-16 shrink-0 place-items-center rounded-2xl bg-(--cover) text-xl font-bold text-white shadow-xs cover-${coverFor(course.code)}`}
         >
           {initials(course.title)}
         </span>
@@ -314,7 +314,7 @@ export function CourseDetail() {
                 ) : (
                   <span>
                     {course.format !== 2 &&
-                      `${groups.length} ${unit} · ${content.lessons.length} bài học · `}
+                       `${groups.length} ${unit} · ${content.lessons.length} bài học · `}
                     {content.files.length} tài liệu
                   </span>
                 )}

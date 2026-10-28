@@ -26,16 +26,16 @@ export function NotificationBell() {
       >
         <Icon name="bell" size={17} />
         {summary.unread > 0 && (
-          <span className="absolute -top-1 -right-1.5 h-4.5 min-w-4.5 rounded-full border-2 border-white bg-red-600 px-[5px] text-center text-[11px] leading-[14px] font-bold text-white">
+          <span className="absolute -top-1 -right-1.5 h-4.5 min-w-4.5 rounded-full border-2 border-white bg-red-600 px-[5px] text-center text-[11px] leading-[14px] font-bold text-white shadow-xs">
             {summary.unread > 99 ? '99+' : summary.unread}
           </span>
         )}
       </summary>
-      <div className="dropdown-panel w-[min(400px,calc(100vw-32px))] rounded-2xl shadow-xl border border-line/80 p-0">
-        <div className="flex items-center justify-between gap-3 border-b border-line px-3.5 py-3">
-          <b className="text-[15px]">Thông báo</b>
+      <div className="dropdown-panel w-[min(400px,calc(100vw-32px))] rounded-2xl shadow-xl border border-line/80 p-0 overflow-hidden">
+        <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-3 bg-surface-muted/50">
+          <b className="text-[15px] font-semibold text-ink">Thông báo</b>
           {summary.unread > 0 && (
-            <button className="link-button" onClick={() => void markAllRead()}>
+            <button className="link-button text-xs" onClick={() => void markAllRead()}>
               Đánh dấu đã đọc hết
             </button>
           )}
@@ -60,11 +60,14 @@ export function NotificationBell() {
             ))}
           </ul>
         ) : (
-          <p className="px-3.5 py-7 text-center text-sm text-ink-muted">Chưa có thông báo nào.</p>
+          <div className="px-4 py-8 text-center text-sm text-ink-muted">
+            <Icon name="bell" size={24} className="mx-auto mb-2 text-ink-subtle opacity-50" />
+            <p>Chưa có thông báo nào.</p>
+          </div>
         )}
         <Link
           href="/notifications/"
-          className="rounded-none border-t border-line px-3.5 py-2.5 text-center text-[13px] font-semibold text-primary-600"
+          className="block rounded-none border-t border-line px-3.5 py-2.5 text-center text-[13px] font-semibold text-primary-600 transition-colors hover:bg-surface-muted"
           onClick={closeDropdown}
         >
           Xem tất cả thông báo

@@ -681,10 +681,10 @@ textarea.input {
   }
 }
 .progress-track {
-  @apply mt-2 h-1 overflow-hidden rounded-full bg-surface-muted ring-1 ring-line;
+  @apply mt-2 h-1.5 overflow-hidden rounded-full bg-surface-muted ring-1 ring-line/80;
 
   & > span {
-    @apply block h-full bg-primary-600;
+    @apply block h-full bg-linear-to-r from-blue-600 to-indigo-600 rounded-full transition-all duration-300;
   }
 }
 

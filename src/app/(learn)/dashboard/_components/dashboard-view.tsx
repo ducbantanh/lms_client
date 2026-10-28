@@ -153,7 +153,7 @@ export function StudentDashboard() {
                 <div>
                   <div className="mb-2 flex items-center justify-between text-[13px]">
                     <span className="text-ink-muted">Tiến độ trung bình</span>
-                    <span className="rounded-sm bg-sidebar px-1.5 py-0.5 text-[11px] font-semibold text-white tabular-nums">
+                    <span className="rounded-lg bg-sidebar px-2 py-0.5 text-[11px] font-semibold text-white tabular-nums shadow-xs">
                       {averageProgress ?? 0}%
                     </span>
                   </div>

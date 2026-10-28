@@ -1,3 +1,5 @@
+@import './modern-design.css';
+@import './animations.css';
 /*
  * Tailwind CSS v4 (build sẵn qua PostCSS, chạy offline). Giao diện viết bằng class Tailwind trong JSX; phần
  * dùng lại nhiều nơi viết thành class bằng @apply với token ở @theme bên dưới. Thứ tự layer (sau thắng trước):
