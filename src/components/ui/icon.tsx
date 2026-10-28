@@ -59,6 +59,8 @@ const icons = {
   code: 'fas fa-code',
   profile: 'far fa-id-card',
   mail: 'far fa-envelope',
+  sun: 'fas fa-sun',
+  moon: 'fas fa-moon',
 } as const;
 
 export type IconName = keyof typeof icons;

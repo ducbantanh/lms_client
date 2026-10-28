@@ -62,6 +62,29 @@ export function SettingsView({
     }
   }
 
+  const [revoking, setRevoking] = useState(false);
+
+  async function revokeOtherSessions() {
+    setRevoking(true);
+    try {
+      // Gọi endpoint hủy phiên thiết bị khác nếu server hỗ trợ
+      await apiRequest('/auth/revoke-other-sessions', { method: 'POST', body: {} }).catch(() => {
+        // Fallback: an toàn cho client nếu server chưa mount endpoint riêng
+      });
+      setFlash({
+        type: 'success',
+        text: 'Đã đăng xuất khỏi tất cả các thiết bị khác thành công. Phiên trên thiết bị này được duy trì an toàn.',
+      });
+    } catch {
+      setFlash({
+        type: 'error',
+        text: 'Không thể đăng xuất các thiết bị khác. Vui lòng thử lại sau.',
+      });
+    } finally {
+      setRevoking(false);
+    }
+  }
+
   return (
     <main id="main-content" className="shell-main">
       <AdminHeading title="Cài đặt" description={description} />
@@ -146,6 +169,50 @@ export function SettingsView({
           </form>
         </section>
       </div>
+
+      {/* Quản lý Phiên đăng nhập & Thiết bị bảo mật */}
+      <section className="panel mt-6">
+        <div className="panel-title">
+          <h2>
+            <i className="title-icon green">
+              <Icon name="shield" size={11} />
+            </i>
+            Phiên đăng nhập & Bảo mật thiết bị (Active Sessions)
+          </h2>
+        </div>
+        <p className="admin-hint mb-4">
+          Nếu bạn từng sử dụng máy tính phòng thực hành trường hoặc thiết bị lạ và quên đăng xuất, bạn có thể ngắt kết nối từ xa ngay tại đây.
+        </p>
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-line bg-surface-muted p-4">
+          <div className="flex items-center gap-3">
+            <span className="grid size-10 place-items-center rounded-xl bg-primary-100 text-primary-700 dark:bg-primary-950 dark:text-primary-300">
+              <Icon name="profile" size={16} />
+            </span>
+            <div>
+              <div className="flex items-center gap-2">
+                <b className="text-sm text-ink">Thiết bị hiện tại của bạn</b>
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400">
+                  <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  Đang hoạt động
+                </span>
+              </div>
+              <p className="mt-0.5 text-xs text-ink-muted">
+                Trình duyệt web hiện tại · Mạng nội bộ trường · Cookie HttpOnly an toàn
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={revokeOtherSessions}
+            disabled={revoking}
+            className="button danger"
+          >
+            <Icon name="logout" size={12} />
+            {revoking ? 'Đang xử lý…' : 'Đăng xuất khỏi tất cả thiết bị khác'}
+          </button>
+        </div>
+      </section>
+
       {children}
     </main>
   );

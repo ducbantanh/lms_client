@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useSession } from '@/providers/session-provider';
 import { homeFor } from '@/lib/auth';
 import { AccountMenu } from '@/components/layout/account-menu';
+import { ThemeToggle } from '@/components/layout/theme-toggle';
 
 /** Header đơn giản cho đăng nhập / đổi mật khẩu; các khu khác dùng khung sidebar (app-shell.tsx). */
 export function SiteHeader() {
@@ -30,11 +31,10 @@ export function SiteHeader() {
               </small>
             </span>
           </Link>
-          {user && (
-            <div className="ml-auto flex items-center gap-3">
-              <AccountMenu />
-            </div>
-          )}
+          <div className="ml-auto flex items-center gap-2.5">
+            <ThemeToggle />
+            {user && <AccountMenu />}
+          </div>
         </div>
       </header>
     </>

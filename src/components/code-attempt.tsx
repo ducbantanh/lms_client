@@ -10,6 +10,7 @@ import {
 } from '@/lib/code';
 import { CodeEditor } from '@/components/code-editor';
 import { Icon } from '@/components/ui/icon';
+import { DiffViewer } from '@/components/ui/diff-viewer';
 
 /** Nhãn kết quả của một lần chạy ("AC 5/5", "Sai kết quả 3/5"...), màu theo kết quả. */
 export function AttemptBadge({ attempt }: { attempt: AttemptView }) {
@@ -131,26 +132,37 @@ export function AttemptDetail({
                         <td className="numeric">{result.timeMs} ms</td>
                         <td>
                           {hasDetail ? (
-                            <details className="code-case">
-                              <summary>Xem</summary>
-                              {shown && (
+                            <details className="code-case" open={result.verdict === 'WA'}>
+                              <summary>Xem chi tiết</summary>
+                              {shown && result.output !== null ? (
+                                <DiffViewer
+                                  expected={shown.expected}
+                                  actual={result.output}
+                                  input={shown.input}
+                                  className="mt-2 min-w-[480px]"
+                                />
+                              ) : (
                                 <>
-                                  <small>Input</small>
-                                  <pre>{shown.input || '(trống)'}</pre>
-                                  <small>Output mong đợi</small>
-                                  <pre>{shown.expected}</pre>
-                                </>
-                              )}
-                              {result.output !== null && (
-                                <>
-                                  <small>Output của bài</small>
-                                  <pre>{result.output}</pre>
+                                  {shown && (
+                                    <>
+                                      <small>Input</small>
+                                      <pre>{shown.input || '(trống)'}</pre>
+                                      <small>Output mong đợi</small>
+                                      <pre>{shown.expected}</pre>
+                                    </>
+                                  )}
+                                  {result.output !== null && (
+                                    <>
+                                      <small>Output của bài</small>
+                                      <pre>{result.output}</pre>
+                                    </>
+                                  )}
                                 </>
                               )}
                               {result.error !== null && (
                                 <>
-                                  <small>Lỗi (stderr)</small>
-                                  <pre>{result.error}</pre>
+                                  <small className="mt-2 block font-semibold text-rose-600">Lỗi thực thi (stderr)</small>
+                                  <pre className="rounded bg-rose-50 p-2 text-rose-900 dark:bg-rose-950/40 dark:text-rose-200">{result.error}</pre>
                                 </>
                               )}
                             </details>

@@ -23,6 +23,8 @@ import { Icon, type IconName } from '@/components/ui/icon';
 import { Modal } from '@/components/ui/modal';
 import { InExamNotice } from '@/components/layout/in-exam-notice';
 import { NotificationBell } from '@/components/layout/notification-bell';
+import { SystemBroadcastBanner } from '@/components/layout/system-broadcast';
+import { ThemeToggle } from '@/components/layout/theme-toggle';
 import { UnreadBanner } from '@/components/layout/unread-banner';
 
 /** learn: sinh viên; manage: quản trị + giảng dạy, cùng một sidebar lọc theo quyền. */
@@ -356,6 +358,7 @@ function Shell({ area, children }: { area: Area; children: ReactNode }) {
         }`}
       />
       <div className="flex min-h-dvh min-w-0 flex-1 flex-col">
+        <SystemBroadcastBanner />
         <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 border-b border-line/80 bg-white/85 px-4 backdrop-blur-md md:px-6 lg:px-8">
           <button
             type="button"
@@ -370,6 +373,7 @@ function Shell({ area, children }: { area: Area; children: ReactNode }) {
           <div className="ml-auto flex items-center gap-2 md:gap-3">
             {/* Khu quản lý phụ thuộc dữ liệu realtime nên luôn hiện trạng thái kết nối. */}
             <ConnectionChip always={area === 'manage'} />
+            <ThemeToggle />
             <NotificationBell />
             <AccountMenu onHelp={area === 'learn' ? () => setHelpOpen(true) : undefined} />
           </div>
