@@ -52,10 +52,10 @@ realtime, student, audit. API có prefix `/api/v1`, response envelope và mã l�
 
 | Tài liệu | Yêu cầu mang vào thiết kế LMS | Điểm cần phân biệt |
 |---|---|---|
-| `readme (1).md` | Chạy LAN, xem đề, chọn file, gửi bài, báo kết quả, bảo toàn nhiều lần nộp | Là mẫu Python submission server độc lập, không phải API LMS Spring |
-| `sercli.md` | Dashboard theo vai trò, course/week/lesson/activity, session/presence, import, submissions/grades/progress; roadmap judge và gamification | Mô tả Python + Next.js và một MVP khác; không dùng phần “đã triển khai” để kết luận repo hiện tại có đủ tính năng |
+| `SUBMISSION_SERVER.md` | Chạy LAN, xem đề, chọn file, gửi bài, báo kết quả, bảo toàn nhiều lần nộp | Là mẫu Python submission server độc lập, không phải API LMS Spring |
+| `SERVER_CLIENT.md` | Dashboard theo vai trò, course/week/lesson/activity, session/presence, import, submissions/grades/progress; roadmap judge và gamification | Mô tả Python + Next.js và một MVP khác; không dùng phần “đã triển khai” để kết luận repo hiện tại có đủ tính năng |
 
-Đọc thêm `design.md` để tận dụng đề xuất màu, thành phần, responsive và micro-interaction
+Đọc thêm `DESIGN.md` để tận dụng đề xuất màu, thành phần, responsive và micro-interaction
 đã có trong repo. Đây là đầu vào thiết kế, không mặc định mọi hiệu ứng đều cần làm ở bản đầu.
 
 ### 1.4 Các khác biệt phải xử lý trong thiết kế/hợp đồng
@@ -68,7 +68,7 @@ realtime, student, audit. API có prefix `/api/v1`, response envelope và mã l�
   con số làm giới hạn chung cho tài liệu và bài nộp.
 - Mẫu Python cho nhập MSSV tự do. LMS đã đăng nhập phải lấy danh tính từ session;
   không cho sinh viên nộp thay bằng sửa ô MSSV.
-- `sercli.md` có chỗ nói mất socket thì kết thúc phiên, trong khi giao thức Spring
+- `SERVER_CLIENT.md` có chỗ nói mất socket thì kết thúc phiên, trong khi giao thức Spring
   yêu cầu reconnect khi lỗi mạng và dừng khi close 4001. Thiết kế theo hợp đồng Spring:
   mất kết nối → hiển thị đang kết nối lại; bị revoke/hết phiên → về đăng nhập.
 - Thông báo trong client hiện là feed nhận event, chưa có API lưu lịch sử/đọc/chưa đọc.
@@ -132,7 +132,7 @@ Nút “Tất cả khóa học” xuất hiện khi dashboard cần hiển thị
 ## 4. Hướng giao diện và thành phần dùng chung
 
 Phong cách: giao diện học tập rõ ràng, nền sáng, sidebar quản lý màu đậm, xanh coban làm
-màu hành động. Tận dụng AdminLTE và token trong `design.md`; asset font/icon đều local.
+màu hành động. Tận dụng AdminLTE và token trong `DESIGN.md`; asset font/icon đều local.
 Giữ tiếng Việt và tên LAN LMS làm mặc định tạm thời; `Cyb3rT1t@ns` trong tài liệu là một
 lựa chọn nhận diện cần thống nhất trước khi hoàn thiện logo và copywriting.
 
