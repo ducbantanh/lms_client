@@ -41,13 +41,13 @@ body.exam-open {
   @apply flex flex-wrap items-center gap-2.5;
 }
 .exam-bar .time-left {
-  @apply m-0 py-1 px-2.5 bg-white/8 text-white/80;
+  @apply m-0 rounded-lg border border-white/15 bg-white/10 py-1 px-3 text-white/90 backdrop-blur-xs;
 }
 .exam-bar .time-left b {
-  @apply text-[15px] text-white;
+  @apply text-sm font-bold text-white;
 }
 .exam-bar .time-left.urgent {
-  @apply bg-red-600;
+  @apply border-red-500/50 bg-red-600/90 text-white animate-pulse;
 }
 .exam-bar .badge {
   @apply m-0;

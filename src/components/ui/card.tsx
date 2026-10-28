@@ -26,9 +26,9 @@ export function ArrowLink({ href, label }: { href: string; label: string }) {
       href={href}
       aria-label={label}
       title={label}
-      className="grid size-8 place-items-center rounded-sm text-ink-muted transition-colors hover:bg-primary-50 hover:text-primary-600"
+      className="grid size-8 place-items-center rounded-lg text-ink-muted transition-all hover:bg-primary-50 hover:text-primary-600 hover:scale-105"
     >
-      <Icon name="arrowRight" size={11} />
+      <Icon name="arrowRight" size={12} />
     </Link>
   );
 }
@@ -63,7 +63,7 @@ export function Card({
   return (
     <section
       style={style}
-      className={`flex min-w-0 animate-fade-in flex-col rounded-card border border-line bg-white p-5 shadow-card ${className}`}
+      className={`flex min-w-0 animate-fade-in flex-col rounded-2xl border border-line/80 bg-white p-5 shadow-card transition-all duration-200 hover:shadow-lift ${className}`}
     >
       {(title || href || action) && (
         <header className="mb-4 flex min-h-8 items-center gap-2">
