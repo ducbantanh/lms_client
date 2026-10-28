@@ -256,7 +256,7 @@ function Shell({ area, children }: { area: Area; children: ReactNode }) {
             onClick={() => setOpen(false)}
             className={`flex min-w-0 flex-1 items-center gap-3 self-stretch px-4 ${collapsed ? 'lg:hidden' : ''}`}
           >
-            <span className="grid size-8 shrink-0 place-items-center rounded-sm bg-primary-600 text-base font-bold text-white">
+            <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 text-base font-bold text-white shadow-md shadow-indigo-500/25">
               F
             </span>
             <span className="min-w-0 leading-tight">
@@ -302,21 +302,23 @@ function Shell({ area, children }: { area: Area; children: ReactNode }) {
                     href={link.href}
                     aria-current={active ? 'page' : undefined}
                     onClick={() => setOpen(false)}
-                    className={`group relative flex h-11 items-center gap-3 px-5 text-sm transition-colors duration-150 ${
-                      collapsed ? 'lg:justify-center lg:px-0' : ''
-                    } ${active ? 'bg-white/10 font-semibold text-white' : 'hover:bg-sidebar-hover hover:text-white'}`}
+                    className={`group relative mx-2.5 my-0.5 flex h-10 items-center gap-3 rounded-xl px-3.5 text-sm font-medium transition-all duration-150 ${
+                      collapsed ? 'lg:justify-center lg:mx-1.5 lg:px-0' : ''
+                    } ${
+                      active
+                        ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold shadow-md shadow-blue-500/25'
+                        : 'text-slate-400 hover:bg-slate-800/80 hover:text-slate-100'
+                    }`}
                   >
-                    {/* Vạch xanh bên trái mục đang mở */}
-                    {active && <span className="absolute inset-y-0 left-0 w-1 bg-primary-400" />}
                     <Icon
                       name={link.icon}
                       size={16}
-                      className={`w-5 text-center ${active ? 'text-primary-300' : ''}`}
+                      className={`w-5 text-center ${active ? 'text-white' : 'text-slate-400 group-hover:text-slate-200'}`}
                     />
                     <span className={`truncate ${hideWhenNarrow}`}>{link.label}</span>
                     {/* Thu gọn: tên mục hiện khi rê chuột */}
                     {collapsed && (
-                      <span className="pointer-events-none absolute left-full z-50 ml-1 hidden rounded-sm bg-sidebar px-2.5 py-1.5 text-xs whitespace-nowrap text-white opacity-0 shadow-lift transition-opacity group-hover:opacity-100 lg:block">
+                      <span className="pointer-events-none absolute left-full z-50 ml-2 hidden rounded-xl bg-slate-900 border border-slate-700/60 px-3 py-1.5 text-xs whitespace-nowrap text-white opacity-0 shadow-float transition-opacity group-hover:opacity-100 lg:block">
                         {link.label}
                       </span>
                     )}
@@ -334,7 +336,7 @@ function Shell({ area, children }: { area: Area; children: ReactNode }) {
               title={collapsed ? user.fullName : undefined}
               className={`flex items-center gap-3 px-4 py-3 transition-colors hover:bg-sidebar-hover ${collapsed ? 'lg:justify-center lg:px-0' : ''}`}
             >
-              <span className="grid size-9 shrink-0 place-items-center rounded-full bg-primary-100 text-xs font-bold text-primary-700">
+              <span className="grid size-9 shrink-0 place-items-center rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-xs font-bold text-white shadow-xs">
                 {initials(user.fullName)}
               </span>
               <span className={`min-w-0 leading-tight ${hideWhenNarrow}`}>
@@ -358,7 +360,7 @@ function Shell({ area, children }: { area: Area; children: ReactNode }) {
         }`}
       />
       <div className="flex min-h-dvh min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 border-b border-line bg-white px-4 md:px-6 lg:px-8">
+        <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 border-b border-slate-200/80 bg-white/80 backdrop-blur-md px-4 md:px-6 lg:px-8 shadow-2xs">
           <button
             type="button"
             aria-label="Mở menu"

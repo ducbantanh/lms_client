@@ -27,11 +27,11 @@ export function StatCard({
   href?: string;
 }) {
   return (
-    <div className="flex min-w-0 flex-col rounded-card border border-line bg-white p-5 shadow-card">
+    <div className="flex min-w-0 flex-col rounded-card border border-line/80 bg-white p-5 shadow-card transition-all duration-200 hover:shadow-lift hover:-translate-y-0.5">
       <div className="flex items-start justify-between gap-3">
         <span className="text-[13px] font-medium text-ink-muted">{label}</span>
         <i
-          className={`grid size-9 shrink-0 place-items-center rounded-md not-italic ${TONES[tone]}`}
+          className={`grid size-9 shrink-0 place-items-center rounded-xl not-italic shadow-xs ${TONES[tone]}`}
         >
           <Icon name={icon} size={14} />
         </i>

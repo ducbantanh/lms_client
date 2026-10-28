@@ -49,15 +49,20 @@ export function AuthForm({ changePassword = false }: { changePassword?: boolean 
       id="main-content"
       className="grid min-h-[calc(100vh-124px)] place-items-center px-4 py-12 max-md:items-start max-md:pt-8"
     >
-      <section className="w-[min(400px,100%)] rounded-lg border border-line bg-white p-8 shadow-card max-md:p-6">
-        <h1 className="text-[22px] font-semibold">
-          {changePassword ? 'Đổi mật khẩu' : 'Đăng nhập'}
-        </h1>
-        <p className="mt-1 mb-6 text-sm text-ink-muted">
-          {changePassword
-            ? 'Tạo mật khẩu mới để bảo vệ tài khoản của bạn.'
-            : 'Sử dụng tài khoản do nhà trường cung cấp.'}
-        </p>
+      <section className="w-[min(420px,100%)] rounded-2xl border border-slate-200/80 bg-white/95 p-8 shadow-xl shadow-slate-200/50 backdrop-blur-md max-md:p-6 animate-scale-in">
+        <div className="mb-6 flex flex-col items-center text-center">
+          <span className="mb-3 grid size-12 place-items-center rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 text-xl font-bold text-white shadow-lg shadow-indigo-500/25">
+            F
+          </span>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+            {changePassword ? 'Đổi mật khẩu' : 'Đăng nhập F LMS'}
+          </h1>
+          <p className="mt-1 text-sm text-slate-500">
+            {changePassword
+              ? 'Tạo mật khẩu mới để bảo vệ tài khoản của bạn.'
+              : 'Hệ thống quản lý học tập trực tuyến'}
+          </p>
+        </div>
         {!changePassword && notice && (
           <p className="notice" role="alert">
             {notice}
@@ -131,7 +136,7 @@ export function AuthForm({ changePassword = false }: { changePassword?: boolean 
               {error}
             </p>
           )}
-          <button className="button primary mt-1 h-10 w-full" type="submit" disabled={busy}>
+          <button className="button primary mt-2 h-11 w-full rounded-xl text-sm font-semibold shadow-md shadow-blue-500/20" type="submit" disabled={busy}>
             {busy ? 'Đang xử lý…' : changePassword ? 'Lưu mật khẩu mới' : 'Đăng nhập'}
           </button>
         </form>

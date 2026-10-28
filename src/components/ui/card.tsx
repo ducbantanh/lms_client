@@ -11,7 +11,7 @@ export function InfoDot({ text }: { text: string }) {
       </span>
       <span
         role="tooltip"
-        className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 w-max max-w-[240px] -translate-x-1/2 translate-y-1 rounded-sm bg-sidebar px-2.5 py-1.5 text-xs leading-snug font-normal text-white opacity-0 shadow-float transition group-hover/info:translate-y-0 group-hover/info:opacity-100 group-focus/info:translate-y-0 group-focus/info:opacity-100"
+        className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 w-max max-w-[240px] -translate-x-1/2 translate-y-1 rounded-lg bg-sidebar px-2.5 py-1.5 text-xs leading-snug font-normal text-white opacity-0 shadow-float transition group-hover/info:translate-y-0 group-hover/info:opacity-100 group-focus/info:translate-y-0 group-focus/info:opacity-100"
       >
         {text}
       </span>
@@ -26,7 +26,7 @@ export function ArrowLink({ href, label }: { href: string; label: string }) {
       href={href}
       aria-label={label}
       title={label}
-      className="grid size-8 place-items-center rounded-sm text-ink-muted transition-colors hover:bg-primary-50 hover:text-primary-600"
+      className="grid size-8 place-items-center rounded-xl text-ink-muted transition-colors hover:bg-primary-50 hover:text-primary-600"
     >
       <Icon name="arrowRight" size={11} />
     </Link>
@@ -63,7 +63,7 @@ export function Card({
   return (
     <section
       style={style}
-      className={`flex min-w-0 animate-fade-in flex-col rounded-card border border-line bg-white p-5 shadow-card ${className}`}
+      className={`flex min-w-0 animate-fade-in flex-col rounded-card border border-line/80 bg-white p-5 shadow-card transition-all duration-200 hover:shadow-lift ${className}`}
     >
       {(title || href || action) && (
         <header className="mb-4 flex min-h-8 items-center gap-2">

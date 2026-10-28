@@ -13,14 +13,14 @@ export function SiteHeader() {
       <a className="skip-link" href="#main-content">
         Đến nội dung chính
       </a>
-      <header className="sticky top-0 z-40 border-b border-line bg-white">
+      <header className="sticky top-0 z-40 border-b border-line/80 bg-white/80 backdrop-blur-md">
         <div className="mx-auto w-[min(1200px,calc(100%-48px))] max-md:w-[calc(100%-32px)] flex h-15 items-center gap-10 max-md:h-14 max-md:gap-3">
           <Link
             href={user ? homeFor(user) : '/'}
             className="flex shrink-0 items-center gap-2.5"
             aria-label="F LMS — Trang chủ"
           >
-            <span className="grid size-8 place-items-center rounded-sm bg-primary-600 text-[17px] font-bold text-white">
+            <span className="grid size-8 place-items-center rounded-xl bg-linear-to-br from-blue-600 via-indigo-600 to-purple-600 text-[17px] font-bold text-white shadow-sm">
               F
             </span>
             <span className="flex flex-col leading-[1.2]">

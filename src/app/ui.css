@@ -6,36 +6,33 @@
 
 /* ---------- Nút ---------- */
 .button {
-  @apply inline-flex h-9 items-center justify-center gap-2 rounded-sm border border-line-strong bg-white px-4 text-sm font-semibold whitespace-nowrap text-ink transition-colors duration-150;
-
-  &:hover:not(:disabled) {
-    @apply border-ink-subtle/60 bg-surface-muted;
-  }
+  @apply inline-flex h-9.5 items-center justify-center gap-2 rounded-xl border border-line-strong/80 bg-white px-4 text-sm font-medium whitespace-nowrap text-ink shadow-2xs transition-all duration-150 active:scale-[0.98];
   &.primary {
-    @apply border-primary-600 bg-primary-600 text-white;
+    @apply border-primary-600 bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-xs shadow-blue-500/25;
   }
   &.primary:hover:not(:disabled) {
-    @apply border-primary-700 bg-primary-700;
+    @apply from-blue-700 to-indigo-700 shadow-sm shadow-blue-500/30;
   }
   &.danger {
-    @apply border-red-600 bg-red-600 text-white;
+    @apply border-rose-600 bg-gradient-to-r from-rose-600 to-red-600 text-white shadow-xs shadow-rose-500/25;
   }
   &.danger:hover:not(:disabled) {
-    @apply border-red-700 bg-red-700;
+    @apply from-rose-700 to-red-700 shadow-sm shadow-rose-500/30;
   }
   &.small {
-    @apply h-[30px] px-2.5 text-[13px];
+    @apply h-8 rounded-lg px-3 text-[13px];
   }
 }
 .full-width {
   @apply w-full;
 }
 .icon-button {
-  @apply inline-flex size-8 items-center justify-center rounded-sm text-ink-muted transition-colors duration-150;
+  @apply inline-flex size-8.5 items-center justify-center rounded-xl text-ink-muted transition-all duration-150 active:scale-95;
 
   &:hover:not(:disabled) {
-    @apply bg-surface-muted text-ink;
+    @apply bg-surface-muted text-ink shadow-2xs;
   }
+
 }
 .row-action.danger:hover:not(:disabled) {
   @apply bg-rose-50 text-rose-600;
@@ -55,13 +52,13 @@
 /* ---------- Ô nhập ---------- */
 .input,
 .select {
-  @apply h-9 rounded-sm border border-line-strong bg-white px-3 text-sm transition-[border-color,box-shadow] duration-150;
+  @apply h-9.5 rounded-xl border border-line-strong/80 bg-white/95 px-3.5 text-sm shadow-2xs transition-all duration-150 backdrop-blur-xs;
 
   &:hover:not(:focus, :disabled) {
-    @apply border-ink-subtle/60;
+    @apply border-ink-subtle/50;
   }
   &:focus {
-    @apply border-primary-600 ring-3 ring-primary-600/15 outline-none;
+    @apply border-primary-600 ring-4 ring-primary-600/15 outline-none;
   }
 }
 .input {
@@ -369,6 +366,7 @@ textarea.input {
     @apply size-6.5 disabled:cursor-default disabled:opacity-30;
   }
 }
+
 .exam-picked-number {
   @apply min-w-5.5 shrink-0 font-bold text-ink-subtle tabular-nums;
 }
@@ -404,13 +402,13 @@ textarea.input {
 
 /* ---------- Thông báo trong trang ---------- */
 .notice {
-  @apply mb-4 rounded-sm border border-amber-200 bg-amber-50 px-3.5 py-2.5 text-sm text-amber-800;
+  @apply mb-4 rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-2.5 text-sm text-amber-800;
 }
 .form-error {
-  @apply mb-4 rounded-sm border border-rose-200 bg-rose-50 px-3 py-2.5 text-sm text-rose-700;
+  @apply mb-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2.5 text-sm text-rose-700;
 }
 .flash {
-  @apply mb-4 rounded-sm border px-3.5 py-2.5 text-sm;
+  @apply mb-4 rounded-xl border px-3.5 py-2.5 text-sm;
 
   &.success {
     @apply border-emerald-200 bg-emerald-50 text-emerald-700;
@@ -442,7 +440,7 @@ textarea.input {
   @apply mb-4 inline-flex items-center gap-2 text-sm text-ink-muted transition-colors hover:text-primary-600;
 }
 .panel {
-  @apply rounded-card border border-line bg-white p-5 shadow-card max-md:p-4;
+  @apply rounded-2xl border border-line/80 bg-white/95 backdrop-blur-xs p-6 shadow-card hover:shadow-lift transition-all duration-200 max-md:p-4;
 
   &.flush {
     @apply overflow-hidden p-0;
@@ -627,7 +625,7 @@ textarea.input {
   }
 }
 .view-toggle {
-  @apply flex overflow-hidden rounded-sm border border-line-strong bg-white;
+  @apply flex overflow-hidden rounded-xl border border-line-strong/80 bg-white shadow-2xs;
 
   & button {
     @apply grid size-[34px] place-items-center text-ink-subtle transition-colors hover:text-ink;
@@ -640,7 +638,7 @@ textarea.input {
   }
 }
 .segmented {
-  @apply mb-3 flex rounded-sm border border-line bg-surface-muted p-[3px];
+  @apply mb-3 flex rounded-xl border border-line bg-surface-muted p-1;
 
   & button {
     @apply h-[30px] flex-1 rounded-[2px] text-[13px] font-semibold text-ink-muted transition-colors hover:text-ink;
@@ -708,7 +706,7 @@ textarea.input {
     @apply border-t-0 border-b border-line pt-0 text-xs font-medium whitespace-nowrap text-ink-subtle;
   }
   & tbody tr {
-    @apply transition-colors hover:bg-surface-muted/70;
+    @apply transition-colors hover:bg-blue-50/30;
   }
   & th:first-child,
   & td:first-child {
@@ -760,7 +758,7 @@ textarea.input {
 
 /* ---------- Nhãn ---------- */
 .badge {
-  @apply mr-1.5 inline-block rounded-sm px-2 py-px text-xs font-semibold whitespace-nowrap;
+  @apply mr-1.5 inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap tracking-wide;
 
   &.ok {
     @apply bg-emerald-50 text-emerald-700;
@@ -784,14 +782,14 @@ textarea.input {
   @apply relative;
 }
 .dropdown-panel {
-  @apply absolute top-[calc(100%+6px)] right-0 z-30 hidden min-w-[220px] rounded-lg border border-line-strong bg-white p-1 shadow-float;
+  @apply absolute top-[calc(100%+8px)] right-0 z-30 hidden min-w-[220px] rounded-2xl border border-line-strong/70 bg-white/95 backdrop-blur-md p-1.5 shadow-float;
 
   .dropdown[open] > & {
     @apply block animate-scale-in;
   }
   & > a,
   & > button {
-    @apply block w-full rounded-sm px-3 py-2 text-left text-sm text-ink transition-colors hover:bg-surface-muted;
+    @apply block w-full rounded-xl px-3.5 py-2 text-left text-sm text-ink transition-colors hover:bg-surface-muted;
   }
 }
 .dropdown-heading {

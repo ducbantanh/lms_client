@@ -18,23 +18,22 @@
 @import './schedule.css' layer(features);
 @import './exam.css' layer(features);
 
-/* Bảng màu, bo góc, bóng, chuyển động dùng chung (class: bg-canvas, text-ink-muted, rounded-card, animate-fade-up…). */
+/* Bảng màu, bo góc, bóng, chuyển động phong cách Modern SaaS / LMS cao cấp. */
 @theme {
-  /* Windows dùng Segoe UI (hiển thị sắc nét với ClearType, đủ dấu tiếng Việt); máy khác dùng Inter đóng gói sẵn. */
   --font-sans:
-    'Segoe UI Variable Text', 'Segoe UI', 'Inter Variable', 'Source Sans Pro', system-ui, sans-serif;
-  --font-mono: ui-monospace, Consolas, 'Courier New', monospace;
+    'Inter Variable', 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: ui-monospace, 'JetBrains Mono', Consolas, 'Courier New', monospace;
 
-  --color-canvas: #f3f5f8;
+  --color-canvas: #f8fafc;
   --color-surface: #ffffff;
-  --color-surface-muted: #f7f9fc;
-  --color-line: #e9edf3;
-  --color-line-strong: #d5dde7;
-  --color-ink: #101828;
-  --color-ink-muted: #667085;
-  --color-ink-subtle: #98a2b3;
-  --color-sidebar: #121826;
-  --color-sidebar-hover: #1d2536;
+  --color-surface-muted: #f1f5f9;
+  --color-line: #e2e8f0;
+  --color-line-strong: #cbd5e1;
+  --color-ink: #0f172a;
+  --color-ink-muted: #64748b;
+  --color-ink-subtle: #94a3b8;
+  --color-sidebar: #0f172a;
+  --color-sidebar-hover: #1e293b;
   --color-primary-50: #eff6ff;
   --color-primary-100: #dbeafe;
   --color-primary-200: #bfdbfe;
@@ -43,20 +42,21 @@
   --color-primary-500: #3b82f6;
   --color-primary-600: #2563eb;
   --color-primary-700: #1d4ed8;
-  /* Màu biểu đồ: pastel, đủ khác nhau khi đặt cạnh nhau */
-  --color-chart-amber: #f6c46a;
-  --color-chart-green: #7fd1a0;
-  --color-chart-rose: #f3a1a1;
-  --color-chart-violet: #c3aef5;
-  --color-chart-blue: #5b9df6;
-  --color-chart-sky: #a7cffb;
 
-  /* Bo góc nhỏ kiểu Windows 11: 8px cho thẻ / hộp thoại, 4px cho nút và ô nhập. */
-  --radius-card: 8px;
-  --radius-control: 4px;
-  --shadow-card: 0 1px 2px rgb(16 24 40 / 0.03);
-  --shadow-lift: 0 4px 12px rgb(16 24 40 / 0.08);
-  --shadow-float: 0 18px 44px rgb(16 24 40 / 0.16);
+  /* Màu biểu đồ: pastel tươi sáng, hiện đại */
+  --color-chart-amber: #f59e0b;
+  --color-chart-green: #10b981;
+  --color-chart-rose: #f43f5e;
+  --color-chart-violet: #8b5cf6;
+  --color-chart-blue: #3b82f6;
+  --color-chart-sky: #0ea5e9;
+
+  /* Bo góc mượt mà kiểu Modern UI: 16px cho thẻ / hộp thoại, 10px cho nút và ô nhập. */
+  --radius-card: 16px;
+  --radius-control: 10px;
+  --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.05), 0 1px 2px -1px rgb(0 0 0 / 0.05);
+  --shadow-lift: 0 10px 25px -5px rgb(15 23 42 / 0.08), 0 8px 10px -6px rgb(15 23 42 / 0.04);
+  --shadow-float: 0 20px 45px -12px rgb(15 23 42 / 0.2);
   --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
 
   /* backwards: chỉ áp lúc chờ / đang chạy; xong rồi không để lại transform (transform giữ lại làm hỏng position: fixed) */
@@ -121,34 +121,40 @@
 /* Hiệu ứng chung của mọi trang. */
 @layer components {
   body {
-    background: var(--color-canvas);
+    background-color: var(--color-canvas);
+    background-image: radial-gradient(at 0% 0%, rgb(239 246 255 / 0.6) 0px, transparent 50%),
+                      radial-gradient(at 100% 0%, rgb(243 232 255 / 0.4) 0px, transparent 50%),
+                      radial-gradient(at 50% 100%, rgb(238 242 255 / 0.5) 0px, transparent 50%);
+    background-attachment: fixed;
+    color: var(--color-ink);
   }
 
-  /* Thanh cuộn mảnh, màu nhạt: thanh cuộn mặc định của Windows to và xám đậm, lệch tông giao diện */
+  /* Thanh cuộn mảnh, bo tròn mượt mà */
   html,
   .scroll-thin {
     scrollbar-width: thin;
     scrollbar-color: var(--color-line-strong) transparent;
   }
 
-  /* Vào trang: nội dung chính hiện mờ dần, không trượt (đỡ giật khi chuyển trang liên tục) */
+  /* Vào trang: nội dung chính hiện mờ dần và trượt nhẹ */
   .shell-main > * {
     animation: var(--animate-fade-in);
   }
 
-  /* Hộp thoại: phóng nhẹ khi mở, nền mờ dần */
+  /* Hộp thoại: phóng nhẹ khi mở, nền mờ dần kèm backdrop-blur */
   dialog[open] {
     animation: var(--animate-scale-in);
   }
   dialog::backdrop {
-    background: rgb(16 24 40 / 0.4);
+    background: rgb(15 23 42 / 0.45);
+    backdrop-filter: blur(4px);
     animation: var(--animate-fade-in);
   }
 
   /* Ô chờ tải: vệt sáng chạy ngang */
   .skeleton {
     border-radius: var(--radius-control);
-    background: linear-gradient(90deg, #eef2f7 25%, #f8fafc 37%, #eef2f7 63%) 0 0 / 200% 100%;
+    background: linear-gradient(90deg, #f1f5f9 25%, #ffffff 37%, #f1f5f9 63%) 0 0 / 200% 100%;
     animation: var(--animate-shimmer);
   }
 }

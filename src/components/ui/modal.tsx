@@ -25,7 +25,7 @@ export function Modal({
   return (
     <dialog
       ref={dialogRef}
-      className={`m-auto max-h-[calc(100dvh-32px)] overflow-y-auto rounded-lg border border-line-strong bg-white p-0 text-ink shadow-float ${
+      className={`m-auto max-h-[calc(100dvh-32px)] overflow-y-auto rounded-2xl border border-line/80 bg-white p-0 text-ink shadow-2xl ${
         wide ? 'w-[min(720px,calc(100%-32px))]' : 'w-[min(460px,calc(100%-32px))]'
       } max-w-none`}
       aria-labelledby="dialog-title"
@@ -39,7 +39,7 @@ export function Modal({
           {title}
         </h2>
         <button
-          className="grid size-8 place-items-center rounded-sm text-ink-muted transition-colors hover:bg-rose-600 hover:text-white"
+          className="grid size-8 place-items-center rounded-xl text-ink-muted transition-colors hover:bg-rose-600 hover:text-white"
           aria-label="Đóng hộp thoại"
           onClick={onClose}
         >
