@@ -3,7 +3,7 @@
 Đây là code **Node.js chạy trên máy phát triển**, không phải component React chạy trong
 trình duyệt. Vì vậy các file này không có hook như `useState` hoặc `useEffect`.
 
-Nếu bạn đang học cách viết giao diện, có thể bắt đầu ở `app/` và `components/` trước.
+Nếu bạn đang học cách viết giao diện, có thể bắt đầu ở `src/app/` và `src/components/` trước.
 Các script này phục vụ bước build, chạy thử và kết nối tới backend.
 
 ## 1. Bắt đầu với `preview.mjs`
@@ -28,7 +28,7 @@ tìm thư mục `out/` dựa theo vị trí script, nên không phụ thuộc th
 ```text
 Browser → localhost:3100
              ├── GET /               → static.js → out/index.html
-             ├── GET /fonts/...      → static.js → file font trong out/
+             ├── GET /_next/...       → static.js → JS, CSS, font trong out/
              ├── /api/v1/auth/login  → Spring Boot :8080 → kết quả về browser
              └── /ws                 ↔ Spring Boot :8080 (WebSocket hai chiều)
 ```
