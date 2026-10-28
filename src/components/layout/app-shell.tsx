@@ -23,6 +23,8 @@ import { Icon, type IconName } from '@/components/ui/icon';
 import { Modal } from '@/components/ui/modal';
 import { InExamNotice } from '@/components/layout/in-exam-notice';
 import { NotificationBell } from '@/components/layout/notification-bell';
+import { SystemBroadcastBanner } from '@/components/layout/system-broadcast';
+import { ThemeToggle } from '@/components/layout/theme-toggle';
 import { UnreadBanner } from '@/components/layout/unread-banner';
 
 /** learn: sinh viên; manage: quản trị + giảng dạy, cùng một sidebar lọc theo quyền. */
@@ -256,7 +258,7 @@ function Shell({ area, children }: { area: Area; children: ReactNode }) {
             onClick={() => setOpen(false)}
             className={`flex min-w-0 flex-1 items-center gap-3 self-stretch px-4 ${collapsed ? 'lg:hidden' : ''}`}
           >
-            <span className="grid size-8 shrink-0 place-items-center rounded-sm bg-primary-600 text-base font-bold text-white">
+            <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-primary-500 to-indigo-600 text-lg font-black text-white shadow-xs">
               F
             </span>
             <span className="min-w-0 leading-tight">
@@ -302,21 +304,19 @@ function Shell({ area, children }: { area: Area; children: ReactNode }) {
                     href={link.href}
                     aria-current={active ? 'page' : undefined}
                     onClick={() => setOpen(false)}
-                    className={`group relative flex h-11 items-center gap-3 px-5 text-sm transition-colors duration-150 ${
-                      collapsed ? 'lg:justify-center lg:px-0' : ''
-                    } ${active ? 'bg-white/10 font-semibold text-white' : 'hover:bg-sidebar-hover hover:text-white'}`}
+                    className={`group relative mx-2.5 my-0.5 flex h-10 items-center gap-3 rounded-lg px-3 text-sm transition-all duration-150 ${
+                      collapsed ? 'lg:mx-1.5 lg:justify-center lg:px-0' : ''
+                    } ${active ? 'bg-primary-600 font-semibold text-white shadow-xs' : 'text-slate-300 hover:bg-sidebar-hover hover:text-white'}`}
                   >
-                    {/* Vạch xanh bên trái mục đang mở */}
-                    {active && <span className="absolute inset-y-0 left-0 w-1 bg-primary-400" />}
                     <Icon
                       name={link.icon}
-                      size={16}
-                      className={`w-5 text-center ${active ? 'text-primary-300' : ''}`}
+                      size={15}
+                      className={`w-5 text-center ${active ? 'text-white' : 'text-slate-400 group-hover:text-white'}`}
                     />
                     <span className={`truncate ${hideWhenNarrow}`}>{link.label}</span>
                     {/* Thu gọn: tên mục hiện khi rê chuột */}
                     {collapsed && (
-                      <span className="pointer-events-none absolute left-full z-50 ml-1 hidden rounded-sm bg-sidebar px-2.5 py-1.5 text-xs whitespace-nowrap text-white opacity-0 shadow-lift transition-opacity group-hover:opacity-100 lg:block">
+                      <span className="pointer-events-none absolute left-full z-50 ml-2 hidden rounded-md bg-sidebar px-2.5 py-1.5 text-xs whitespace-nowrap text-white opacity-0 shadow-lift transition-opacity group-hover:opacity-100 lg:block">
                         {link.label}
                       </span>
                     )}
@@ -358,7 +358,8 @@ function Shell({ area, children }: { area: Area; children: ReactNode }) {
         }`}
       />
       <div className="flex min-h-dvh min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 border-b border-line bg-white px-4 md:px-6 lg:px-8">
+        <SystemBroadcastBanner />
+        <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 border-b border-line/80 bg-white/85 px-4 backdrop-blur-md md:px-6 lg:px-8">
           <button
             type="button"
             aria-label="Mở menu"
@@ -372,6 +373,7 @@ function Shell({ area, children }: { area: Area; children: ReactNode }) {
           <div className="ml-auto flex items-center gap-2 md:gap-3">
             {/* Khu quản lý phụ thuộc dữ liệu realtime nên luôn hiện trạng thái kết nối. */}
             <ConnectionChip always={area === 'manage'} />
+            <ThemeToggle />
             <NotificationBell />
             <AccountMenu onHelp={area === 'learn' ? () => setHelpOpen(true) : undefined} />
           </div>

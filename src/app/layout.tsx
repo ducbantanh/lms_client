@@ -17,7 +17,14 @@ export const metadata: Metadata = {
 /** Layout chung tồn tại xuyên suốt các route, tránh tạo lại session/socket khi chuyển trang. */
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="vi">
+    <html lang="vi" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('lms.theme');var d=window.matchMedia('(prefers-color-scheme: dark)').matches;if(t==='dark'||(!t&&d)){document.documentElement.classList.add('dark');}}catch(e){}})();`,
+          }}
+        />
+      </head>
       <body>
         <SessionProvider>
           {/* Khung trang do layout của từng nhóm route quyết định: (auth), (learn), admin. */}

@@ -40,43 +40,76 @@ export function CourseCard({ course, starred, hidden, onStar, onHide }: Props) {
         <div className={TILE_META}>
           <span className={TILE_CODE}>
             {course.code}
-            {starred && <Icon name="starFilled" size={11} className="text-[#d99a1e]" />}
           </span>
-          <details className="dropdown">
-            <summary className={TILE_MENU_BUTTON} aria-label={`Tùy chọn ${course.title}`}>
-              <Icon name="more" size={15} />
-            </summary>
-            <div className="dropdown-panel">
-              <button
-                onClick={(event) => {
-                  onStar();
-                  event.currentTarget.closest('details')?.removeAttribute('open');
-                }}
-              >
-                {starred ? 'Bỏ yêu thích' : 'Đánh dấu yêu thích'}
-              </button>
-              <button
-                onClick={(event) => {
-                  onHide();
-                  event.currentTarget.closest('details')?.removeAttribute('open');
-                }}
-              >
-                {hidden ? 'Hiện lại khóa học' : 'Ẩn khỏi danh sách'}
-              </button>
-            </div>
-          </details>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={onStar}
+              className={`icon-button size-7 transition hover:scale-110 ${
+                starred ? 'text-amber-500 hover:text-amber-600' : 'text-ink-subtle hover:text-amber-500'
+              }`}
+              aria-label={starred ? 'Bỏ yêu thích' : 'Đánh dấu yêu thích'}
+              title={starred ? 'Bỏ yêu thích' : 'Đánh dấu yêu thích'}
+            >
+              <Icon name="starFilled" size={13} />
+            </button>
+            <details className="dropdown">
+              <summary className={TILE_MENU_BUTTON} aria-label={`Tùy chọn ${course.title}`}>
+                <Icon name="more" size={14} />
+              </summary>
+              <div className="dropdown-panel">
+                <button
+                  onClick={(event) => {
+                    onStar();
+                    event.currentTarget.closest('details')?.removeAttribute('open');
+                  }}
+                >
+                  {starred ? 'Bỏ yêu thích' : 'Đánh dấu yêu thích'}
+                </button>
+                <button
+                  onClick={(event) => {
+                    onHide();
+                    event.currentTarget.closest('details')?.removeAttribute('open');
+                  }}
+                >
+                  {hidden ? 'Hiện lại khóa học' : 'Ẩn khỏi danh sách'}
+                </button>
+              </div>
+            </details>
+          </div>
         </div>
         <Link href={href} className={TILE_TITLE}>
           <h2 className={TILE_HEADING}>{course.title}</h2>
         </Link>
         {course.subtitle && <p className={TILE_LINE}>{course.subtitle}</p>}
-        <p className={`${TILE_LINE} mt-1.5`}>{course.teacher || 'Chưa có thông tin giảng viên'}</p>
+        <p className={`${TILE_LINE} mt-1 text-ink-muted`}>
+          <Icon name="teach" size={12} className="mr-1 inline text-ink-subtle" />
+          {course.teacher || 'Chưa có thông tin giảng viên'}
+        </p>
+
+        {course.nextLesson && (
+          <div className="mt-3">
+            <Link
+              href={`/course/lesson/?courseId=${encodeURIComponent(course.id)}&lessonId=${encodeURIComponent(course.nextLesson.id)}`}
+              className="inline-flex items-center gap-1.5 rounded-md border border-primary-200 bg-primary-50/60 px-2.5 py-1 text-xs font-medium text-primary-700 transition hover:bg-primary-100/80"
+            >
+              <span className="text-[10px]">▶</span>
+              <span className="max-w-[190px] truncate">{course.nextLesson.title}</span>
+            </Link>
+          </div>
+        )}
+
         <div className={TILE_FOOTER}>
-          <span>{course.semesterLabel}</span>
+          <span className="text-xs text-ink-subtle">{course.semesterLabel}</span>
           {course.status === 'completed' ? (
-            <b className={`${TILE_FOOTER_VALUE} text-emerald-700`}>Đã hoàn thành</b>
+            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
+              <Icon name="check" size={10} />
+              Hoàn thành
+            </span>
           ) : (
-            course.progress !== null && <b className={TILE_FOOTER_VALUE}>{course.progress}%</b>
+            course.progress !== null && (
+              <b className={TILE_FOOTER_VALUE}>{course.progress}%</b>
+            )
           )}
         </div>
         {course.progress !== null && (

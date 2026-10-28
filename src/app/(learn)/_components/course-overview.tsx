@@ -76,9 +76,12 @@ export function CourseOverview() {
   return (
     <main id="main-content" className="shell-main">
       <div className="page-heading">
-        <h1>Khóa học của tôi</h1>
-        <button className="button" onClick={() => setJoining(true)}>
-          <Icon name="join" size={13} />
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-ink">Khóa học của tôi</h1>
+          <p className="mt-0.5 text-xs text-ink-muted">Danh sách các học phần bạn đang tham gia trong học kỳ</p>
+        </div>
+        <button className="button primary shadow-xs" onClick={() => setJoining(true)}>
+          <Icon name="plus" size={12} />
           Tham gia bằng mã
         </button>
       </div>
@@ -177,19 +180,27 @@ export function CourseOverview() {
         </div>
       ) : filteredCourses.length === 0 ? (
         <div className="empty-state">
+          <span className="mx-auto mb-3 grid size-12 place-items-center rounded-2xl bg-primary-50 text-primary-600 shadow-xs">
+            <Icon name="book" size={20} />
+          </span>
           <h3>
             {courses.length === 0 ? 'Bạn chưa có khóa học nào' : 'Không tìm thấy khóa học phù hợp'}
           </h3>
-          <p>
+          <p className="mx-auto max-w-md">
             {courses.length === 0
               ? 'Khóa học sẽ xuất hiện khi giảng viên ghi danh cho bạn, hoặc khi bạn tham gia bằng mã.'
               : filter === 'starred'
                 ? 'Chọn "Đánh dấu yêu thích" trong menu của khóa học để lưu vào đây.'
                 : 'Thử từ khóa khác hoặc đặt lại bộ lọc.'}
           </p>
-          {courses.length > 0 && (
+          {courses.length > 0 ? (
             <button className="button" onClick={clearFilters}>
               Xem tất cả khóa học
+            </button>
+          ) : (
+            <button className="button primary shadow-xs" onClick={() => setJoining(true)}>
+              <Icon name="plus" size={12} />
+              Tham gia bằng mã ngay
             </button>
           )}
         </div>

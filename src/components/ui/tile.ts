@@ -6,11 +6,11 @@ export const TILE_GRID =
   'grid grid-cols-[repeat(auto-fill,minmax(250px,1fr))] gap-5 data-[view=list]:grid-cols-1 data-[view=list]:gap-3';
 
 export const TILE =
-  'relative flex min-w-0 flex-col rounded-lg border border-line bg-white shadow-card transition hover:border-line-strong hover:shadow-[0_4px_14px_rgb(16_24_40/0.06)] in-data-[view=list]:flex-row';
+  'group relative flex min-w-0 flex-col rounded-xl border border-line/90 bg-white shadow-card transition-all duration-200 hover:-translate-y-1 hover:border-primary-200 hover:shadow-lift in-data-[view=list]:flex-row in-data-[view=list]:hover:-translate-y-0 in-data-[view=list]:hover:translate-x-1';
 
-/** Dải màu bìa: màu lấy từ lớp cover-* (ui.css) qua biến --cover. */
+/** Dải màu bìa: kết hợp --cover-gradient từ ui.css với hiệu ứng phủ ánh sáng mềm */
 export const TILE_COVER =
-  'block h-22 rounded-t-[7px] bg-(--cover) bg-linear-135 from-white/15 to-transparent to-60% max-md:h-14 in-data-[view=list]:h-auto! in-data-[view=list]:w-1.5 in-data-[view=list]:shrink-0 in-data-[view=list]:rounded-l-[7px] in-data-[view=list]:rounded-tr-none';
+  'relative block h-24 overflow-hidden rounded-t-[11px] bg-(--cover) [background:var(--cover-gradient,var(--cover))] max-md:h-16 in-data-[view=list]:h-auto! in-data-[view=list]:w-2 in-data-[view=list]:shrink-0 in-data-[view=list]:rounded-l-[11px] in-data-[view=list]:rounded-tr-none before:absolute before:inset-0 before:bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.35),transparent_70%)] after:absolute after:inset-0 after:bg-[linear-gradient(to_bottom,transparent_40%,rgba(0,0,0,0.12))]';
 
 export const TILE_BODY = 'flex min-w-0 flex-1 flex-col px-4 pt-3 pb-4';
 export const TILE_META = '-mr-2 flex items-center justify-between gap-2';
