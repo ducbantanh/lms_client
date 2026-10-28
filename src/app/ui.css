@@ -6,25 +6,25 @@
 
 /* ---------- Nút ---------- */
 .button {
-  @apply inline-flex h-9 items-center justify-center gap-2 rounded-sm border border-line-strong bg-white px-4 text-sm font-semibold whitespace-nowrap text-ink transition-colors duration-150;
+  @apply inline-flex h-9 items-center justify-center gap-2 rounded-md border border-line-strong bg-surface px-4 text-sm font-semibold whitespace-nowrap text-ink shadow-xs transition-all duration-150 active:scale-[0.98];
 
   &:hover:not(:disabled) {
-    @apply border-ink-subtle/60 bg-surface-muted;
+    @apply border-ink-subtle/60 bg-surface-muted shadow-xs;
   }
   &.primary {
-    @apply border-primary-600 bg-primary-600 text-white;
+    @apply border-primary-600 bg-linear-to-b from-primary-500 to-primary-600 text-white shadow-xs;
   }
   &.primary:hover:not(:disabled) {
-    @apply border-primary-700 bg-primary-700;
+    @apply border-primary-700 bg-linear-to-b from-primary-600 to-primary-700 shadow-sm;
   }
   &.danger {
-    @apply border-red-600 bg-red-600 text-white;
+    @apply border-red-600 bg-linear-to-b from-red-500 to-red-600 text-white shadow-xs;
   }
   &.danger:hover:not(:disabled) {
-    @apply border-red-700 bg-red-700;
+    @apply border-red-700 bg-linear-to-b from-red-600 to-red-700;
   }
   &.small {
-    @apply h-[30px] px-2.5 text-[13px];
+    @apply h-[30px] rounded-sm px-2.5 text-[13px];
   }
 }
 .full-width {
@@ -55,7 +55,7 @@
 /* ---------- Ô nhập ---------- */
 .input,
 .select {
-  @apply h-9 rounded-sm border border-line-strong bg-white px-3 text-sm transition-[border-color,box-shadow] duration-150;
+  @apply h-9.5 rounded-md border border-line-strong bg-surface px-3 text-sm shadow-xs transition-[border-color,box-shadow,background-color] duration-150;
 
   &:hover:not(:focus, :disabled) {
     @apply border-ink-subtle/60;
@@ -237,15 +237,14 @@ textarea.input {
     @apply text-primary-600 underline;
   }
 }
-/* Thời gian còn lại khi làm bài; .urgent khi còn dưới 5 phút */
 .time-left {
-  @apply mb-3.5 flex items-center gap-2 rounded-sm bg-surface-muted px-3 py-2.5 text-sm text-ink-muted;
+  @apply mb-3.5 flex items-center gap-2 rounded-lg border border-line bg-surface-muted px-3.5 py-2 text-sm text-ink-muted shadow-xs transition-colors;
 
   & b {
-    @apply text-lg text-ink tabular-nums;
+    @apply text-base font-bold text-ink tabular-nums;
   }
   &.urgent {
-    @apply bg-red-50 text-red-600;
+    @apply border-red-200 bg-red-50 text-red-600 animate-pulse;
   }
   &.urgent b {
     @apply text-red-600;
@@ -540,42 +539,54 @@ textarea.input {
   --tone-soft: var(--color-amber-50);
 }
 
-/* Màu bìa theo mã môn (lib/course-utils coverFor): lớp cover-* đặt biến --cover cho thẻ, ô chữ viết tắt, lịch */
+/* Màu bìa theo mã môn (lib/course-utils coverFor): lớp cover-* đặt biến --cover và gradient cho thẻ */
 .cover-rose {
-  --cover: #c4607d;
+  --cover: #e11d48;
+  --cover-gradient: linear-gradient(135deg, #f43f5e 0%, #be123c 100%);
 }
 .cover-slate {
-  --cover: #6b7a8f;
+  --cover: #475569;
+  --cover-gradient: linear-gradient(135deg, #64748b 0%, #334155 100%);
 }
 .cover-amber {
-  --cover: #c48a2f;
+  --cover: #d97706;
+  --cover-gradient: linear-gradient(135deg, #f59e0b 0%, #b45309 100%);
 }
 .cover-sand {
-  --cover: #a48a5e;
+  --cover: #b45309;
+  --cover-gradient: linear-gradient(135deg, #d97706 0%, #92400e 100%);
 }
 .cover-violet {
-  --cover: #7668b3;
+  --cover: #7c3aed;
+  --cover-gradient: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
 }
 .cover-emerald {
-  --cover: #2f8a6e;
+  --cover: #059669;
+  --cover-gradient: linear-gradient(135deg, #10b981 0%, #047857 100%);
 }
 .cover-aqua {
-  --cover: #3a8b96;
+  --cover: #0891b2;
+  --cover-gradient: linear-gradient(135deg, #06b6d4 0%, #0e7490 100%);
 }
 .cover-blue {
-  --cover: #4a71a5;
+  --cover: #2563eb;
+  --cover-gradient: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
 }
 .cover-pink {
-  --cover: #ad5b8b;
+  --cover: #db2777;
+  --cover-gradient: linear-gradient(135deg, #ec4899 0%, #be185d 100%);
 }
 .cover-ink {
-  --cover: #4b5768;
+  --cover: #334155;
+  --cover-gradient: linear-gradient(135deg, #475569 0%, #1e293b 100%);
 }
 .cover-sage {
-  --cover: #6d8a4f;
+  --cover: #16a34a;
+  --cover-gradient: linear-gradient(135deg, #22c55e 0%, #15803d 100%);
 }
 .cover-orange {
-  --cover: #c0693f;
+  --cover: #ea580c;
+  --cover-gradient: linear-gradient(135deg, #f97316 0%, #c2410c 100%);
 }
 
 /* Danh sách nhãn – giá trị (<dl>): mỗi cặp một dòng, kẻ ngang giữa các dòng */
@@ -658,7 +669,7 @@ textarea.input {
 
 /* ---------- Trạng thái rỗng, chấm trạng thái, tiến độ ---------- */
 .empty-state {
-  @apply px-4 py-14 text-center text-sm text-ink-muted;
+  @apply rounded-xl border border-dashed border-line-strong/80 bg-white/60 px-6 py-12 text-center text-sm text-ink-muted shadow-xs backdrop-blur-xs;
 
   & h1,
   & h3 {
@@ -679,14 +690,14 @@ textarea.input {
   @apply inline-block size-2 shrink-0 rounded-full bg-line-strong;
 
   &.online {
-    @apply bg-emerald-500;
+    @apply bg-emerald-500 shadow-[0_0_6px_rgb(16_185_129/0.6)];
   }
 }
 .progress-track {
-  @apply mt-2 h-1 overflow-hidden rounded-full bg-surface-muted ring-1 ring-line;
+  @apply mt-2.5 h-1.5 overflow-hidden rounded-full bg-slate-100 ring-1 ring-line/60;
 
   & > span {
-    @apply block h-full bg-primary-600;
+    @apply block h-full rounded-full bg-linear-to-r from-primary-500 to-primary-600 transition-[width] duration-300;
   }
 }
 
