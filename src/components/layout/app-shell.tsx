@@ -223,6 +223,13 @@ function Shell({ area, children }: { area: Area; children: ReactNode }) {
   const [helpOpen, setHelpOpen] = useState(false);
   const [collapsed, setCollapsed] = useSidebarCollapsed();
   const groups = navFor(area, user).filter((group) => group.links.length);
+  const handleBrandClick = () => {
+    if (window.matchMedia('(max-width: 960px)').matches) {
+      setOpen(false);
+      return;
+    }
+    setCollapsed(!collapsed);
+  };
 
   return (
     <div className={`shell${collapsed ? ' is-collapsed' : ''}`}>
@@ -230,12 +237,19 @@ function Shell({ area, children }: { area: Area; children: ReactNode }) {
         Đến nội dung chính
       </a>
       <aside className={`shell-sidebar ${open ? 'is-open' : ''}`} aria-label="Menu chính">
-        <Link
-          href={area === 'manage' && user ? homeFor(user) : '/dashboard/'}
+        <button
+          type="button"
           className="shell-brand"
-          onClick={() => setOpen(false)}
+          aria-label={collapsed ? 'Mở rộng menu' : 'Thu gọn menu'}
+          title={collapsed ? 'Mở rộng menu' : 'Thu gọn menu'}
+          onClick={handleBrandClick}
         >
-          <span className="brand-mark">F</span>
+          <span className="brand-mark shell-brand-mark">
+            <span className="shell-brand-initial">F</span>
+            <span className="shell-brand-action">
+              <Icon name={collapsed ? 'expand' : 'collapse'} size={18} />
+            </span>
+          </span>
           <span className="brand-text">
             <strong>F LMS</strong>
             <small>
@@ -246,7 +260,7 @@ function Shell({ area, children }: { area: Area; children: ReactNode }) {
                   : 'Giảng viên'}
             </small>
           </span>
-        </Link>
+        </button>
         <nav className="shell-nav">
           {groups.map((group, index) => (
             <div key={group.title ?? index}>
@@ -275,16 +289,6 @@ function Shell({ area, children }: { area: Area; children: ReactNode }) {
       {open && <div className="shell-backdrop" onClick={() => setOpen(false)} />}
       <div className="shell-body">
         <header className="shell-topbar">
-          {/* Màn hình rộng: thu gọn/mở rộng menu trái (chỉ icon, tên hiện khi rê chuột) */}
-          <button
-            className="icon-button shell-collapse"
-            aria-label={collapsed ? 'Mở rộng menu' : 'Thu gọn menu'}
-            aria-expanded={!collapsed}
-            title={collapsed ? 'Mở rộng menu' : 'Thu gọn menu'}
-            onClick={() => setCollapsed(!collapsed)}
-          >
-            <Icon name={collapsed ? 'expand' : 'collapse'} size={15} />
-          </button>
           {/* Màn hình hẹp: menu là ngăn kéo */}
           <button
             className="icon-button shell-menu-toggle"

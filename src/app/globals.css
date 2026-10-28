@@ -1234,6 +1234,7 @@ a.list-row:hover {
   display: grid;
   grid-template-columns: 236px minmax(0, 1fr);
   min-height: 100vh;
+  transition: grid-template-columns 0.18s ease;
   /* Nền cột trái kéo dài hết trang khi nội dung cao hơn sidebar (sidebar chỉ cao 100vh). */
   background: linear-gradient(90deg, var(--navy) 236px, var(--surface) 236px);
 }
@@ -1251,9 +1252,65 @@ a.list-row:hover {
   display: flex;
   align-items: center;
   gap: 10px;
+  width: 100%;
   height: 64px;
   padding: 0 8px;
   margin-bottom: 8px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color 0.15s;
+}
+.shell-brand:hover,
+.shell-brand:focus-visible {
+  background: rgb(255 255 255 / 0.05);
+}
+.shell-brand:focus-visible {
+  outline: 2px solid var(--accent-ring);
+  outline-offset: -2px;
+}
+.shell-brand-mark {
+  position: relative;
+  flex-shrink: 0;
+  transition:
+    border-radius 0.18s,
+    background-color 0.18s,
+    transform 0.18s;
+}
+.shell-brand-initial,
+.shell-brand-action {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  transition:
+    opacity 0.15s,
+    transform 0.15s;
+}
+.shell-brand-action {
+  opacity: 0;
+  transform: scale(0.7);
+}
+.shell-brand:hover .shell-brand-mark,
+.shell-brand:focus-visible .shell-brand-mark {
+  border-radius: 10px;
+  background-color: #e85a16;
+  transform: scale(1.04);
+}
+.shell-brand:hover .shell-brand-initial,
+.shell-brand:focus-visible .shell-brand-initial {
+  opacity: 0;
+  transform: scale(0.7);
+}
+.shell-brand:hover .shell-brand-action,
+.shell-brand:focus-visible .shell-brand-action {
+  opacity: 1;
+  transform: scale(1);
 }
 .shell-brand strong {
   color: #fff;
@@ -1333,27 +1390,6 @@ a.list-row:hover {
 .shell-backdrop {
   display: none;
 }
-/* Nút thu gọn menu: icon ở đầu thanh trên cùng, cùng kiểu nút icon của trang (chỉ màn hình rộng;
-   màn hình hẹp dùng ngăn kéo với .shell-menu-toggle) */
-.shell-collapse {
-  margin-left: -8px;
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-sm);
-  color: var(--text-subtle);
-  transition:
-    background-color 0.15s,
-    color 0.15s;
-}
-.shell-collapse:hover {
-  background: var(--surface-muted);
-  color: var(--text);
-}
-.shell-collapse:focus-visible {
-  outline: 2px solid var(--accent-ring);
-  outline-offset: 1px;
-  color: var(--text);
-}
 @media (min-width: 961px) {
   .shell.is-collapsed {
     grid-template-columns: 72px minmax(0, 1fr);
@@ -1391,11 +1427,6 @@ a.list-row:hover {
     padding: 0 4px;
     font-size: 10px;
     line-height: 16px;
-  }
-}
-@media (max-width: 960px) {
-  .shell-collapse {
-    display: none;
   }
 }
 .connection-chip.online {
