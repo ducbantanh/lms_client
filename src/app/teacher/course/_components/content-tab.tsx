@@ -28,6 +28,7 @@ import { useViewMode } from '@/hooks/use-view-mode';
 import { Modal } from '@/components/ui/modal';
 import { DropZone } from '@/components/ui/drop-zone';
 import { Icon } from '@/components/ui/icon';
+import { setPinnedAnnouncement } from '@/lib/pinned-announcements';
 import { errorFlash, type TabProps } from './course-manager';
 
 /** Bài đang soạn: lesson có giá trị là sửa, không có là tạo mới trong sectionId. */
@@ -611,6 +612,7 @@ function LessonDialog({
   const [hidden, setHidden] = useState(lesson?.hidden ?? false);
   /** Chỉ khi tạo bài mới; bài đang ẩn thì không gửi (server cũng bỏ qua). */
   const [sendNotice, setSendNotice] = useState(false);
+  const [pinNotice, setPinNotice] = useState(false);
   /** File chọn trong hộp thoại, tải lên sau khi lưu bài (cần id bài để đính kèm). */
   const [attachments, setAttachments] = useState<File[]>([]);
   const [busy, setBusy] = useState(false);
@@ -696,6 +698,15 @@ function LessonDialog({
       } catch (reason) {
         failed.push(`${file.name} (${reason instanceof Error ? reason.message : 'lỗi'})`);
       }
+    }
+    if (!lesson && pinNotice && !hidden) {
+      setPinnedAnnouncement(content.course.id, {
+        title: `[Bài học mới] ${saved.title}`,
+        body: body.trim() || undefined,
+        type: 'lesson',
+        link: `/course/?id=${encodeURIComponent(content.course.id)}&lesson=${encodeURIComponent(saved.id)}`,
+        teacherName: content.course.teacherName,
+      });
     }
     notify(
       failed.length
@@ -854,6 +865,20 @@ function LessonDialog({
             Gửi thông báo cho sinh viên
           </label>
         )}
+        {!lesson && (
+          <label className="check-field">
+            <input
+              type="checkbox"
+              checked={pinNotice && !hidden}
+              disabled={hidden}
+              onChange={(event) => setPinNotice(event.target.checked)}
+            />
+            <span className="inline-flex items-center gap-1.5">
+              <Icon name="pin" size={12} className="text-amber-500" />
+              Ghim thông báo lên đầu khóa học
+            </span>
+          </label>
+        )}
         <div className="dialog-actions">
           <button type="button" className="button" disabled={busy} onClick={onClose}>
             Hủy
@@ -877,6 +902,7 @@ function UploadPanel({ content, base, reload, notify }: TabProps) {
   const [lessonId, setLessonId] = useState('');
   const [hidden, setHidden] = useState(false);
   const [sendNotice, setSendNotice] = useState(false);
+  const [uploadPinNotice, setUploadPinNotice] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const target = sectionId ?? content.sections.at(-1)?.id ?? '';
@@ -906,7 +932,17 @@ function UploadPanel({ content, base, reload, notify }: TabProps) {
       notify({ type: 'success', text: `Đã tải lên ${file.name}.` });
       setFile(null);
       setHidden(false);
+      if (uploadPinNotice && !hidden) {
+        setPinnedAnnouncement(content.course.id, {
+          title: `[Tài liệu mới] ${file.name}`,
+          body: 'Tài liệu mới đã được tải lên cho khóa học.',
+          type: 'general',
+          link: `/course/?id=${encodeURIComponent(content.course.id)}`,
+          teacherName: content.course.teacherName,
+        });
+      }
       setSendNotice(false);
+      setUploadPinNotice(false);
       if (inputRef.current) inputRef.current.value = '';
       await reload();
     } catch (reason) {
@@ -997,6 +1033,18 @@ function UploadPanel({ content, base, reload, notify }: TabProps) {
             onChange={(event) => setSendNotice(event.target.checked)}
           />
           Gửi thông báo cho sinh viên
+        </label>
+        <label className="check-field">
+          <input
+            type="checkbox"
+            checked={uploadPinNotice && !hidden}
+            disabled={hidden}
+            onChange={(event) => setUploadPinNotice(event.target.checked)}
+          />
+          <span className="inline-flex items-center gap-1.5">
+            <Icon name="pin" size={12} className="text-amber-500" />
+            Ghim thông báo lên đầu khóa học
+          </span>
         </label>
         <button className="button primary full-width" disabled={busy || !file}>
           {busy ? 'Đang tải lên…' : 'Tải lên'}

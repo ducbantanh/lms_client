@@ -14,7 +14,7 @@ export function SiteHeader() {
       <a className="skip-link" href="#main-content">
         Đến nội dung chính
       </a>
-      <header className="sticky top-0 z-40 border-b border-line/80 bg-white/85 backdrop-blur-md transition-all">
+      <header className="sticky top-0 z-40 border-b border-line/80 bg-surface/85 backdrop-blur-md transition-all">
         <div className="mx-auto flex h-15 w-[min(1200px,calc(100%-48px))] items-center gap-10 max-md:h-14 max-md:w-[calc(100%-32px)] max-md:gap-3">
           <Link
             href={user ? homeFor(user) : '/'}

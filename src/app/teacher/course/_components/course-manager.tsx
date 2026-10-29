@@ -26,6 +26,8 @@ import {
   type Flash,
 } from '@/components/admin-ui';
 import { Icon } from '@/components/ui/icon';
+import { PinnedBanner } from '@/components/pinned-banner';
+import { usePinnedAnnouncement } from '@/lib/pinned-announcements';
 import { ContentTab } from './content-tab';
 import { StudentsTab } from './students-tab';
 import { AssessmentsTab } from './assessments-tab';
@@ -88,6 +90,7 @@ export function CourseManager() {
   const [error, setError] = useState('');
   const [flash, setFlash] = useState<Flash | null>(null);
   const [confirm, setConfirm] = useState<ConfirmRequest | null>(null);
+  const { rawAnnouncement: pinnedNotice, unpin } = usePinnedAnnouncement(id);
   const [editing, setEditing] = useState(false);
   const [assigning, setAssigning] = useState(false);
   const { user } = useSession();
@@ -226,6 +229,13 @@ export function CourseManager() {
         </div>
       </div>
       <FlashMessage flash={flash} onDone={clearFlash} />
+      {pinnedNotice && (
+        <PinnedBanner
+          announcement={pinnedNotice}
+          canUnpin={canTeach}
+          onUnpin={unpin}
+        />
+      )}
       <div className="tabs" role="tablist" aria-label="Quản lý khóa học">
         {tabs.map((item) => (
           <button
