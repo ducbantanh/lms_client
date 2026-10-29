@@ -26,6 +26,12 @@
   &.small {
     @apply h-[30px] rounded-sm px-2.5 text-[13px];
   }
+  &.subtle {
+    @apply border-transparent bg-transparent text-ink-muted shadow-none;
+    &:hover:not(:disabled) {
+      @apply border-line bg-surface-muted text-ink shadow-xs;
+    }
+  }
 }
 .full-width {
   @apply w-full;

@@ -8,6 +8,7 @@ import { timeAgo, type SentNotification } from '@/lib/notifications';
 import type { EnrolledStudent } from '@/lib/teaching';
 import { CategoryBadge, NOTIFICATION_LIST, NotificationRow } from '@/components/notification-row';
 import { Icon } from '@/components/ui/icon';
+import { setPinnedAnnouncement } from '@/lib/pinned-announcements';
 import { errorFlash, type TabProps } from './course-manager';
 
 /** Tab Thông báo: soạn thông báo gửi cả lớp hoặc một số sinh viên, xem thông báo đã gửi và số người đã đọc. */
@@ -81,6 +82,7 @@ function Compose({ content, base, notify, onSent }: TabProps & { onSent: () => P
   const [students, setStudents] = useState<EnrolledStudent[] | null>(null);
   const [picked, setPicked] = useState<Set<string>>(new Set());
   const [query, setQuery] = useState('');
+  const [pinNotice, setPinNotice] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const total = content.course.studentCount;
@@ -128,8 +130,18 @@ function Compose({ content, base, notify, onSent }: TabProps & { onSent: () => P
           studentIds: mode === 'pick' ? [...picked] : null,
         },
       });
+      if (pinNotice) {
+        setPinnedAnnouncement(content.course.id, {
+          title: title.trim(),
+          body: body.trim() || undefined,
+          type: 'general',
+          link: `/course/?id=${encodeURIComponent(content.course.id)}`,
+          teacherName: content.course.teacherName,
+        });
+      }
       notify({ type: 'success', text: `Đã gửi thông báo tới ${sent.recipients} sinh viên.` });
       setTitle('');
+      setPinNotice(false);
       setBody('');
       setPicked(new Set());
       await onSent();
@@ -233,6 +245,17 @@ function Compose({ content, base, notify, onSent }: TabProps & { onSent: () => P
             </>
           )}
         </div>
+        <label className="check-field mb-3">
+          <input
+            type="checkbox"
+            checked={pinNotice}
+            onChange={(event) => setPinNotice(event.target.checked)}
+          />
+          <span className="inline-flex items-center gap-1.5">
+            <Icon name="pin" size={12} className="text-amber-500" />
+            Ghim thông báo lên đầu khóa học
+          </span>
+        </label>
         <button
           className="button primary full-width"
           disabled={busy || !title.trim() || !total || (mode === 'pick' && !picked.size)}
