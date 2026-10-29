@@ -21,6 +21,7 @@ import {
 } from '@/lib/proctor';
 import { ProctorSettingsFields } from '@/components/proctor-settings';
 import { TEACHER_PATH } from '@/lib/auth';
+import { useSession } from '@/providers/session-provider';
 import { courseLabel } from '@/lib/course-utils';
 import {
   DIFFICULTIES,
@@ -71,6 +72,7 @@ import { AdminHeading, FlashMessage, type Flash } from '@/components/admin-ui';
 import { CodeFields } from '@/components/code-problem-editor';
 import { DropZone } from '@/components/ui/drop-zone';
 import { Icon } from '@/components/ui/icon';
+import { setPinnedAnnouncement } from '@/lib/pinned-announcements';
 
 /** Một bài trong chế độ tạo nhiều bài lập trình cùng lúc. */
 interface BatchItem {
@@ -115,6 +117,7 @@ const EXAM_SUMMARY = 'panel sticky top-18 max-lg:static';
 export function ExamBuilder() {
   const router = useRouter();
   const params = useSearchParams();
+  const { user } = useSession();
   const typeParam = params.get('type');
   const initialType: AssessmentType = typeParam === '0' ? 0 : typeParam === '1' ? 1 : 2;
   const [courses, setCourses] = useState<TeacherCourse[] | null>(null);
@@ -142,6 +145,7 @@ export function ExamBuilder() {
     scoreRelease: 0 as ScoreRelease,
     /** Chỉ bài tập mới hỏi; bài thực hành và bài kiểm tra luôn thông báo (như form trong khóa học). */
     notify: false,
+    pinned: false,
   });
   /** Giám sát (chống gian lận), chỉ bài kiểm tra: lưu sau khi tạo bài (PUT .../proctor/settings). */
   const [proctor, setProctor] = useState<ProctorForm>(DEFAULT_PROCTOR_FORM);
@@ -246,6 +250,14 @@ export function ExamBuilder() {
         setBusy(false);
         return;
       }
+    }
+    if (form.pinned && items.length > 0) {
+      setPinnedAnnouncement(form.courseId, {
+        title: `[Bài mới] Đã thêm ${items.length} bài tập lập trình`,
+        body: `Giảng viên đã thêm ${items.length} bài tập lập trình mới vào khóa học.`,
+        type: 'exam',
+        teacherName: user?.fullName,
+      });
     }
     if (unguarded.length) {
       setBatch(null);
@@ -488,6 +500,15 @@ export function ExamBuilder() {
         });
       }
       // Chưa lưu được cài đặt giám sát: sang trang Giám sát của bài để bật lại
+      if (form.pinned) {
+        setPinnedAnnouncement(form.courseId, {
+          title: `[${EXAM_TYPES.find((item) => item.value === form.type)?.label || 'Bài mới'}] ${form.title.trim()}`,
+          body: form.description?.trim() || `Giảng viên đã tạo ${typeLabel}: ${form.title.trim()}`,
+          type: 'exam',
+          link: `/course/assessment/?id=${encodeURIComponent(created.id)}`,
+          teacherName: user?.fullName,
+        });
+      }
       if (await saveProctor(created.id)) {
         router.push(
           `${TEACHER_PATH}/course/proctor/?course=${encodeURIComponent(form.courseId)}&id=${encodeURIComponent(created.id)}&unsaved=1`,
@@ -806,6 +827,17 @@ export function ExamBuilder() {
                 Gửi thông báo cho sinh viên
               </label>
             )}
+            <label className="check-field">
+              <input
+                type="checkbox"
+                checked={form.pinned}
+                onChange={(event) => set({ pinned: event.target.checked })}
+              />
+              <span className="inline-flex items-center gap-1.5">
+                <Icon name="pin" size={12} className="text-amber-500" />
+                Ghim thông báo lên đầu khóa học
+              </span>
+            </label>
           </section>
 
           {form.type === 2 && (

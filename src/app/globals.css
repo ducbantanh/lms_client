@@ -25,14 +25,14 @@
     'Segoe UI Variable Text', 'Segoe UI', 'Inter Variable', 'Source Sans Pro', system-ui, sans-serif;
   --font-mono: ui-monospace, Consolas, 'Courier New', monospace;
 
-  --color-canvas: #f3f5f8;
+  --color-canvas: #f8fafc;
   --color-surface: #ffffff;
-  --color-surface-muted: #f7f9fc;
-  --color-line: #e9edf3;
-  --color-line-strong: #d5dde7;
-  --color-ink: #101828;
-  --color-ink-muted: #667085;
-  --color-ink-subtle: #98a2b3;
+  --color-surface-muted: #f1f5f9;
+  --color-line: #e2e8f0;
+  --color-line-strong: #cbd5e1;
+  --color-ink: #0f172a;
+  --color-ink-muted: #475569;
+  --color-ink-subtle: #64748b;
   --color-sidebar: #121826;
   --color-sidebar-hover: #1d2536;
   --color-primary-50: #eff6ff;
@@ -150,14 +150,22 @@
   html.dark {
     --color-canvas: #090d16;
     --color-surface: #111827;
-    --color-surface-muted: #1a2234;
-    --color-line: #1e293b;
-    --color-line-strong: #334155;
+    --color-surface-muted: #1e293b;
+    --color-line: #26334d;
+    --color-line-strong: #3b4d6b;
     --color-ink: #f8fafc;
-    --color-ink-muted: #94a3b8;
-    --color-ink-subtle: #64748b;
+    --color-ink-muted: #cbd5e1;
+    --color-ink-subtle: #94a3b8;
     --color-sidebar: #060911;
     --color-sidebar-hover: #111827;
+    --color-primary-50: #172554;
+    --color-primary-100: #1e3a8a;
+    --color-primary-200: #1d4ed8;
+    --color-primary-300: #2563eb;
+    --color-primary-400: #3b82f6;
+    --color-primary-500: #60a5fa;
+    --color-primary-600: #3b82f6;
+    --color-primary-700: #93c5fd;
     color-scheme: dark;
   }
 
@@ -166,44 +174,206 @@
     color: var(--color-ink);
   }
 
-  html.dark .bg-white {
+  /* Nền các card, dialog, header, empty-state trong dark mode */
+  html.dark .bg-white,
+  html.dark [class*="bg-white/"] {
     background-color: var(--color-surface) !important;
+  }
+  html.dark header.bg-white\/85,
+  html.dark [class*="bg-white/85"] {
+    background-color: rgba(17, 24, 39, 0.85) !important;
+  }
+  html.dark .empty-state {
+    background-color: rgba(17, 24, 39, 0.7) !important;
   }
 
   html.dark .border-line {
     border-color: var(--color-line);
   }
 
+  /* Khắc phục các nền pastel nhạt (50) trong dark mode để không bị chữ trắng trên nền trắng */
+  html.dark .bg-primary-50 {
+    background-color: rgba(30, 58, 138, 0.35) !important;
+  }
+  html.dark .hover\:bg-primary-50:hover {
+    background-color: rgba(30, 58, 138, 0.45) !important;
+  }
+  html.dark .hover\:bg-primary-100\/70:hover {
+    background-color: rgba(30, 58, 138, 0.55) !important;
+  }
+  html.dark .bg-emerald-50 {
+    background-color: rgba(6, 78, 59, 0.4) !important;
+  }
+  html.dark .bg-amber-50 {
+    background-color: rgba(120, 53, 15, 0.4) !important;
+  }
+  html.dark .bg-rose-50,
+  html.dark .bg-red-50 {
+    background-color: rgba(136, 19, 55, 0.4) !important;
+  }
+  html.dark .bg-violet-50 {
+    background-color: rgba(76, 29, 149, 0.4) !important;
+  }
+
+  /* Viền các trạng thái trong dark mode */
+  html.dark .border-primary-200,
+  html.dark .border-primary-300 {
+    border-color: rgba(59, 130, 246, 0.4) !important;
+  }
+  html.dark .border-emerald-200,
+  html.dark .border-emerald-300 {
+    border-color: rgba(16, 185, 129, 0.4) !important;
+  }
+  html.dark .border-amber-200,
+  html.dark .border-amber-300 {
+    border-color: rgba(245, 158, 11, 0.4) !important;
+  }
+  html.dark .border-rose-200,
+  html.dark .border-red-200,
+  html.dark .border-red-300 {
+    border-color: rgba(244, 63, 94, 0.4) !important;
+  }
+
+  /* Màu chữ trạng thái trong dark mode: sáng rõ, tương phản cao trên nền tối */
+  html.dark .text-primary-700 {
+    color: #93c5fd !important;
+  }
+  html.dark .text-primary-600 {
+    color: #60a5fa !important;
+  }
+  html.dark .text-emerald-700,
+  html.dark .text-emerald-800 {
+    color: #34d399 !important;
+  }
+  html.dark .text-emerald-600 {
+    color: #4ade80 !important;
+  }
+  html.dark .text-amber-700,
+  html.dark .text-amber-800,
+  html.dark .text-amber-900 {
+    color: #fbbf24 !important;
+  }
+  html.dark .text-amber-600 {
+    color: #fcd34d !important;
+  }
+  html.dark .text-rose-700,
+  html.dark .text-rose-800,
+  html.dark .text-rose-900,
+  html.dark .text-red-600,
+  html.dark .text-red-700 {
+    color: #f87171 !important;
+  }
+  html.dark .text-violet-600,
+  html.dark .text-violet-700 {
+    color: #c084fc !important;
+  }
+
+  /* Soft tone icons */
+  html.dark .green {
+    --tone: #34d399;
+    --tone-soft: rgba(6, 78, 59, 0.5);
+  }
+  html.dark .blue {
+    --tone: #60a5fa;
+    --tone-soft: rgba(30, 58, 138, 0.5);
+  }
+  html.dark .violet {
+    --tone: #c084fc;
+    --tone-soft: rgba(76, 29, 149, 0.5);
+  }
+  html.dark .red {
+    --tone: #f87171;
+    --tone-soft: rgba(136, 19, 55, 0.5);
+  }
+  html.dark .orange {
+    --tone: #fbbf24;
+    --tone-soft: rgba(120, 53, 15, 0.5);
+  }
+
+  /* Câu hỏi trắc nghiệm & xem lại bài thi trong dark mode */
+  html.dark .question-options li.is-correct {
+    background-color: rgba(6, 78, 59, 0.4) !important;
+    border-color: rgba(16, 185, 129, 0.5) !important;
+  }
+  html.dark .question-options li.is-wrong {
+    background-color: rgba(136, 19, 55, 0.4) !important;
+    border-color: rgba(244, 63, 94, 0.5) !important;
+  }
+  html.dark .time-left {
+    background-color: var(--color-surface-muted);
+    border-color: var(--color-line);
+    color: var(--color-ink-muted);
+  }
+  html.dark .time-left.urgent {
+    background-color: rgba(136, 19, 55, 0.4) !important;
+    border-color: rgba(244, 63, 94, 0.5) !important;
+    color: #f87171 !important;
+  }
+
+  /* Lịch học / thời khóa biểu trong dark mode */
+  html.dark .week-day-head.today {
+    background-color: rgba(30, 58, 138, 0.35) !important;
+  }
+  html.dark .week-column.today {
+    background-color: rgba(30, 58, 138, 0.2) !important;
+  }
+
+  /* Bài tập lập trình & kho bài trong dark mode */
+  html.dark .code-attempts button.selected {
+    background-color: rgba(30, 58, 138, 0.4) !important;
+    color: #93c5fd !important;
+  }
+  html.dark .library-table tr.selected td {
+    background-color: rgba(30, 58, 138, 0.35) !important;
+  }
+  html.dark .drop-zone.is-over::after {
+    background-color: rgba(30, 58, 138, 0.9) !important;
+    color: #93c5fd !important;
+  }
+
+  /* Ô nhập, select, textarea */
   html.dark input,
   html.dark select,
   html.dark textarea,
   html.dark .input {
-    color: var(--color-ink);
-    background-color: var(--color-surface);
-    border-color: var(--color-line-strong);
+    color: var(--color-ink) !important;
+    background-color: var(--color-surface) !important;
+    border-color: var(--color-line-strong) !important;
   }
 
   html.dark input::placeholder,
   html.dark textarea::placeholder {
-    color: var(--color-ink-subtle);
-  }
-
-  /* Đảm bảo nếu ô nhập nào vẫn mang nền trắng thì chữ tự động chuyển sang màu tối để không bị trắng trên trắng */
-  html.dark input[class*="bg-white"],
-  html.dark textarea[class*="bg-white"],
-  html.dark .bg-white input,
-  html.dark .bg-white textarea {
-    color: #101828;
+    color: var(--color-ink-subtle) !important;
   }
 
   html.dark select {
-    background-color: var(--color-surface);
+    background-color: var(--color-surface) !important;
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M4 6l4 4 4-4'/%3e%3c/svg%3e");
   }
+  html.dark select option {
+    background-color: #111827;
+    color: #f8fafc;
+  }
 
+  /* Trình soạn CodeMirror trong dark mode: chữ sáng rõ ràng, không bị đen trên nền đen */
   html.dark .code-editor {
     background-color: var(--color-surface);
     border-color: var(--color-line-strong);
+  }
+  html.dark .code-editor .cm-editor {
+    color: var(--color-ink);
+  }
+  html.dark .code-editor .cm-content {
+    color: var(--color-ink);
+    caret-color: #60a5fa;
+  }
+  html.dark .code-editor .cm-cursor {
+    border-left-color: #60a5fa !important;
+  }
+  html.dark .code-editor .cm-selectionBackground,
+  html.dark .code-editor.cm-focused .cm-selectionBackground,
+  html.dark .code-editor ::selection {
+    background-color: rgba(59, 130, 246, 0.3) !important;
   }
 
   html.dark .code-editor .cm-gutters {
@@ -214,7 +384,11 @@
 
   html.dark .code-editor .cm-activeLine,
   html.dark .code-editor .cm-activeLineGutter {
-    background-color: rgba(37, 99, 235, 0.15);
+    background-color: rgba(37, 99, 235, 0.18);
+  }
+
+  html.dark .code-editor .cm-line {
+    color: #f1f5f9;
   }
 
   html.dark dialog {

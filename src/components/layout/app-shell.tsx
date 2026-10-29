@@ -359,7 +359,7 @@ function Shell({ area, children }: { area: Area; children: ReactNode }) {
       />
       <div className="flex min-h-dvh min-w-0 flex-1 flex-col">
         <SystemBroadcastBanner />
-        <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 border-b border-line/80 bg-white/85 px-4 backdrop-blur-md md:px-6 lg:px-8">
+        <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 border-b border-line/80 bg-surface/85 px-4 backdrop-blur-md md:px-6 lg:px-8">
           <button
             type="button"
             aria-label="Mở menu"
