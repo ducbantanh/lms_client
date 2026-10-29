@@ -32,6 +32,8 @@ import { ViewToggle } from '@/components/ui/view-toggle';
 import { useViewMode } from '@/hooks/use-view-mode';
 import { Icon } from '@/components/ui/icon';
 import { CourseSidebar } from './course-sidebar';
+import { PinnedBanner } from '@/components/pinned-banner';
+import { usePinnedAnnouncement } from '@/lib/pinned-announcements';
 
 /** Tab Nội dung, hoặc một loại bài (Bài tập / Bài thực hành / Bài kiểm tra). */
 type Tab = 'content' | AssessmentType;
@@ -41,6 +43,7 @@ const ASSESSMENT_ORDER: AssessmentType[] = [0, 1, 2];
 export function CourseDetail() {
   const params = useSearchParams();
   const id = params.get('id') ?? '';
+  const { announcement: pinnedNotice, dismiss: dismissPinned } = usePinnedAnnouncement(id);
   // ?tab=exam... để trang làm bài quay về đúng tab
   const initialTab = ASSESSMENT_ORDER.find(
     (type) => ASSESSMENT_TAB_PARAM[type] === params.get('tab'),
@@ -259,6 +262,7 @@ export function CourseDetail() {
           </p>
         </div>
       </div>
+      {pinnedNotice && <PinnedBanner announcement={pinnedNotice} onDismiss={dismissPinned} />}
       <div className="tabs" role="tablist" aria-label="Nội dung khóa học">
         {tabs.map((item) => (
           <button

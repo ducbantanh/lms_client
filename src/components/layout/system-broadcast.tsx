@@ -69,7 +69,7 @@ export function SystemBroadcastBanner() {
   if (maintenance?.active) {
     return (
       <div
-        className="relative z-50 flex items-center justify-between gap-3 border-b border-amber-300 bg-amber-500 px-4 py-2 text-xs font-semibold text-white shadow-md"
+        className="relative z-50 flex items-center justify-between gap-3 border-b border-amber-400 bg-amber-500 px-4 py-2 text-xs font-bold text-amber-950 shadow-md dark:border-amber-600/50 dark:bg-amber-950/90 dark:text-amber-200"
         role="alert"
       >
         <div className="mx-auto flex max-w-6xl items-center gap-2">

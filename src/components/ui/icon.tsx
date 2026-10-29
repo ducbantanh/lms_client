@@ -61,6 +61,8 @@ const icons = {
   mail: 'far fa-envelope',
   sun: 'fas fa-sun',
   moon: 'fas fa-moon',
+  pin: 'fas fa-thumbtack',
+  bullhorn: 'fas fa-bullhorn',
 } as const;
 
 export type IconName = keyof typeof icons;
