@@ -96,7 +96,7 @@
   @apply text-xs;
 }
 .code-archive .exam-paper {
-  @apply bg-white;
+  @apply bg-surface;
 }
 .code-archive .exam-paper > span {
   @apply flex-1;
@@ -241,7 +241,7 @@
   @apply flex flex-col gap-2 mt-0 mx-0 mb-3 p-0 list-none;
 }
 .code-problem-row {
-  @apply grid grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-y-1.5 gap-x-4 py-3 px-4 border border-line rounded-sm bg-white;
+  @apply grid grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-y-1.5 gap-x-4 py-3 px-4 border border-line rounded-sm bg-surface;
   transition:
     border-color 0.15s,
     box-shadow 0.15s;

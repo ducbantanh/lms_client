@@ -108,7 +108,7 @@ export function usePinnedAnnouncement(courseId: string) {
   }, [courseId]);
 
   useEffect(() => {
-    refresh();
+    const initTimer = setTimeout(refresh, 0);
 
     const onCustomEvent = (e: Event) => {
       const detail = (e as CustomEvent)?.detail;
@@ -130,6 +130,7 @@ export function usePinnedAnnouncement(courseId: string) {
     window.addEventListener('storage', onStorage);
 
     return () => {
+      clearTimeout(initTimer);
       window.removeEventListener(EVENT_NAME, onCustomEvent);
       window.removeEventListener('storage', onStorage);
     };
