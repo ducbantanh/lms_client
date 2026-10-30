@@ -18,7 +18,7 @@ export function PinnedBanner({
   onUnpin,
 }: PinnedBannerProps) {
   return (
-    <div
+    <aside
       role="region"
       aria-label="Thông báo ghim của khóa học"
       className="mb-5 overflow-hidden rounded-xl border border-amber-500/30 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent p-4 shadow-xs transition-all dark:border-amber-400/25 dark:from-amber-400/10"
@@ -66,6 +66,7 @@ export function PinnedBanner({
               onClick={onUnpin}
               className="button subtle text-xs"
               title="Bỏ ghim thông báo này"
+              aria-label="Bỏ ghim thông báo này"
             >
               Bỏ ghim
             </button>
@@ -74,16 +75,15 @@ export function PinnedBanner({
             <button
               type="button"
               onClick={onDismiss}
-              className="text-ink-muted hover:text-ink p-1 transition-colors"
+              className="flex size-7 items-center justify-center rounded-md text-ink-muted hover:bg-surface-muted hover:text-ink transition-colors"
               title="Đóng thông báo này"
-              aria-label="Đóng thông báo"
+              aria-label="Đóng thông báo này"
             >
               <Icon name="close" size={13} />
             </button>
           )}
         </div>
       </div>
-    </div>
+    </aside>
   );
 }
-

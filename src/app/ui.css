@@ -110,7 +110,7 @@ textarea.input {
   @apply font-normal text-ink-subtle;
 }
 .check-field {
-  @apply mb-4 flex cursor-pointer items-start gap-2 text-sm text-ink-muted;
+  @apply mb-4 flex cursor-pointer items-start gap-2 text-sm text-ink-muted transition-colors hover:text-ink;
 
   & input {
     @apply mt-1 accent-primary-600;
@@ -303,7 +303,7 @@ textarea.input {
   @apply m-0 flex list-none flex-col gap-3 p-0;
 }
 .question-card {
-  @apply rounded-lg border border-line bg-white px-5 py-4 shadow-card max-md:p-3.5;
+  @apply rounded-lg border border-line bg-surface px-5 py-4 shadow-card max-md:p-3.5;
 
   &.is-selected {
     @apply border-primary-600 ring-3 ring-primary-600/18;
@@ -447,7 +447,7 @@ textarea.input {
   @apply mb-4 inline-flex items-center gap-2 text-sm text-ink-muted transition-colors hover:text-primary-600;
 }
 .panel {
-  @apply rounded-card border border-line bg-white p-5 shadow-card max-md:p-4;
+  @apply rounded-card border border-line bg-surface p-5 shadow-card max-md:p-4;
 
   &.flush {
     @apply overflow-hidden p-0;
@@ -644,7 +644,7 @@ textarea.input {
   }
 }
 .view-toggle {
-  @apply flex overflow-hidden rounded-sm border border-line-strong bg-white;
+  @apply flex overflow-hidden rounded-sm border border-line-strong bg-surface;
 
   & button {
     @apply grid size-[34px] place-items-center text-ink-subtle transition-colors hover:text-ink;
@@ -675,7 +675,7 @@ textarea.input {
 
 /* ---------- Trạng thái rỗng, chấm trạng thái, tiến độ ---------- */
 .empty-state {
-  @apply rounded-xl border border-dashed border-line-strong/80 bg-white/60 px-6 py-12 text-center text-sm text-ink-muted shadow-xs backdrop-blur-xs;
+  @apply rounded-xl border border-dashed border-line-strong/80 bg-surface/60 px-6 py-12 text-center text-sm text-ink-muted shadow-xs backdrop-blur-xs;
 
   & h1,
   & h3 {
@@ -801,7 +801,7 @@ textarea.input {
   @apply relative;
 }
 .dropdown-panel {
-  @apply absolute top-[calc(100%+6px)] right-0 z-30 hidden min-w-[220px] rounded-lg border border-line-strong bg-white p-1 shadow-float;
+  @apply absolute top-[calc(100%+6px)] right-0 z-30 hidden min-w-[220px] rounded-lg border border-line-strong bg-surface p-1 shadow-float;
 
   .dropdown[open] > & {
     @apply block animate-scale-in;
