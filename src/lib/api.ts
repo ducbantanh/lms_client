@@ -12,6 +12,8 @@ const MESSAGES: Record<string, string> = {
   CSRF_INVALID: 'Phiên làm việc không hợp lệ. Vui lòng tải lại trang.',
   FORBIDDEN: 'Tài khoản chưa có quyền truy cập chức năng này.',
   TOO_MANY_ATTEMPTS: 'Bạn đã thử quá nhiều lần. Vui lòng thử lại sau.',
+  PASSWORD_RESET_CODE_INVALID: 'Mã OTP chưa đúng hoặc đã hết hạn. Vui lòng kiểm tra lại.',
+  EMAIL_UNAVAILABLE: 'Dịch vụ gửi email chưa sẵn sàng. Vui lòng liên hệ quản trị viên.',
   VALIDATION_FAILED: 'Vui lòng kiểm tra lại thông tin đã nhập.',
   BAD_REQUEST: 'Yêu cầu không hợp lệ.',
   NOT_FOUND: 'Không tìm thấy dữ liệu.',

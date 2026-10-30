@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useSession } from '@/providers/session-provider';
 import { apiRequest } from '@/lib/api';
@@ -50,7 +51,10 @@ export function AuthForm({ changePassword = false }: { changePassword?: boolean 
 
   if (changePassword) {
     return (
-      <main id="main-content" className="grid min-h-[calc(100vh-140px)] place-items-center px-4 py-12">
+      <main
+        id="main-content"
+        className="grid min-h-[calc(100vh-140px)] place-items-center px-4 py-12"
+      >
         <section className="w-[min(420px,100%)] rounded-2xl border border-line bg-surface p-8 shadow-lift animate-fade-up">
           <div className="mb-6 flex items-center gap-3">
             <span className="grid size-11 place-items-center rounded-xl bg-primary-50 text-primary-600">
@@ -58,7 +62,9 @@ export function AuthForm({ changePassword = false }: { changePassword?: boolean 
             </span>
             <div>
               <h1 className="text-xl font-bold tracking-tight text-ink">Đổi mật khẩu</h1>
-              <p className="text-xs text-ink-muted">Tạo mật khẩu mới an toàn cho tài khoản của bạn</p>
+              <p className="text-xs text-ink-muted">
+                Tạo mật khẩu mới an toàn cho tài khoản của bạn
+              </p>
             </div>
           </div>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -115,7 +121,11 @@ export function AuthForm({ changePassword = false }: { changePassword?: boolean 
                 {error}
               </p>
             )}
-            <button className="button primary mt-2 h-10 w-full font-semibold" type="submit" disabled={busy}>
+            <button
+              className="button primary mt-2 h-10 w-full font-semibold"
+              type="submit"
+              disabled={busy}
+            >
               {busy ? 'Đang lưu…' : 'Lưu mật khẩu mới'}
             </button>
           </form>
@@ -146,7 +156,10 @@ export function AuthForm({ changePassword = false }: { changePassword?: boolean 
           </div>
 
           {notice && (
-            <div className="mb-5 flex items-center gap-2.5 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900" role="alert">
+            <div
+              className="mb-5 flex items-center gap-2.5 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900"
+              role="alert"
+            >
               <Icon name="info" size={14} className="shrink-0 text-amber-600" />
               <span>{notice}</span>
             </div>
@@ -154,9 +167,7 @@ export function AuthForm({ changePassword = false }: { changePassword?: boolean 
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <label className="form-field">
-              <span className="text-xs font-medium text-ink">
-                Tên đăng nhập / Mã sinh viên
-              </span>
+              <span className="text-xs font-medium text-ink">Tên đăng nhập / Mã sinh viên</span>
               <div className="relative mt-1">
                 <input
                   className="input pl-9"
@@ -177,6 +188,12 @@ export function AuthForm({ changePassword = false }: { changePassword?: boolean 
             <label className="form-field">
               <span className="flex items-center justify-between text-xs font-medium text-ink">
                 <span>Mật khẩu</span>
+                <Link
+                  href="/forgot-password/"
+                  className="font-semibold text-primary-600 hover:underline"
+                >
+                  Quên mật khẩu?
+                </Link>
               </span>
               <div className="relative mt-1">
                 <input
@@ -205,7 +222,10 @@ export function AuthForm({ changePassword = false }: { changePassword?: boolean 
             </label>
 
             {error && (
-              <div className="flex items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 p-2.5 text-xs text-rose-700" role="alert">
+              <div
+                className="flex items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 p-2.5 text-xs text-rose-700"
+                role="alert"
+              >
                 <Icon name="close" size={12} className="shrink-0 text-rose-600" />
                 <span>{error}</span>
               </div>

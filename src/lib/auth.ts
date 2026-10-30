@@ -21,6 +21,7 @@ export function hasPermission(user: User | null | undefined, permission: string)
 
 export const LOGIN_PATH = '/login';
 export const CHANGE_PASSWORD_PATH = '/change-password';
+export const FORGOT_PASSWORD_PATH = '/forgot-password';
 export const ADMIN_PATH = '/admin';
 export const TEACHER_PATH = '/teacher';
 
@@ -59,13 +60,14 @@ export function routeRedirect(session: Session | null, current: string): string 
   const path = normalizePath(url.pathname);
   const search = url.search;
   if (!session) {
-    if (path === LOGIN_PATH) return null;
+    if (path === LOGIN_PATH || path === FORGOT_PASSWORD_PATH) return null;
     return `${LOGIN_PATH}/?next=${encodeURIComponent(current)}`;
   }
   const user = session.user;
   if (user.mustChangePassword)
     return path === CHANGE_PASSWORD_PATH ? null : `${CHANGE_PASSWORD_PATH}/`;
-  if (path === LOGIN_PATH) return safeNext(search) ?? homeFor(user);
+  if (path === LOGIN_PATH || path === FORGOT_PASSWORD_PATH)
+    return safeNext(search) ?? homeFor(user);
 
   const home = homeFor(user);
   const manageRoute = MANAGE_ROUTES.find((route) => isUnder(path, route.prefix));
