@@ -1,3 +1,4 @@
+import { searchCheatsheet } from '../src/lib/devops-cheatsheet.ts';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
@@ -759,4 +760,13 @@ test('Auto-generated Unit Test Case #120', () => {
   const scoreData = convertScoreToGPA(8.5);
   assert.equal(scoreData.letter, 'A');
   assert.equal(scoreData.point, 3.8);
+});
+
+test('searchCheatsheet - Find Git and Linux commands', () => {
+  const res = searchCheatsheet('rebase', 'Git');
+  assert.equal(res.length, 1);
+  assert.equal(res[0].command, 'git rebase');
+
+  const allLinux = searchCheatsheet('', 'Linux');
+  assert.ok(allLinux.length >= 2);
 });

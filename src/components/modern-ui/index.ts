@@ -19,3 +19,4 @@ export * from './admin-widgets';
 export * from './navigation';
 export * from './pagination';
 export * from './tooltip';
+export * from './cheatsheet-viewer';
