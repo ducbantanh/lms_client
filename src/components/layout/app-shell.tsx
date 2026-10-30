@@ -70,6 +70,12 @@ function navFor(area: Area, user: User | null): NavGroup[] {
             active: (path) => path === '/schedule',
           },
           {
+            href: '/tasks/',
+            label: 'Việc cần làm',
+            icon: 'list',
+            active: (path) => path === '/tasks',
+          },
+          {
             href: '/profile/',
             label: 'Hồ sơ',
             icon: 'profile',

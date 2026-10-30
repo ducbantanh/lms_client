@@ -14,6 +14,47 @@ export function useToday() {
   return today;
 }
 
+/** Lịch trong một khoảng ngày tùy ý (backend cho phép tối đa 62 ngày). */
+export function useScheduleRange(
+  from: string,
+  to: string,
+  filter: { course?: string; room?: string } = {},
+) {
+  const [version, setVersion] = useState(0);
+  const { course, room } = filter;
+  const key = `${from}|${to}|${course ?? ''}|${room ?? ''}|${version}`;
+  const [loaded, setLoaded] = useState<{ key: string; feed: ScheduleFeed | null; error: string }>({
+    key: '',
+    feed: null,
+    error: '',
+  });
+
+  useEffect(() => {
+    const controller = new AbortController();
+    apiRequest<ScheduleFeed>(scheduleQuery(from, to, { course, room }), {
+      signal: controller.signal,
+    })
+      .then((feed) => setLoaded({ key, feed, error: '' }))
+      .catch((reason) => {
+        if (!controller.signal.aborted)
+          setLoaded({
+            key,
+            feed: null,
+            error: reason instanceof Error ? reason.message : 'Không tải được lịch học.',
+          });
+      });
+    return () => controller.abort();
+  }, [key, from, to, course, room]);
+
+  const reload = useCallback(() => setVersion((value) => value + 1), []);
+  const current = loaded.key === key;
+  return {
+    feed: current ? loaded.feed : null,
+    error: current ? loaded.error : '',
+    reload,
+  };
+}
+
 /** Lịch một tuần (thứ 2 → chủ nhật) của người đang đăng nhập, lọc thêm theo khóa học / phòng nếu có. */
 export function useWeekSchedule(filter: { course?: string; room?: string } = {}) {
   const today = useToday();

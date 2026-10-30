@@ -124,6 +124,114 @@
 .week-empty-note {
   @apply mt-3 text-[13px] text-center text-ink-subtle;
 }
+.schedule-view-switch {
+  @apply grid min-w-[280px] grid-cols-3;
+}
+.schedule-view-switch button {
+  @apply whitespace-nowrap px-2;
+}
+.month-grid {
+  @apply grid overflow-x-auto rounded-sm border border-line;
+  grid-template-columns: repeat(7, minmax(118px, 1fr));
+}
+.month-weekday {
+  @apply border-b border-l border-line bg-surface-muted px-2 py-2 text-center text-xs font-semibold text-ink-muted;
+}
+.month-weekday:first-child {
+  @apply border-l-0;
+}
+.month-day {
+  @apply min-h-34 border-l border-t border-line bg-surface p-1.5;
+}
+.month-day:nth-child(7n + 8) {
+  @apply border-l-0;
+}
+.month-day:nth-child(-n + 14) {
+  @apply border-t-0;
+}
+.month-day.outside {
+  @apply bg-surface-muted/50;
+}
+.month-day.outside .month-day-number {
+  @apply text-ink-subtle opacity-60;
+}
+.month-day.today {
+  @apply bg-primary-50/70;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-primary-500) 45%, transparent);
+}
+.month-day-number {
+  @apply ml-auto grid size-6 place-items-center rounded-full text-xs font-semibold text-ink-muted;
+}
+.month-day.today .month-day-number {
+  @apply bg-primary-600 text-white;
+}
+.month-events {
+  @apply mt-1 flex flex-col gap-1;
+}
+.month-event {
+  @apply flex min-w-0 items-center gap-1 overflow-hidden rounded-xs px-1.5 py-1 text-left text-[11px] leading-tight text-ink transition-colors;
+  border-left: 3px solid var(--cover);
+  background: color-mix(in srgb, var(--cover) 12%, var(--color-surface));
+}
+.month-event:hover {
+  background: color-mix(in srgb, var(--cover) 20%, var(--color-surface));
+}
+.month-event span {
+  @apply shrink-0 text-ink-subtle tabular-nums;
+}
+.month-event b {
+  @apply truncate font-semibold;
+  color: var(--cover);
+}
+.month-event.cancelled {
+  @apply opacity-55 line-through;
+  border-left-style: dashed;
+}
+.month-event.deadline {
+  @apply border-red-300 bg-red-50 text-red-700;
+}
+.month-event.deadline.opens {
+  @apply border-primary-300 bg-primary-50 text-primary-700;
+}
+.month-event.deadline b {
+  @apply text-inherit;
+}
+.month-more {
+  @apply px-1 text-[11px] font-semibold text-ink-subtle;
+}
+.agenda-list {
+  @apply divide-y divide-line;
+}
+.agenda-day {
+  @apply grid grid-cols-[126px_minmax(0,1fr)] gap-4 py-4 first:pt-0 last:pb-0;
+}
+.agenda-date {
+  @apply border-r border-line pr-4;
+}
+.agenda-date time {
+  @apply sticky top-20 flex flex-col items-end text-right;
+}
+.agenda-date b {
+  @apply text-sm font-semibold text-ink;
+}
+.agenda-date span {
+  @apply mt-0.5 text-xs text-ink-subtle;
+}
+.agenda-date.today b {
+  @apply text-primary-600;
+}
+.agenda-items {
+  @apply min-w-0 space-y-1.5;
+}
+.agenda-deadline {
+  @apply flex min-h-12 items-center gap-3 rounded-sm px-3 py-2 text-sm transition-colors hover:bg-surface-muted;
+}
+.agenda-deadline-icon {
+  @apply grid size-8 shrink-0 place-items-center rounded-full bg-primary-50 text-primary-600;
+}
+.agenda-deadline-icon.closes {
+  @apply bg-red-50 text-red-600;
+}
 .meeting-facts {
   @apply grid grid-cols-[max-content_1fr] gap-y-2 gap-x-4 mb-2 text-sm;
 }
@@ -153,6 +261,24 @@
   }
   .week-schedule .toolbar-right .select {
     @apply max-w-full;
+  }
+  .month-schedule .toolbar {
+    @apply items-stretch;
+  }
+  .month-schedule .toolbar-right {
+    @apply ml-0;
+  }
+  .schedule-view-switch {
+    @apply w-full min-w-0;
+  }
+  .agenda-day {
+    @apply block py-3;
+  }
+  .agenda-date {
+    @apply mb-1 border-r-0 border-b border-line pb-2 pr-0;
+  }
+  .agenda-date time {
+    @apply static flex-row items-baseline justify-between text-left;
   }
 }
 button.list-row:hover {

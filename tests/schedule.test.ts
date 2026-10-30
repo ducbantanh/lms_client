@@ -10,6 +10,11 @@ import {
   dayLabel,
   isoWeekday,
   meetingsByDay,
+  addMonths,
+  monthEnd,
+  monthGridDays,
+  monthLabel,
+  monthStart,
   movedLabel,
   periodLabel,
   periodTime,
@@ -59,6 +64,18 @@ test('nhãn ngày, tuần và tiết', () => {
   assert.equal(periodLabel(4, 1), 'tiết 4');
   assert.equal(periodLabel(1, 3), 'tiết 1–3');
   assert.equal(periodTime({ firstHour: 7, periodsPerDay: 14 }, 3, 2), '09:00 – 11:00');
+});
+
+test('tháng và lưới tháng luôn phủ trọn các tuần thứ 2 đến chủ nhật', () => {
+  assert.equal(monthStart('2026-10-30'), '2026-10-01');
+  assert.equal(monthEnd('2026-10-30'), '2026-10-31');
+  assert.equal(addMonths('2026-12-31', 1), '2027-01-01');
+  assert.equal(addMonths('2026-01-31', -1), '2025-12-01');
+  assert.equal(monthLabel('2026-10-30'), 'Tháng 10/2026');
+  const days = monthGridDays('2026-10-30');
+  assert.equal(days[0], '2026-09-28');
+  assert.equal(days.at(-1), '2026-11-01');
+  assert.equal(days.length, 35);
 });
 
 test('đếm số buổi của lịch lặp, kể cả ngày đầu và ngày cuối', () => {
