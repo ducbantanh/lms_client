@@ -65,3 +65,13 @@
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(148, 163, 184, 0.6);
 }
+
+
+/* Tooltip & Pagination enhancements */
+.tooltip-arrow {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: inherit;
+  transform: rotate(45deg);
+}
