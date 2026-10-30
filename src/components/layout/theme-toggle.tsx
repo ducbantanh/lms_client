@@ -1,23 +1,52 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useSyncExternalStore } from 'react';
 import { Icon } from '@/components/ui/icon';
 
 const THEME_KEY = 'lms.theme';
 
-export function ThemeToggle({ className = '' }: { className?: string }) {
-  const [dark, setDark] = useState<boolean>(false);
-  const [mounted, setMounted] = useState<boolean>(false);
+function subscribeTheme(callback: () => void) {
+  if (typeof window === 'undefined') return () => {};
+  const observer = new MutationObserver((mutations) => {
+    for (const m of mutations) {
+      if (m.attributeName === 'class') {
+        callback();
+      }
+    }
+  });
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+  window.addEventListener('storage', callback);
+  return () => {
+    observer.disconnect();
+    window.removeEventListener('storage', callback);
+  };
+}
 
-  useEffect(() => {
-    setMounted(true);
-    const isDark = document.documentElement.classList.contains('dark');
-    setDark(isDark);
-  }, []);
+function getThemeSnapshot() {
+  if (typeof document === 'undefined') return false;
+  return document.documentElement.classList.contains('dark');
+}
+
+function getServerSnapshot() {
+  return false;
+}
+
+const noopSubscribe = () => () => {};
+
+export function ThemeToggle({ className = '' }: { className?: string }) {
+  const mounted = useSyncExternalStore(
+    noopSubscribe,
+    () => true,
+    () => false,
+  );
+  const dark = useSyncExternalStore(
+    subscribeTheme,
+    getThemeSnapshot,
+    getServerSnapshot,
+  );
 
   function toggle() {
     const nextDark = !dark;
-    setDark(nextDark);
     if (nextDark) {
       document.documentElement.classList.add('dark');
       try {
