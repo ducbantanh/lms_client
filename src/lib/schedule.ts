@@ -172,6 +172,38 @@ export function weekLabel(monday: string) {
   return `${day}/${month} – ${shortDate(sunday)}`;
 }
 
+/** Ngày đầu tháng chứa ngày đã cho. */
+export function monthStart(iso: string) {
+  return `${iso.slice(0, 7)}-01`;
+}
+
+/** Ngày cuối tháng chứa ngày đã cho. */
+export function monthEnd(iso: string) {
+  const [year, month] = iso.split('-').map(Number);
+  return toIsoDate(new Date(year, month, 0));
+}
+
+/** Chuyển tháng; kết quả luôn là ngày đầu tháng để không bị tràn từ ngày 29–31. */
+export function addMonths(iso: string, months: number) {
+  const [year, month] = iso.split('-').map(Number);
+  return toIsoDate(new Date(year, month - 1 + months, 1));
+}
+
+/** Các ngày cần vẽ cho lưới tháng, gồm cả đầu/cuối tuần nằm ngoài tháng. */
+export function monthGridDays(iso: string) {
+  const first = weekStart(monthStart(iso));
+  const last = addDays(weekStart(monthEnd(iso)), 6);
+  const count =
+    Math.round((parseIsoDate(last).getTime() - parseIsoDate(first).getTime()) / 86_400_000) + 1;
+  return Array.from({ length: count }, (_, index) => addDays(first, index));
+}
+
+/** "Tháng 10/2026". */
+export function monthLabel(iso: string) {
+  const [year, month] = iso.split('-');
+  return `Tháng ${Number(month)}/${year}`;
+}
+
 // ---------------------------------------------------------------- tiết học
 
 /** "tiết 4" / "tiết 1–3". */

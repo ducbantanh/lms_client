@@ -41,7 +41,7 @@ lms_client/
 │   │   │   ├── course/            Chi tiết khóa học, làm bài (assessment/)
 │   │   │   ├── notifications/     Thông báo
 │   │   │   └── settings/          Cài đặt
-│   │   ├── (auth)/                Header + footer đơn giản: login/, change-password/
+│   │   ├── (auth)/                Header + footer đơn giản: login/, forgot-password/, change-password/
 │   │   ├── admin/                 Khu quản trị: tổng quan, users/, import/, audit/, settings/
 │   │   └── teacher/               Khu giảng viên: courses/, course/ (quản lý một khóa), settings/
 │   ├── components/                Component dùng chung nhiều route
@@ -107,7 +107,8 @@ trong README này để tra đường dẫn hiện tại.
   - Giảng viên: form cài đặt `src/components/proctor-settings.tsx` (trang Tạo bài thi và trang Giám sát). Trang
     `/teacher/course/proctor/` (`proctor-board.tsx`) có mã phòng thi để chiếu, bảng sinh viên cập nhật qua
     WebSocket `proctor.updated`, nhật ký, khóa / mở khóa / cho đổi máy.
-- Login, phiên và WebSocket: `src/components/auth-form.tsx`, `src/providers/session-provider.tsx`.
+- Login, quên mật khẩu bằng OTP email, phiên và WebSocket: `src/components/auth-form.tsx`,
+  `src/app/(auth)/forgot-password/`, `src/providers/session-provider.tsx`.
 - API/CSRF: `src/lib/api.ts`. Token chỉ giữ trong RAM; session thật dùng cookie HttpOnly.
 - Bảo vệ route (giống `requirePage` của client cũ): `src/providers/session-provider.tsx`. Chưa đăng nhập →
   `/login/?next=...`, phải đổi mật khẩu → `/change-password/`, bị thu hồi phiên → về login kèm lý do.

@@ -7,12 +7,17 @@ import { apiRequest } from '@/lib/api';
 import { TEACHER_PATH } from '@/lib/auth';
 import { formatDateTime } from '@/lib/admin';
 import { LEAVE_STATUS, canRequestLeave, noticeLabel } from '@/lib/leave';
-import { canTakeAttendance, type Meeting } from '@/lib/schedule';
-import { useWeekSchedule } from '@/hooks/use-schedule';
+import { addDays, canTakeAttendance, monthGridDays, weekStart, type Meeting } from '@/lib/schedule';
+import { useScheduleRange, useToday } from '@/hooks/use-schedule';
 import { AdminHeading } from '@/components/admin-ui';
 import { Icon } from '@/components/ui/icon';
 import { LeaveDialog } from './leave-dialog';
 import { MeetingDetail } from './meeting-detail';
+import {
+  MonthAgendaSchedule,
+  ScheduleViewSwitch,
+  type ScheduleViewMode,
+} from './month-agenda-schedule';
 import { WeekSchedule } from './week-schedule';
 
 const attendanceHref = (courseId: string, sessionId?: string) =>
@@ -25,7 +30,14 @@ const attendanceHref = (courseId: string, sessionId?: string) =>
  */
 export function MySchedule({ mode }: { mode: 'learn' | 'teach' }) {
   const router = useRouter();
-  const { today, monday, setMonday, feed, error, reload } = useWeekSchedule();
+  const today = useToday();
+  const [view, setView] = useState<ScheduleViewMode>('week');
+  const [anchor, setAnchor] = useState(today);
+  const monday = weekStart(anchor);
+  const monthDays = monthGridDays(anchor);
+  const from = view === 'week' ? monday : monthDays[0];
+  const to = view === 'week' ? addDays(monday, 6) : monthDays.at(-1)!;
+  const { feed, error, reload } = useScheduleRange(from, to);
   const [selected, setSelected] = useState<Meeting | null>(null);
   const [leaving, setLeaving] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -92,18 +104,27 @@ export function MySchedule({ mode }: { mode: 'learn' | 'teach' }) {
           {notice}
         </div>
       )}
-      <WeekSchedule
-        feed={feed}
-        monday={monday}
-        today={today}
-        onWeekChange={setMonday}
-        onSelect={(meeting) => {
-          setActionError('');
-          setNotice('');
-          setNow(Date.now());
-          setSelected(meeting);
-        }}
-      />
+      {view === 'week' ? (
+        <WeekSchedule
+          feed={feed}
+          monday={monday}
+          today={today}
+          onWeekChange={setAnchor}
+          onSelect={selectMeeting}
+          toolbar={<ScheduleViewSwitch value={view} onChange={setView} />}
+        />
+      ) : (
+        <MonthAgendaSchedule
+          mode={mode}
+          view={view}
+          anchor={anchor}
+          today={today}
+          feed={feed}
+          onAnchorChange={setAnchor}
+          onSelect={selectMeeting}
+          toolbar={<ScheduleViewSwitch value={view} onChange={setView} />}
+        />
+      )}
       {selected && feed && !leaving && (
         <MeetingDetail
           meeting={selected}
@@ -179,6 +200,13 @@ export function MySchedule({ mode }: { mode: 'learn' | 'teach' }) {
       )}
     </main>
   );
+
+  function selectMeeting(meeting: Meeting) {
+    setActionError('');
+    setNotice('');
+    setNow(Date.now());
+    setSelected(meeting);
+  }
 }
 
 /** Sinh viên: trạng thái đơn xin nghỉ của buổi, hoặc hạn gửi đơn. */

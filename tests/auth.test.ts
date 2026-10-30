@@ -31,6 +31,12 @@ test('each role lands on its own home after login', () => {
   assert.equal(homeFor(session(1).user), '/teacher/');
 });
 
+test('quên mật khẩu là trang công khai và người đã đăng nhập được đưa về trang chủ', () => {
+  assert.equal(routeRedirect(null, '/forgot-password/'), null);
+  assert.equal(routeRedirect(session(5), '/forgot-password/'), '/');
+  assert.equal(routeRedirect(session(1), '/forgot-password/'), '/teacher/');
+});
+
 test('teachers and admins leave the student area, students stay', () => {
   assert.equal(routeRedirect(session(1), '/'), '/teacher/');
   assert.equal(routeRedirect(session(1), '/course/?id=abc'), '/teacher/');
