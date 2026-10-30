@@ -26,6 +26,7 @@ export function SettingsView({
   const [flash, setFlash] = useState<Flash | null>(null);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [revoking, setRevoking] = useState(false);
   const clearFlash = useCallback(() => setFlash(null), []);
   if (!user) return null;
 
@@ -61,8 +62,6 @@ export function SettingsView({
       setBusy(false);
     }
   }
-
-  const [revoking, setRevoking] = useState(false);
 
   async function revokeOtherSessions() {
     setRevoking(true);
