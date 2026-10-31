@@ -14,7 +14,7 @@ body.exam-open {
   @apply fixed inset-0 z-[900] flex flex-col bg-canvas;
 }
 .exam-bar {
-  @apply flex flex-wrap items-center justify-between gap-y-2 gap-x-4 py-2.5 px-6 bg-sidebar text-white;
+  @apply flex flex-wrap items-center justify-between gap-y-2.5 gap-x-5 py-3 px-6 bg-[#0b0f19] text-white border-b border-white/10 shadow-md;
 }
 .exam-bar-title {
   @apply flex items-center gap-2.5 min-w-0;
@@ -41,7 +41,7 @@ body.exam-open {
   @apply flex flex-wrap items-center gap-2.5;
 }
 .exam-bar .time-left {
-  @apply m-0 rounded-lg border border-white/15 bg-white/10 py-1 px-3 text-white/90 backdrop-blur-xs;
+  @apply m-0 rounded-xl border border-white/20 bg-white/10 py-1.5 px-3.5 text-white/95 backdrop-blur-md shadow-xs;
 }
 .exam-bar .time-left b {
   @apply text-sm font-bold text-white;
@@ -65,7 +65,7 @@ body.exam-open {
   @apply absolute inset-0 z-[2] grid place-items-center p-4 bg-sidebar/97;
 }
 .exam-overlay-card {
-  @apply max-w-110 p-7 rounded-lg bg-white shadow-float text-center;
+  @apply max-w-115 p-8 rounded-2xl bg-surface border border-line/80 shadow-float text-center;
 }
 .exam-overlay-card svg {
   @apply text-primary-600;
@@ -89,7 +89,7 @@ body.exam-open {
   @apply justify-self-start;
 }
 .exam-entry-icon {
-  @apply grid place-items-center w-11 h-11 rounded-lg bg-primary-50 text-primary-600;
+  @apply grid place-items-center w-12 h-12 rounded-xl bg-primary-50 text-primary-600 shadow-xs;
 }
 .exam-entry-icon.locked {
   @apply bg-red-50 text-red-600;
