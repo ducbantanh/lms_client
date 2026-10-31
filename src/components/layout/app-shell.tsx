@@ -247,23 +247,23 @@ function Shell({ area, children }: { area: Area; children: ReactNode }) {
       </a>
       <aside
         aria-label="Menu chính"
-        className={`fixed inset-y-0 left-0 z-50 flex w-[264px] shrink-0 flex-col bg-sidebar text-slate-300 shadow-float transition-[width,translate] duration-200 ease-out lg:sticky lg:top-0 lg:z-30 lg:h-dvh lg:translate-x-0 lg:shadow-none ${width} ${open ? 'translate-x-0' : '-translate-x-full'}`}
+        className={`fixed inset-y-0 left-0 z-50 flex w-[268px] shrink-0 flex-col bg-[#0b0f19] text-slate-300 border-r border-slate-800/80 shadow-2xl transition-[width,translate] duration-200 ease-out lg:sticky lg:top-0 lg:z-30 lg:h-dvh lg:translate-x-0 lg:shadow-none ${width} ${open ? 'translate-x-0' : '-translate-x-full'}`}
       >
         {/* Đầu sidebar cao bằng thanh trên (h-16) để hai đường kẻ ngang thẳng hàng */}
         <div
-          className={`flex h-16 shrink-0 items-center border-b border-white/10 ${collapsed ? 'lg:justify-center' : ''}`}
+          className={`flex h-16 shrink-0 items-center border-b border-slate-800/80 ${collapsed ? 'lg:justify-center' : ''}`}
         >
           <Link
             href={area === 'manage' && user ? homeFor(user) : '/dashboard/'}
             onClick={() => setOpen(false)}
-            className={`flex min-w-0 flex-1 items-center gap-3 self-stretch px-4 ${collapsed ? 'lg:hidden' : ''}`}
+            className={`flex min-w-0 flex-1 items-center gap-3 self-stretch px-4 transition hover:opacity-95 ${collapsed ? 'lg:hidden' : ''}`}
           >
-            <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-primary-500 to-indigo-600 text-lg font-black text-white shadow-xs">
+            <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-violet-500 text-lg font-black text-white shadow-md shadow-indigo-500/20">
               F
             </span>
             <span className="min-w-0 leading-tight">
-              <strong className="block text-[15px] font-semibold text-white">F LMS</strong>
-              <small className="block truncate text-xs text-slate-400">
+              <strong className="block text-[15px] font-bold tracking-tight text-white">F LMS</strong>
+              <small className="block truncate text-xs font-medium text-slate-400">
                 {area === 'learn'
                   ? 'Khoa Công nghệ Thông tin'
                   : user?.role === 0
@@ -272,14 +272,13 @@ function Shell({ area, children }: { area: Area; children: ReactNode }) {
               </small>
             </span>
           </Link>
-          {/* Nút ba gạch kiểu Windows: thu gọn chỉ còn icon / mở rộng có chữ */}
           <button
             type="button"
             onClick={() => setCollapsed(!collapsed)}
             aria-label={collapsed ? 'Mở rộng menu' : 'Thu gọn menu'}
             aria-expanded={!collapsed}
             title={collapsed ? 'Mở rộng menu' : 'Thu gọn menu'}
-            className={`hidden size-10 shrink-0 place-items-center rounded-sm text-slate-300 transition-colors hover:bg-sidebar-hover hover:text-white lg:grid ${collapsed ? '' : 'mr-3'}`}
+            className={`hidden size-9 shrink-0 place-items-center rounded-xl text-slate-400 transition-all hover:bg-white/10 hover:text-white lg:grid ${collapsed ? '' : 'mr-3'}`}
           >
             <Icon name="menu" size={15} />
           </button>
@@ -304,19 +303,21 @@ function Shell({ area, children }: { area: Area; children: ReactNode }) {
                     href={link.href}
                     aria-current={active ? 'page' : undefined}
                     onClick={() => setOpen(false)}
-                    className={`group relative mx-2.5 my-0.5 flex h-10 items-center gap-3 rounded-lg px-3 text-sm transition-all duration-150 ${
+                    className={`group relative mx-3 my-0.5 flex h-10.5 items-center gap-3 rounded-xl px-3.5 text-sm font-medium transition-all duration-150 ${
                       collapsed ? 'lg:mx-1.5 lg:justify-center lg:px-0' : ''
-                    } ${active ? 'bg-primary-600 font-semibold text-white shadow-xs' : 'text-slate-300 hover:bg-sidebar-hover hover:text-white'}`}
+                    } ${active ? 'bg-gradient-to-r from-primary-600 to-indigo-600 font-semibold text-white shadow-sm shadow-primary-500/25' : 'text-slate-300 hover:bg-white/6 hover:text-white'}`}
                   >
                     <Icon
                       name={link.icon}
-                      size={15}
-                      className={`w-5 text-center ${active ? 'text-white' : 'text-slate-400 group-hover:text-white'}`}
+                      size={16}
+                      className={`shrink-0 transition-transform group-hover:scale-110 ${active ? 'text-white' : 'text-slate-400 group-hover:text-white'}`}
                     />
                     <span className={`truncate ${hideWhenNarrow}`}>{link.label}</span>
-                    {/* Thu gọn: tên mục hiện khi rê chuột */}
+                    {active && !collapsed && (
+                      <span className="ml-auto size-1.5 rounded-full bg-white shadow-xs" />
+                    )}
                     {collapsed && (
-                      <span className="pointer-events-none absolute left-full z-50 ml-2 hidden rounded-md bg-sidebar px-2.5 py-1.5 text-xs whitespace-nowrap text-white opacity-0 shadow-lift transition-opacity group-hover:opacity-100 lg:block">
+                      <span className="pointer-events-none absolute left-full z-50 ml-3 hidden rounded-xl bg-slate-900 border border-slate-700/80 px-3 py-1.5 text-xs font-medium whitespace-nowrap text-white opacity-0 shadow-float transition-opacity group-hover:opacity-100 lg:block">
                         {link.label}
                       </span>
                     )}
@@ -327,15 +328,16 @@ function Shell({ area, children }: { area: Area; children: ReactNode }) {
           ))}
         </nav>
         {user && (
-          <div className="border-t border-white/10">
+          <div className="border-t border-slate-800/80 p-3">
             <Link
               href={profile ?? (area === 'manage' ? homeFor(user) : '/dashboard/')}
               onClick={() => setOpen(false)}
               title={collapsed ? user.fullName : undefined}
-              className={`flex items-center gap-3 px-4 py-3 transition-colors hover:bg-sidebar-hover ${collapsed ? 'lg:justify-center lg:px-0' : ''}`}
+              className={`flex items-center gap-3 rounded-xl p-2 transition-all hover:bg-white/6 ${collapsed ? 'lg:justify-center lg:p-1' : ''}`}
             >
-              <span className="grid size-9 shrink-0 place-items-center rounded-full bg-primary-100 text-xs font-bold text-primary-700">
+              <span className="relative grid size-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-primary-500 to-indigo-600 text-xs font-bold text-white shadow-xs">
                 {initials(user.fullName)}
+                <span className="absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full bg-emerald-500 ring-2 ring-[#0b0f19]" />
               </span>
               <span className={`min-w-0 leading-tight ${hideWhenNarrow}`}>
                 <b className="block truncate text-[13px] font-semibold text-white">
@@ -359,7 +361,7 @@ function Shell({ area, children }: { area: Area; children: ReactNode }) {
       />
       <div className="flex min-h-dvh min-w-0 flex-1 flex-col">
         <SystemBroadcastBanner />
-        <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 border-b border-line/80 bg-surface/85 px-4 backdrop-blur-md md:px-6 lg:px-8">
+        <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 border-b border-line/70 bg-surface/80 px-4 backdrop-blur-xl md:px-6 lg:px-8">
           <button
             type="button"
             aria-label="Mở menu"

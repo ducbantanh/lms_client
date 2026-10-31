@@ -21,7 +21,7 @@ export function ConnectionChip({ always = false }: { always?: boolean }) {
   if (connection === 'online' && !always) return null;
   return (
     <span
-      className={`flex items-center gap-1.5 rounded-sm px-2.5 py-[3px] text-xs font-semibold ${CONNECTION_TONES[connection]}`}
+      className={`flex items-center gap-1.5 rounded-full border border-line/80 px-3 py-1 text-xs font-semibold shadow-xs ${CONNECTION_TONES[connection]}`}
       role="status"
     >
       <span className="status-dot bg-current" />
@@ -56,7 +56,7 @@ export function AccountMenu({ onHelp }: { onHelp?: () => void }) {
           className="flex items-center gap-2 rounded-sm py-1 pr-2 pl-1 text-ink-subtle transition-colors group-open:bg-surface-muted hover:bg-surface-muted max-md:p-0.5"
           aria-label="Tài khoản"
         >
-          <span className="grid size-7.5 place-items-center rounded-full bg-primary-50 text-xs font-bold text-primary-600">
+          <span className="grid size-8 place-items-center rounded-xl bg-gradient-to-br from-primary-500 to-indigo-600 text-xs font-bold text-white shadow-xs">
             {initials(user.fullName)}
           </span>
           <span className="max-w-45 truncate text-sm font-semibold text-ink max-md:hidden">
@@ -64,7 +64,7 @@ export function AccountMenu({ onHelp }: { onHelp?: () => void }) {
           </span>
           <Icon name="down" size={11} className="max-md:hidden" />
         </summary>
-        <div className="dropdown-panel">
+        <div className="dropdown-panel rounded-2xl border border-line/80 p-1.5 shadow-2xl backdrop-blur-xl">
           <div className="dropdown-heading">
             <b>{user.fullName}</b>
             <small>
