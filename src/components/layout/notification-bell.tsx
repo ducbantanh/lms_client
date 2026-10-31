@@ -26,12 +26,12 @@ export function NotificationBell() {
       >
         <Icon name="bell" size={17} />
         {summary.unread > 0 && (
-          <span className="absolute -top-1 -right-1.5 h-4.5 min-w-4.5 rounded-full border-2 border-white bg-red-600 px-[5px] text-center text-[11px] leading-[14px] font-bold text-white">
+          <span className="absolute -top-1 -right-1 size-4.5 rounded-full border-2 border-white bg-rose-600 px-[3px] text-center text-[10px] leading-[14px] font-black text-white shadow-xs animate-pulse dark:border-slate-900">
             {summary.unread > 99 ? '99+' : summary.unread}
           </span>
         )}
       </summary>
-      <div className="dropdown-panel w-[min(380px,calc(100vw-32px))] p-0">
+      <div className="dropdown-panel w-[min(380px,calc(100vw-32px))] rounded-2xl border border-line/80 p-0 shadow-2xl backdrop-blur-xl">
         <div className="flex items-center justify-between gap-3 border-b border-line px-3.5 py-3">
           <b className="text-[15px]">Thông báo</b>
           {summary.unread > 0 && (
