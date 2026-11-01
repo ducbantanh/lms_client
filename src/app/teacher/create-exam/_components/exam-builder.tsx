@@ -48,16 +48,28 @@ import {
 } from '@/lib/quiz';
 import {
   ASSESSMENT_TAB_PARAM,
+  formatScore,
   formatSize,
   localInputToIso,
+  MAX_SCORE,
+  MIXED_PART_LABELS,
   moveId,
   SCORE_RELEASES,
   uploadProblem,
   type Assessment,
   type AssessmentType,
+  type MixedPartKey,
   type ScoreRelease,
   type TeacherCourse,
 } from '@/lib/teaching';
+import {
+  MIXED_PART_HINTS,
+  MIXED_PART_KEYS,
+  defaultWeights,
+  mixedWeightsProblem,
+  parseWeight,
+  weightTotal,
+} from '@/lib/mixed';
 import {
   codeBody,
   codeDraftProblem,
@@ -109,7 +121,9 @@ const LEVELS: Difficulty[] = [0, 1, 2];
  * - trắc nghiệm: chọn câu hỏi (chọn tay hoặc bốc ngẫu nhiên theo mức độ) từ ngân hàng câu hỏi; câu hỏi được
  *   chép sang bài, sửa ngân hàng sau đó không làm đổi bài đã tạo;
  * - tải đề lên: đề PDF (bắt buộc với bài kiểm tra), sinh viên nộp file bài làm, giảng viên chấm tay;
- * - lập trình: đề và bộ test, sinh viên nộp mã nguồn, máy chấm chạy test và cho điểm.
+ * - lập trình: đề và bộ test, sinh viên nộp mã nguồn, máy chấm chạy test và cho điểm;
+ * - tổng hợp: từ hai phần trở lên trong ba hình thức trên, mỗi phần một điểm tối đa (tổng 10), làm trong một lần
+ *   bắt đầu với đồng hồ chung (lib/mixed.ts).
  */
 /** Cột phải (đề đang soạn) bám theo khi cuộn danh sách câu hỏi; trừ chiều cao thanh trên. */
 const EXAM_SUMMARY = 'panel sticky top-18 max-lg:static';
@@ -125,11 +139,18 @@ export function ExamBuilder() {
   const [loadError, setLoadError] = useState('');
   const [mode, setMode] = useState<ExamMode>(() => {
     const value = params.get('mode');
-    if (value === 'file' || value === 'code') return value;
+    if (value === 'file' || value === 'code' || value === 'mixed') return value;
     // Bài tập (tab Bài tập của khóa học) không có trắc nghiệm: mặc định bài lập trình
     return initialType === 0 ? 'code' : 'quiz';
   });
   const [code, setCode] = useState<CodeDraft>(emptyCode);
+  /** Hình thức tổng hợp: các phần đang bật (theo thứ tự MIXED_PART_KEYS) và điểm tối đa từng phần (ô nhập). */
+  const [parts, setParts] = useState<MixedPartKey[]>(() =>
+    initialType === 0 ? ['code', 'file'] : ['quiz', 'code'],
+  );
+  const [weights, setWeights] = useState(() =>
+    defaultWeights(initialType === 0 ? ['code', 'file'] : ['quiz', 'code']),
+  );
   const [paper, setPaper] = useState<File | null>(null);
   const paperInput = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState({
@@ -173,6 +194,19 @@ export function ExamBuilder() {
   /** Lưu ý khi đọc thư mục nhiều bài (thiếu đề, test lỗi...), hiện ở đầu phần Các bài. */
   const [batchWarnings, setBatchWarnings] = useState<string[]>([]);
   const batchMode = mode === 'code' && !!batch;
+  const mixed = mode === 'mixed';
+  /** Form đang có phần trắc nghiệm / lập trình / nộp file (hình thức đơn hoặc phần của bài tổng hợp). */
+  const hasQuizPart = mode === 'quiz' || (mixed && parts.includes('quiz'));
+  const hasCodePart = mode === 'code' || (mixed && parts.includes('code'));
+  const hasFilePart = mode === 'file' || (mixed && parts.includes('file'));
+
+  /** Bật/tắt một phần của bài tổng hợp; điểm tối đa chia lại đều cho các phần còn bật. */
+  function togglePart(key: MixedPartKey, on: boolean) {
+    const next = MIXED_PART_KEYS.filter((item) => (item === key ? on : parts.includes(item)));
+    setParts(next);
+    setWeights(defaultWeights(next));
+    setError('');
+  }
 
   function importMany(result: ImportResult) {
     setBatchWarnings(result.warnings);
@@ -439,10 +473,12 @@ export function ExamBuilder() {
       questionCount: selected.length,
       hasPaper: !!paper,
       scoreRelease: form.scoreRelease,
+      parts: mixed ? parts : undefined,
     });
     const invalid =
       problem ??
-      (batchMode ? batchProblem(batch!) : mode === 'code' ? codeDraftProblem(code) : null) ??
+      (mixed ? mixedWeightsProblem(parts, weights) : null) ??
+      (batchMode ? batchProblem(batch!) : hasCodePart ? codeDraftProblem(code) : null) ??
       (form.type === 2 ? proctorFormProblem(proctor, closesAt) : null);
     if (invalid) {
       setError(invalid);
@@ -475,6 +511,32 @@ export function ExamBuilder() {
             revealMode: form.reveal,
             questionIds: selected.map((item) => item.id),
           },
+        });
+      } else if (mixed) {
+        // Một request cho cả bài: JSON (part data), đề PDF phần nộp file (part paper), ZIP bộ test các câu
+        const request = hasCodePart ? codeRequest(code) : null;
+        const files = [
+          ...(request?.files ?? []),
+          ...(hasFilePart && paper ? [{ name: 'paper', file: paper }] : []),
+        ];
+        const weightOf = (key: MixedPartKey) => parseWeight(weights[key] ?? '');
+        created = await apiRequest<Assessment>(`/teacher/courses/${course}/mixed-assessments`, {
+          method: 'POST',
+          body: codeBody(
+            {
+              ...common,
+              notifyStudents,
+              timeLimitMinutes: parseTimeLimit(form.timeLimit),
+              shuffle: form.shuffle,
+              revealMode: hasQuizPart ? form.reveal : 0,
+              quiz: hasQuizPart
+                ? { weight: weightOf('quiz'), questionIds: selected.map((item) => item.id) }
+                : null,
+              code: request ? { weight: weightOf('code'), code: request.code } : null,
+              file: hasFilePart ? { weight: weightOf('file') } : null,
+            },
+            files,
+          ),
         });
       } else if (mode === 'code') {
         // Mỗi câu có file ZIP bộ test thì gửi multipart, mỗi file một part
@@ -594,6 +656,12 @@ export function ExamBuilder() {
                     set({ type, reveal: type === 1 ? 1 : 2 });
                     // Bài tập không có trắc nghiệm: chuyển sang bài lập trình
                     if (!modeAllowed(mode, type)) setMode('code');
+                    // Bài tổng hợp của bài tập: bỏ phần trắc nghiệm (còn một phần thì thêm phần còn thiếu)
+                    if (type === 0 && parts.includes('quiz')) {
+                      const next: MixedPartKey[] = ['code', 'file'];
+                      setParts(next);
+                      setWeights(defaultWeights(next));
+                    }
                   }}
                 >
                   {EXAM_TYPES.map((item) => (
@@ -723,14 +791,68 @@ export function ExamBuilder() {
             {form.scoreRelease !== 0 && mode !== 'code' && (
               <p className="admin-hint">
                 Sinh viên nộp xong chỉ thấy &quot;đã nộp&quot;; điểm, nhận xét
-                {mode === 'quiz' ? ' và đáp án' : ''}{' '}
+                {hasQuizPart ? ' và đáp án' : ''}{' '}
                 {form.scoreRelease === 1
                   ? 'hiện sau giờ đóng bài'
                   : 'không bao giờ hiện với sinh viên'}
                 . Bạn vẫn xem, sửa điểm và xuất bảng điểm bình thường.
               </p>
             )}
-            {mode === 'quiz' ? (
+            {mixed && (
+              <div className="form-field">
+                Các phần và điểm tối đa
+                <ul className="m-0 flex list-none flex-col gap-2 p-0" aria-label="Các phần của bài">
+                  {MIXED_PART_KEYS.map((key) => {
+                    const on = parts.includes(key);
+                    const blocked = key === 'quiz' && form.type === 0;
+                    return (
+                      <li
+                        key={key}
+                        className={`flex flex-wrap items-center gap-x-3 gap-y-1 rounded-sm border px-3 py-2 font-normal ${
+                          on ? 'border-primary-600 bg-primary-50' : 'border-line'
+                        }`}
+                      >
+                        <label className="check-field m-0 min-w-32 font-semibold">
+                          <input
+                            type="checkbox"
+                            checked={on}
+                            disabled={blocked}
+                            onChange={(event) => togglePart(key, event.target.checked)}
+                          />
+                          {MIXED_PART_LABELS[key]}
+                        </label>
+                        {on && (
+                          <label className="inline-flex items-center gap-1.5 text-sm">
+                            <input
+                              className="input h-8 w-20 tabular-nums"
+                              inputMode="decimal"
+                              value={weights[key] ?? ''}
+                              onChange={(event) =>
+                                setWeights({ ...weights, [key]: event.target.value })
+                              }
+                              aria-label={`Điểm tối đa phần ${MIXED_PART_LABELS[key].toLowerCase()}`}
+                            />
+                            điểm
+                          </label>
+                        )}
+                        <small className="basis-full text-ink-muted">
+                          {blocked ? 'Bài tập không có phần trắc nghiệm.' : MIXED_PART_HINTS[key]}
+                        </small>
+                      </li>
+                    );
+                  })}
+                </ul>
+                <small
+                  className={
+                    weightTotal(parts, weights) === MAX_SCORE ? 'text-ink-muted' : 'text-red-600'
+                  }
+                  aria-live="polite"
+                >
+                  Tổng: {formatScore(weightTotal(parts, weights))} / {MAX_SCORE} điểm
+                </small>
+              </div>
+            )}
+            {mode === 'quiz' || mixed ? (
               <>
                 <div className="form-row">
                   <label className="form-field">
@@ -748,42 +870,71 @@ export function ExamBuilder() {
                       placeholder="Không giới hạn"
                     />
                   </label>
-                  <label className="form-field">
-                    Sinh viên xem đáp án
-                    <select
-                      className="select"
-                      value={form.reveal}
-                      disabled={form.scoreRelease === 2}
-                      onChange={(event) =>
-                        set({ reveal: Number(event.target.value) as RevealMode })
-                      }
-                    >
-                      {([0, 1, 2] as RevealMode[]).map((value) => (
-                        // Điểm chưa công bố thì cũng chưa cho xem đáp án (xem đáp án là tự tính được điểm)
-                        <option
-                          key={value}
-                          value={value}
-                          disabled={value === 1 && form.scoreRelease === 1}
-                        >
-                          {REVEAL_MODES[value]}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
+                  {hasQuizPart && (
+                    <label className="form-field">
+                      Sinh viên xem đáp án
+                      <select
+                        className="select"
+                        value={form.reveal}
+                        disabled={form.scoreRelease === 2}
+                        onChange={(event) =>
+                          set({ reveal: Number(event.target.value) as RevealMode })
+                        }
+                      >
+                        {([0, 1, 2] as RevealMode[]).map((value) => (
+                          // Điểm chưa công bố thì cũng chưa cho xem đáp án (xem đáp án là tự tính được điểm)
+                          <option
+                            key={value}
+                            value={value}
+                            disabled={value === 1 && form.scoreRelease === 1}
+                          >
+                            {REVEAL_MODES[value]}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  )}
                 </div>
-                <p className="admin-hint">
-                  Để trống giờ mở là mở ngay; để trống giờ đóng là không giới hạn. Thời gian làm bài
-                  tính từ lúc sinh viên bấm &quot;Bắt đầu&quot;, không quá giờ đóng. Hết giờ mà chưa
-                  nộp thì các câu đã chọn được tính là bài nộp.
-                </p>
-                <label className="check-field">
-                  <input
-                    type="checkbox"
-                    checked={form.shuffle}
-                    onChange={(event) => set({ shuffle: event.target.checked })}
-                  />
-                  Xáo trộn thứ tự câu hỏi và đáp án cho từng sinh viên
-                </label>
+                {mixed ? (
+                  <p className="admin-hint">
+                    Để trống giờ mở là mở ngay; để trống giờ đóng là không giới hạn. Sinh viên bấm
+                    &quot;Bắt đầu&quot; một lần, thời gian làm bài tính chung cho mọi phần (không
+                    quá giờ đóng); bấm nộp hoặc hết giờ thì mọi phần cùng khóa. Mỗi sinh viên làm
+                    một lần.
+                  </p>
+                ) : (
+                  <p className="admin-hint">
+                    Để trống giờ mở là mở ngay; để trống giờ đóng là không giới hạn. Thời gian làm
+                    bài tính từ lúc sinh viên bấm &quot;Bắt đầu&quot;, không quá giờ đóng. Hết giờ
+                    mà chưa nộp thì các câu đã chọn được tính là bài nộp.
+                  </p>
+                )}
+                {hasQuizPart && (
+                  <label className="check-field">
+                    <input
+                      type="checkbox"
+                      checked={form.shuffle}
+                      onChange={(event) => set({ shuffle: event.target.checked })}
+                    />
+                    Xáo trộn thứ tự câu hỏi và đáp án cho từng sinh viên
+                  </label>
+                )}
+                {mixed && hasFilePart && (
+                  <label className="form-field">
+                    <span>
+                      File đề phần nộp file <span className="optional">(PDF, không bắt buộc)</span>
+                    </span>
+                    <DropZone className="drop-box" hint="Hoặc kéo thả file PDF vào đây">
+                      <input
+                        ref={paperInput}
+                        className="input file-input"
+                        type="file"
+                        accept=".pdf,application/pdf"
+                        onChange={(event) => pickPaper(event.target.files?.[0] ?? null)}
+                      />
+                    </DropZone>
+                  </label>
+                )}
               </>
             ) : mode === 'code' ? (
               <p className="admin-hint">
@@ -957,14 +1108,14 @@ export function ExamBuilder() {
               </ol>
             </section>
           ) : (
-            mode === 'code' && (
+            hasCodePart && (
               <section className="panel">
                 <div className="panel-title">
                   <h2>
                     <i className="title-icon violet">
                       <Icon name="file" size={12} />
                     </i>
-                    Các câu
+                    {mixed ? 'Phần lập trình' : 'Các câu'}
                   </h2>
                 </div>
                 <CodeFields
@@ -972,7 +1123,8 @@ export function ExamBuilder() {
                   onChange={setCode}
                   courseId={form.courseId}
                   subjectCode={course?.code}
-                  onImportMany={importMany}
+                  // Nhập thư mục nhiều bài chỉ tạo nhiều bài lập trình, không dùng cho phần của bài tổng hợp
+                  onImportMany={mixed ? undefined : importMany}
                   onImportTitle={(title) =>
                     setForm((current) =>
                       current.title.trim() ? current : { ...current, title: title.slice(0, 200) },
@@ -982,14 +1134,14 @@ export function ExamBuilder() {
               </section>
             )
           )}
-          {mode === 'quiz' && (
+          {hasQuizPart && (
             <section className="panel">
               <div className="panel-title">
                 <h2>
                   <i className="title-icon violet">
                     <Icon name="bank" size={12} />
                   </i>
-                  Chọn câu hỏi
+                  {mixed ? 'Phần trắc nghiệm: chọn câu hỏi' : 'Chọn câu hỏi'}
                 </h2>
                 <Link href={`${TEACHER_PATH}/question-banks/`}>Quản lý ngân hàng</Link>
               </div>
@@ -1174,7 +1326,54 @@ export function ExamBuilder() {
           )}
         </div>
 
-        {mode === 'quiz' ? (
+        {mixed ? (
+          <aside className={EXAM_SUMMARY}>
+            <div className="panel-title">
+              <h2>
+                <i className="title-icon red">
+                  <Icon name="layers" size={12} />
+                </i>
+                Bài tổng hợp
+              </h2>
+            </div>
+            <ol className="exam-picked" aria-label="Các phần">
+              {parts.map((key, index) => (
+                <li key={key}>
+                  <span className="exam-picked-number">{index + 1}</span>
+                  <span className="exam-picked-text">
+                    <b>{MIXED_PART_LABELS[key]}</b> ·{' '}
+                    {key === 'quiz'
+                      ? `${selected.length} câu`
+                      : key === 'code'
+                        ? `${code.problems.length} câu, ${code.problems.reduce((sum, problem) => sum + testCount(problem), 0)} test`
+                        : paper
+                          ? paper.name
+                          : 'không có file đề'}
+                  </span>
+                  <span className="badge muted m-0 shrink-0">
+                    {Number.isNaN(parseWeight(weights[key] ?? ''))
+                      ? '?'
+                      : formatScore(parseWeight(weights[key] ?? ''))}{' '}
+                    đ
+                  </span>
+                </li>
+              ))}
+            </ol>
+            <p className="admin-hint">
+              Điểm bài = tổng điểm các phần. Trắc nghiệm và lập trình máy chấm ngay khi nộp (phần
+              lập trình tính theo số câu AC); phần nộp file bạn chấm ở trang Bài nộp, điểm bài hiện
+              sau khi chấm phần này.
+            </p>
+            {error && (
+              <p className="form-error" role="alert">
+                {error}
+              </p>
+            )}
+            <button className="button primary full-width" disabled={busy || !courses.length}>
+              {busy ? 'Đang tạo…' : `Tạo ${typeLabel}`}
+            </button>
+          </aside>
+        ) : mode === 'quiz' ? (
           <aside className={EXAM_SUMMARY}>
             <div className="panel-title">
               <h2>

@@ -29,23 +29,25 @@ export function SystemBroadcastBanner() {
   const [dismissedId, setDismissedId] = useState<string | null>(null);
 
   useEffect(() => {
-    // 1. Đọc thông báo lưu sẵn từ trước
-    try {
-      const savedBroadcast = localStorage.getItem(BROADCAST_STORAGE_KEY);
-      if (savedBroadcast) {
-        const parsed = JSON.parse(savedBroadcast) as SystemBroadcastMessage;
-        if (!parsed.expiresAt || new Date(parsed.expiresAt).getTime() > Date.now()) {
-          setBroadcast(parsed);
+    // 1. Đọc thông báo lưu sẵn từ trước (tránh gọi setState đồng bộ ngay trong render pass của effect)
+    const initTimer = setTimeout(() => {
+      try {
+        const savedBroadcast = localStorage.getItem(BROADCAST_STORAGE_KEY);
+        if (savedBroadcast) {
+          const parsed = JSON.parse(savedBroadcast) as SystemBroadcastMessage;
+          if (!parsed.expiresAt || new Date(parsed.expiresAt).getTime() > Date.now()) {
+            setBroadcast(parsed);
+          }
         }
+        const savedMaintenance = localStorage.getItem(MAINTENANCE_STORAGE_KEY);
+        if (savedMaintenance) {
+          const parsedM = JSON.parse(savedMaintenance) as MaintenanceNotice;
+          if (parsedM.active) setMaintenance(parsedM);
+        }
+      } catch {
+        // Bỏ qua lỗi parse
       }
-      const savedMaintenance = localStorage.getItem(MAINTENANCE_STORAGE_KEY);
-      if (savedMaintenance) {
-        const parsedM = JSON.parse(savedMaintenance) as MaintenanceNotice;
-        if (parsedM.active) setMaintenance(parsedM);
-      }
-    } catch {
-      // Bỏ qua lỗi parse
-    }
+    }, 0);
 
     // 2. Lắng nghe thông báo khẩn cấp từ WebSocket realtime
     const unsubBroadcast = subscribe('system.broadcast', (data) => {
@@ -60,6 +62,7 @@ export function SystemBroadcastBanner() {
     });
 
     return () => {
+      clearTimeout(initTimer);
       unsubBroadcast();
       unsubMaintenance();
     };

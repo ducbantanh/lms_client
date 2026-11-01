@@ -81,11 +81,11 @@ export function CommandPalette({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="hidden h-9 w-full max-w-sm items-center gap-2.5 rounded-sm border border-line-strong bg-white px-3 text-left text-[13px] text-ink-muted transition-colors hover:border-primary-400 md:flex"
+        className="hidden h-10 w-full max-w-sm items-center gap-2.5 rounded-xl border border-line/80 bg-surface/70 px-3.5 text-left text-sm text-ink-muted shadow-xs transition-all hover:border-primary-500/60 hover:bg-surface hover:shadow-sm md:flex"
       >
         <Icon name="search" size={13} />
         <span className="flex-1 truncate">Tìm trang, khóa học…</span>
-        <kbd className="rounded-sm border border-line bg-surface-muted px-1.5 py-0.5 font-sans text-[11px] font-medium text-ink-muted">
+        <kbd className="rounded-lg border border-line-strong/60 bg-surface-muted px-2 py-0.5 font-mono text-[11px] font-semibold text-ink-muted shadow-xs">
           {mac ? '⌘' : 'Ctrl'} K
         </kbd>
       </button>
@@ -174,7 +174,7 @@ function PaletteDialog({
       aria-label="Tìm nhanh"
       onCancel={onClose}
       onClick={(event) => event.target === event.currentTarget && onClose()}
-      className="m-auto mt-[12vh] w-[min(560px,calc(100vw-32px))] max-w-none overflow-hidden rounded-lg border border-line-strong bg-white p-0 text-ink shadow-float"
+      className="m-auto mt-[12vh] w-[min(580px,calc(100vw-32px))] max-w-none overflow-hidden rounded-2xl border border-line/80 bg-surface p-0 text-ink shadow-2xl backdrop-blur-xl"
     >
       <div className="flex items-center gap-3 border-b border-line px-4">
         <Icon name="search" size={14} className="text-ink-subtle" />
@@ -189,7 +189,7 @@ function PaletteDialog({
           placeholder="Tìm trang, khóa học…"
           className="h-14 flex-1 appearance-none border-0 bg-transparent text-[15px] outline-none placeholder:text-ink-subtle"
         />
-        <kbd className="rounded-sm border border-line px-1.5 py-0.5 text-[11px] text-ink-muted">
+        <kbd className="rounded-lg border border-line-strong/60 bg-surface-muted px-2 py-0.5 font-mono text-[11px] font-semibold text-ink-muted shadow-xs">
           Esc
         </kbd>
       </div>
@@ -211,14 +211,14 @@ function PaletteDialog({
                 type="button"
                 onMouseMove={() => setActive(index)}
                 onClick={() => go(item)}
-                className={`flex w-full items-center gap-3 rounded-sm px-3 py-2 text-left text-sm transition-colors ${
-                  index === current ? 'bg-primary-50 text-primary-700' : 'text-ink'
+                className={`flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-left text-sm transition-all ${
+                  index === current ? 'bg-primary-50 text-primary-700 font-semibold dark:bg-primary-950/60 dark:text-primary-300' : 'text-ink hover:bg-surface-muted'
                 }`}
               >
                 <span
-                  className={`grid size-8 shrink-0 place-items-center rounded-sm ${
+                  className={`grid size-8.5 shrink-0 place-items-center rounded-xl transition-transform ${
                     index === current
-                      ? 'bg-white text-primary-600'
+                      ? 'bg-primary-600 text-white shadow-xs scale-105'
                       : 'bg-surface-muted text-ink-muted'
                   }`}
                 >

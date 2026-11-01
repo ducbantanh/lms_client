@@ -11,6 +11,7 @@ import {
   ASSESSMENT_TAB_PARAM,
   ASSESSMENT_TYPES,
   MAX_SCORE,
+  MIXED_PART_LABELS,
   PDF,
   SUBMISSION_STATUS,
   fileIcon,
@@ -21,6 +22,8 @@ import {
   parseScore,
   submissionFileUrl,
   submissionsZipUrl,
+  mixedParts,
+  type Assessment,
   type AssessmentSubmissions,
   type SubmissionRow,
   type SubmissionStatus,
@@ -121,8 +124,11 @@ export function SubmissionsView() {
   const visible = rows.filter(FILTERS.find((item) => item.value === filter)!.match);
   /**
    * Bài trắc nghiệm / lập trình: không có file, máy chấm sẵn; giảng viên xem bài làm và sửa điểm nếu cần.
+   * Bài tổng hợp: máy chấm phần trắc nghiệm, lập trình; giảng viên chấm phần nộp file (nếu có).
    */
+  const mixed = assessment.answerMode === 3;
   const quiz = assessment.answerMode === 1;
+  const hasFiles = assessment.answerMode === 0 || (mixed && assessment.fileWeight !== null);
   const auto = assessment.answerMode !== 0;
   const current = selected ? rows.findIndex((row) => row.studentId === selected) : -1;
 
@@ -144,9 +150,13 @@ export function SubmissionsView() {
             Mở: {assessment.opensAt ? formatDateTime(assessment.opensAt) : 'ngay'} · Đóng:{' '}
             {assessment.closesAt ? formatDateTime(assessment.closesAt) : 'không hạn'}
             {assessment.scoreRelease === 1 &&
-              ` · Sinh viên thấy ${auto && !quiz ? 'kết quả' : 'điểm'} sau giờ đóng`}
+              ` · Sinh viên thấy ${auto && !quiz && !mixed ? 'kết quả' : 'điểm'} sau giờ đóng`}
             {assessment.scoreRelease === 2 &&
-              ` · Sinh viên không xem được ${auto && !quiz ? 'kết quả' : 'điểm'}`}
+              ` · Sinh viên không xem được ${auto && !quiz && !mixed ? 'kết quả' : 'điểm'}`}
+            {mixed &&
+              ` · ${mixedParts(assessment)
+                .map((part) => `${MIXED_PART_LABELS[part.key]} ${formatScore(part.weight)}đ`)
+                .join(' + ')}`}
             {assessment.paperFileId && (
               <>
                 {' · '}
@@ -163,7 +173,7 @@ export function SubmissionsView() {
           </p>
         </div>
         {/* ZIP chỉ gồm bài đã chốt (đã nộp / nộp khi hết giờ), mỗi sinh viên một thư mục */}
-        {auto ? null : summary.submitted > 0 ? (
+        {!hasFiles ? null : summary.submitted > 0 ? (
           <a className="button" href={submissionsZipUrl(course.id, assessment.id)} download>
             <Icon name="download" size={13} />
             Tải bài nộp (ZIP)
@@ -188,7 +198,7 @@ export function SubmissionsView() {
         <Grader
           key={rows[current].studentId}
           row={rows[current]}
-          quiz={assessment.answerMode === 1}
+          assessment={assessment}
           canGrade={data.canGrade}
           position={`${current + 1} / ${rows.length}`}
           base={base}
@@ -246,7 +256,8 @@ export function SubmissionsView() {
                       <th>Họ tên</th>
                       <th>Trạng thái</th>
                       <th>Nộp lúc</th>
-                      {!auto && <th>File</th>}
+                      {hasFiles && <th>File</th>}
+                      {mixed && <th className="numeric">Máy chấm</th>}
                       <th className="numeric">Điểm</th>
                       <th className="actions" aria-label="Thao tác" />
                     </tr>
@@ -269,12 +280,20 @@ export function SubmissionsView() {
                                 ? 'Khi hết giờ'
                                 : '—'}
                           </td>
-                          {!auto && <td>{row.files.length ? `${row.files.length} file` : '—'}</td>}
+                          {hasFiles && (
+                            <td>{row.files.length ? `${row.files.length} file` : '—'}</td>
+                          )}
+                          {mixed && (
+                            <td className="numeric">
+                              {row.autoScore === null ? '—' : formatScore(row.autoScore)}
+                            </td>
+                          )}
                           <td className="numeric font-bold">
                             {row.grade ? formatScore(row.grade.score) : '—'}
                           </td>
                           <td className="actions">
-                            {data.canGrade ? (
+                            {/* Bài tổng hợp không có phần nộp file: điểm hoàn toàn do máy chấm, chỉ xem */}
+                            {data.canGrade && (!mixed || hasFiles) ? (
                               <button
                                 className={`button small${gradable && !row.grade ? ' primary' : ''}`}
                                 disabled={!gradable}
@@ -308,7 +327,21 @@ export function SubmissionsView() {
               </p>
             )}
           </section>
-          {quiz && <QuizStats courseId={course.id} assessmentId={assessment.id} />}
+          {(quiz || (mixed && assessment.quizWeight !== null)) && (
+            <QuizStats courseId={course.id} assessmentId={assessment.id} />
+          )}
+          {mixed && assessment.codeWeight !== null && (
+            // Phần lập trình: bảng sinh viên × câu, sửa bộ test, chấm lại như bài lập trình
+            <section className="mt-5">
+              <h2 className="mb-3 text-base font-semibold">Phần lập trình</h2>
+              <CodeResultsPage
+                courseId={course.id}
+                assessmentId={assessment.id}
+                canEdit={data.canGrade}
+                notify={setFlash}
+              />
+            </section>
+          )}
         </>
       )}
     </main>
@@ -318,8 +351,8 @@ export function SubmissionsView() {
 /** Khung chấm một sinh viên: xem file bài làm (PDF vẽ bằng pdf.js) bên trái, điểm và nhận xét bên phải. */
 function Grader({
   row,
-  quiz,
-  canGrade,
+  assessment,
+  canGrade: canGradeCourse,
   position,
   base,
   onPrev,
@@ -329,8 +362,11 @@ function Grader({
   notify,
 }: {
   row: SubmissionRow;
-  /** Bài trắc nghiệm: bên trái là bài làm (đáp án đã chọn) thay cho file. */
-  quiz: boolean;
+  /**
+   * Bài trắc nghiệm: bên trái là bài làm (đáp án đã chọn) thay cho file. Bài tổng hợp: bài làm trắc nghiệm và file
+   * (phần nào có thì hiện), điểm nhập là điểm phần nộp file.
+   */
+  assessment: Assessment;
   /** false: admin xem bài làm, điểm và nhận xét nhưng không chấm. */
   canGrade: boolean;
   position: string;
@@ -341,8 +377,16 @@ function Grader({
   onSaved: (next: boolean) => Promise<void>;
   notify: (flash: Flash) => void;
 }) {
+  const mixed = assessment.answerMode === 3;
+  const quiz = assessment.answerMode === 1 || (mixed && assessment.quizWeight !== null);
+  const showFiles = assessment.answerMode === 0 || (mixed && assessment.fileWeight !== null);
+  /** Điểm tối đa ô nhập: cả bài, hoặc phần nộp file của bài tổng hợp. */
+  const maxScore = mixed ? (assessment.fileWeight ?? 0) : MAX_SCORE;
+  // Bài tổng hợp không có phần nộp file: điểm do máy chấm, giảng viên chỉ xem
+  const canGrade = canGradeCourse && (!mixed || assessment.fileWeight !== null);
+  const initial = mixed ? (row.grade?.manualScore ?? null) : (row.grade?.score ?? null);
   const [fileIndex, setFileIndex] = useState(0);
-  const [score, setScore] = useState(row.grade ? String(row.grade.score).replace('.', ',') : '');
+  const [score, setScore] = useState(initial === null ? '' : String(initial).replace('.', ','));
   const [feedback, setFeedback] = useState(row.grade?.feedback ?? '');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -363,7 +407,9 @@ function Grader({
         text:
           value === null
             ? `Đã xóa điểm của ${row.fullName}.`
-            : `Đã lưu ${formatScore(value)} điểm cho ${row.fullName}.`,
+            : mixed
+              ? `Đã lưu ${formatScore(value)} điểm phần nộp file cho ${row.fullName}.`
+              : `Đã lưu ${formatScore(value)} điểm cho ${row.fullName}.`,
       });
       await onSaved(next);
     } catch (reason) {
@@ -384,76 +430,91 @@ function Grader({
       setError('Nhập điểm trước khi lưu.');
       return;
     }
+    if (parsed.value > maxScore) {
+      setError(`Điểm phần nộp file tối đa ${formatScore(maxScore)}.`);
+      return;
+    }
     void save(parsed.value, next);
   }
 
   return (
     <div className="columns items-start">
-      {quiz ? (
-        <QuizAnswers url={`${base}/${encodeURIComponent(row.studentId)}/quiz`} />
+      {!showFiles ? (
+        quiz ? (
+          <QuizAnswers url={`${base}/${encodeURIComponent(row.studentId)}/quiz`} />
+        ) : (
+          <section className="panel">
+            <p className="admin-hint">
+              Bài làm lập trình xem ở bảng Phần lập trình bên dưới danh sách bài nộp.
+            </p>
+          </section>
+        )
       ) : (
-        <section className="panel flush">
-          <div className="panel-title">
-            <h2>
-              <i className="title-icon blue">
-                <Icon name="file" size={12} />
-              </i>
-              Bài làm
-            </h2>
-            {file && (
-              <a className="file-link" href={submissionFileUrl(file.id)} download={file.name}>
-                Tải file
-              </a>
+        <div className="stack min-w-0">
+          {quiz && <QuizAnswers url={`${base}/${encodeURIComponent(row.studentId)}/quiz`} />}
+          <section className="panel flush">
+            <div className="panel-title">
+              <h2>
+                <i className="title-icon blue">
+                  <Icon name="file" size={12} />
+                </i>
+                Bài làm
+              </h2>
+              {file && (
+                <a className="file-link" href={submissionFileUrl(file.id)} download={file.name}>
+                  Tải file
+                </a>
+              )}
+            </div>
+            {row.files.length > 1 && (
+              <div
+                className="flex gap-1.5 overflow-x-auto border-t border-line px-4 py-2"
+                role="tablist"
+                aria-label="File bài làm"
+              >
+                {row.files.map((item, index) => (
+                  <button
+                    key={item.id}
+                    role="tab"
+                    aria-selected={index === fileIndex}
+                    className={`flex h-7.5 shrink-0 items-center gap-1.5 rounded-sm border px-2.5 text-[13px] ${
+                      index === fileIndex
+                        ? 'border-primary-600 bg-primary-50 font-semibold text-primary-600'
+                        : 'border-line text-ink-muted hover:bg-surface-muted'
+                    }`}
+                    onClick={() => setFileIndex(index)}
+                  >
+                    <Icon name={fileIcon(item.contentType)} size={12} />
+                    {item.name}
+                  </button>
+                ))}
+              </div>
             )}
-          </div>
-          {row.files.length > 1 && (
-            <div
-              className="flex gap-1.5 overflow-x-auto border-t border-line px-4 py-2"
-              role="tablist"
-              aria-label="File bài làm"
-            >
-              {row.files.map((item, index) => (
-                <button
-                  key={item.id}
-                  role="tab"
-                  aria-selected={index === fileIndex}
-                  className={`flex h-7.5 shrink-0 items-center gap-1.5 rounded-sm border px-2.5 text-[13px] ${
-                    index === fileIndex
-                      ? 'border-primary-600 bg-primary-50 font-semibold text-primary-600'
-                      : 'border-line text-ink-muted hover:bg-surface-muted'
-                  }`}
-                  onClick={() => setFileIndex(index)}
-                >
-                  <Icon name={fileIcon(item.contentType)} size={12} />
-                  {item.name}
-                </button>
-              ))}
-            </div>
-          )}
-          {!file ? (
-            <p className="empty-cell">Sinh viên không nộp file nào.</p>
-          ) : file.contentType === PDF ? (
-            <PdfViewer
-              key={file.id}
-              url={submissionFileUrl(file.id)}
-              title={`Bài làm: ${file.name}`}
-            />
-          ) : (
-            <div className="flex flex-col items-center gap-2 border-t border-line px-5 py-12 text-center">
-              <Icon name={fileIcon(file.contentType)} size={36} className="file-icon" />
-              <p>
-                <b>{file.name}</b> · {formatSize(file.size)}
-              </p>
-              <p className="admin-hint">
-                File {file.name.split('.').pop()?.toUpperCase()} không xem trực tiếp được.
-              </p>
-              <a className="button" href={submissionFileUrl(file.id)} download={file.name}>
-                <Icon name="upload" size={12} />
-                Tải về để xem
-              </a>
-            </div>
-          )}
-        </section>
+            {!file ? (
+              <p className="empty-cell">Sinh viên không nộp file nào.</p>
+            ) : file.contentType === PDF ? (
+              <PdfViewer
+                key={file.id}
+                url={submissionFileUrl(file.id)}
+                title={`Bài làm: ${file.name}`}
+              />
+            ) : (
+              <div className="flex flex-col items-center gap-2 border-t border-line px-5 py-12 text-center">
+                <Icon name={fileIcon(file.contentType)} size={36} className="file-icon" />
+                <p>
+                  <b>{file.name}</b> · {formatSize(file.size)}
+                </p>
+                <p className="admin-hint">
+                  File {file.name.split('.').pop()?.toUpperCase()} không xem trực tiếp được.
+                </p>
+                <a className="button" href={submissionFileUrl(file.id)} download={file.name}>
+                  <Icon name="upload" size={12} />
+                  Tải về để xem
+                </a>
+              </div>
+            )}
+          </section>
+        </div>
       )}
       <aside className="panel">
         <div className={GRADER_NAV}>
@@ -503,10 +564,43 @@ function Grader({
               : row.grade.autoScore !== null
                 ? `Máy chấm lúc ${formatDateTime(row.grade.gradedAt)}.`
                 : `Đã chấm ${formatDateTime(row.grade.gradedAt)}.`}
-            {row.grade.autoScore !== null &&
+            {!mixed &&
+              row.grade.autoScore !== null &&
               row.grade.autoScore !== row.grade.score &&
               ` Điểm máy chấm: ${formatScore(row.grade.autoScore)}.`}
           </p>
+        )}
+        {mixed && (
+          <div className="mt-3.5 rounded-sm border border-line bg-surface-muted px-3.5 py-2.5 text-sm">
+            <p>
+              Máy chấm (
+              {[
+                assessment.quizWeight !== null ? 'trắc nghiệm' : null,
+                assessment.codeWeight !== null ? 'lập trình' : null,
+              ]
+                .filter(Boolean)
+                .join(' + ')}
+              ): <b>{row.autoScore === null ? 'chưa có' : formatScore(row.autoScore)}</b> /{' '}
+              {formatScore((assessment.quizWeight ?? 0) + (assessment.codeWeight ?? 0))}
+            </p>
+            {assessment.fileWeight !== null && (
+              <p>
+                Phần nộp file:{' '}
+                <b>
+                  {row.grade?.manualScore == null
+                    ? 'chưa chấm'
+                    : formatScore(row.grade.manualScore)}
+                </b>{' '}
+                / {formatScore(assessment.fileWeight)}
+              </p>
+            )}
+            {assessment.codeWeight !== null && (
+              <p className="admin-hint">
+                Bài làm lập trình xem ở bảng Phần lập trình bên dưới danh sách; điểm phần này tính
+                lại khi máy chấm xong lần nộp.
+              </p>
+            )}
+          </div>
         )}
         {!canGrade ? (
           <div className="mt-3.5 rounded-sm border border-line bg-surface-muted px-4 py-3.5">
@@ -531,18 +625,25 @@ function Grader({
               </p>
             )}
             <label className="form-field">
-              Điểm (thang {MAX_SCORE})
+              {mixed
+                ? `Điểm phần nộp file (tối đa ${formatScore(maxScore)})`
+                : `Điểm (thang ${MAX_SCORE})`}
               <span className="flex items-center gap-2 font-normal text-ink-muted">
                 <input
                   className="input h-10 w-27.5 text-lg font-bold tabular-nums"
                   inputMode="decimal"
                   value={score}
                   onChange={(event) => setScore(event.target.value)}
-                  placeholder="Ví dụ 8,5"
+                  placeholder={mixed ? '' : 'Ví dụ 8,5'}
                   autoFocus
                 />
-                <span>/ {MAX_SCORE}</span>
+                <span>/ {formatScore(maxScore)}</span>
               </span>
+              {mixed && (
+                <small className="font-normal text-ink-muted">
+                  Điểm bài = điểm máy chấm + điểm phần này.
+                </small>
+              )}
             </label>
             <label className="form-field">
               <span>

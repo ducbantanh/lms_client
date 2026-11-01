@@ -96,7 +96,7 @@ export async function apiRequest<T>(
   if (signal?.aborted) abort();
   signal?.addEventListener('abort', abort, { once: true });
   const isForm = body instanceof FormData;
-  const timer = setTimeout(abort, isForm ? 300_000 : 15_000);
+  const timer = setTimeout(abort, isForm ? 300_000 : 120_000);
   try {
     const response = await fetch(API_BASE + path, {
       method,

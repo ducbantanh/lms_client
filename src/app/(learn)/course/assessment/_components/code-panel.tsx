@@ -39,11 +39,17 @@ export function CodePanel({
   assessment,
   back,
   onSubmitted,
+  embedded = false,
 }: {
   assessment: Assessment;
   back: string;
   /** Lần nộp đầu: trang cha tải lại để nhãn trạng thái bài làm khớp. */
   onSubmitted: () => void;
+  /**
+   * Phần lập trình của bài tổng hợp (MixedPanel): đồng hồ và nút nộp cả bài ở thanh trên; link giữ tab Lập trình
+   * (&part=code). Server chỉ nhận chạy/nộp khi sinh viên đang làm bài (state.open).
+   */
+  embedded?: boolean;
 }) {
   const problemId = useSearchParams().get('p');
   const base = `/student/assessments/${encodeURIComponent(assessment.id)}/code`;
@@ -84,8 +90,12 @@ export function CodePanel({
     return () => clearTimeout(timer);
   }, [pending, problemId, state, load]);
 
-  // Hết giờ thì tải lại: server không nhận chạy/nộp nữa
-  const left = useRemaining(state?.open ? assessment.closesAt : null, offset, () => void load());
+  // Hết giờ thì tải lại: server không nhận chạy/nộp nữa (bài tổng hợp: thanh trên đếm giờ và tải lại cả trang)
+  const left = useRemaining(
+    state?.open && !embedded ? assessment.closesAt : null,
+    offset,
+    () => void load(),
+  );
 
   if (error)
     return (
@@ -104,7 +114,7 @@ export function CodePanel({
       </section>
     );
 
-  const listHref = `/course/assessment/?id=${encodeURIComponent(assessment.id)}`;
+  const listHref = `/course/assessment/?id=${encodeURIComponent(assessment.id)}${embedded ? '&part=code' : ''}`;
   const timer = state.open && left !== null && (
     <p className={`time-left${left < 5 * 60_000 ? ' urgent' : ''}`} role="timer">
       <Icon name="clock" size={13} />
@@ -123,6 +133,13 @@ export function CodePanel({
         summary={current}
         listHref={listHref}
         timer={timer}
+        lockedNote={
+          embedded
+            ? 'Bài đã nộp hoặc đã hết giờ, không chạy thử hay nộp thêm được.'
+            : assessment.status === 'closed'
+              ? 'Bài đã đóng, không chạy thử hay nộp thêm được.'
+              : 'Bài chưa mở.'
+        }
         onChanged={() => {
           if (!state.problems.some((problem) => problem.attemptsUsed > 0)) onSubmitted();
           void load();
@@ -189,7 +206,7 @@ export function CodePanel({
         Câu xanh: đã có lần nộp đúng hết các test. Câu đỏ: đã nộp nhưng chưa đúng hết. Câu vàng:
         đang chấm. Bấm vào một câu để xem đề và làm bài.
       </p>
-      {!state.open && (
+      {!state.open && !embedded && (
         <Link href={back} className="button">
           Về danh sách {ASSESSMENT_GROUPS[assessment.type].noun}
         </Link>
@@ -206,6 +223,7 @@ function ProblemView({
   summary,
   listHref,
   timer,
+  lockedNote,
   onChanged,
 }: {
   assessment: Assessment;
@@ -214,6 +232,8 @@ function ProblemView({
   summary: ProblemSummary;
   listHref: string;
   timer: React.ReactNode;
+  /** Thông báo khi không chạy / nộp được nữa. */
+  lockedNote: string;
   /** Vừa nộp / chấm xong: trang cha tải lại danh sách câu. */
   onChanged: () => void;
 }) {
@@ -542,11 +562,7 @@ function ProblemView({
               </span>
             </div>
           ) : (
-            <p className="submission-note locked">
-              {assessment.status === 'closed'
-                ? 'Bài đã đóng, không chạy thử hay nộp thêm được.'
-                : 'Bài chưa mở.'}
-            </p>
+            <p className="submission-note locked">{lockedNote}</p>
           )}
 
           {data.attempts.length > 0 && (
