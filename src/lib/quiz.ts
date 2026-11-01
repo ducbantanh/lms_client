@@ -1,5 +1,5 @@
 import type { Difficulty } from './question-bank.ts';
-import type { AssessmentType } from './teaching.ts';
+import type { AssessmentType, MixedPartKey } from './teaching.ts';
 
 /** Kiểu dữ liệu khớp QuizViews của Spring (lms.quiz); mọi id là public_id. */
 
@@ -144,12 +144,13 @@ export function pickRandom<T extends { difficulty: Difficulty }>(
  * Hình thức bài tạo ở trang Tạo bài thi: trắc nghiệm từ ngân hàng, tải đề PDF lên để sinh viên nộp file,
  * hoặc bài lập trình chấm tự động bằng bộ test (lib/code.ts).
  */
-export type ExamMode = 'quiz' | 'file' | 'code';
+export type ExamMode = 'quiz' | 'file' | 'code' | 'mixed';
 
 export const EXAM_MODES: { value: ExamMode; label: string }[] = [
   { value: 'quiz', label: 'Trắc nghiệm từ ngân hàng' },
   { value: 'file', label: 'Tải đề lên, sinh viên nộp file' },
   { value: 'code', label: 'Lập trình, chấm tự động' },
+  { value: 'mixed', label: 'Tổng hợp nhiều phần' },
 ];
 
 /** Giống QuizViews.CreateQuizRequest (type 1..2): bài trắc nghiệm chỉ là bài thực hành hoặc bài kiểm tra. */
@@ -172,6 +173,8 @@ export interface ExamForm {
   hasPaper: boolean;
   /** Khớp Assessment.SCORE_*: 1 = công bố điểm sau giờ đóng bài (cần giờ đóng), 2 = không công bố. */
   scoreRelease: 0 | 1 | 2;
+  /** Hình thức tổng hợp: các phần đang bật (điểm tối đa kiểm tra riêng bằng mixedWeightsProblem). */
+  parts?: MixedPartKey[];
 }
 
 /** Kiểm tra form tạo bài thi trước khi gửi (server kiểm tra lại); null = hợp lệ. */
@@ -190,11 +193,17 @@ export function examProblem(form: ExamForm): string | null {
   // Giống CourseContentService: bài kiểm tra nộp file bắt buộc có đề PDF
   if (form.mode === 'file')
     return form.type === 2 && !form.hasPaper ? 'Bài kiểm tra cần có file đề (PDF).' : null;
+  const parts = form.parts ?? [];
+  // Giống MixedService: bài tập không có phần trắc nghiệm
+  if (form.mode === 'mixed' && form.type === 0 && parts.includes('quiz'))
+    return 'Bài tập không có phần trắc nghiệm.';
   if (form.timeLimit.trim()) {
     const minutes = Number(form.timeLimit);
     if (!Number.isInteger(minutes) || minutes < 1 || minutes > MAX_TIME_LIMIT)
       return `Thời gian làm bài là số phút nguyên từ 1 đến ${MAX_TIME_LIMIT}.`;
   }
+  // Bài tổng hợp không có phần trắc nghiệm thì không cần câu hỏi
+  if (form.mode === 'mixed' && !parts.includes('quiz')) return null;
   if (!form.questionCount) return 'Chọn ít nhất một câu hỏi cho đề.';
   if (form.questionCount > MAX_QUIZ_QUESTIONS) return `Mỗi đề tối đa ${MAX_QUIZ_QUESTIONS} câu.`;
   return null;

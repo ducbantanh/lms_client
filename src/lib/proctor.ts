@@ -161,11 +161,13 @@ export const MAX_VIOLATION_LIMIT = 100;
 
 /**
  * Trang làm bài vào chế độ thi khi bài có giám sát đang mở và sinh viên chưa kết thúc: chưa nộp (trắc nghiệm,
- * nộp file), hoặc chưa bấm kết thúc (lập trình, nộp nhiều lần được).
+ * nộp file), hoặc chưa bấm kết thúc (lập trình, nộp nhiều lần được). Bài tổng hợp: chưa nộp cả bài (kể cả trước
+ * khi bấm "Bắt đầu", như bài trắc nghiệm).
  */
 export function inExamMode(data: StudentAssessment): boolean {
   const { proctor, assessment, submission } = data;
   if (!proctor || assessment.status !== 'open' || proctor.status === 'finished') return false;
+  if (assessment.answerMode === 3) return submission.status === 'in_progress';
   return assessment.answerMode === 2 || submission.editable;
 }
 

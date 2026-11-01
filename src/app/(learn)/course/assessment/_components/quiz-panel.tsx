@@ -46,11 +46,17 @@ export function QuizPanel({
   assessment,
   back,
   onPhaseChange,
+  embedded = false,
 }: {
   assessment: Assessment;
   back: string;
   /** Bắt đầu / nộp xong: trang cha tải lại để nhãn trạng thái bài làm khớp. */
   onPhaseChange: () => void;
+  /**
+   * Phần trắc nghiệm của bài tổng hợp (MixedPanel): bắt đầu, đồng hồ và nút nộp là của cả bài; ở đây chỉ trả lời
+   * câu hỏi, sau khi nộp thì hiện kết quả phần và đáp án (nếu được xem).
+   */
+  embedded?: boolean;
 }) {
   const base = `/student/assessments/${encodeURIComponent(assessment.id)}/quiz`;
   const [state, setState] = useState<QuizState | null>(null);
@@ -104,7 +110,13 @@ export function QuizPanel({
       </section>
     );
   if (state.phase === 'not_started')
-    return <QuizIntro assessment={assessment} state={state} base={base} onStarted={receive} />;
+    return embedded ? (
+      <section className="panel">
+        <p className="empty-cell">Bấm &quot;Bắt đầu làm bài&quot; để xem câu hỏi.</p>
+      </section>
+    ) : (
+      <QuizIntro assessment={assessment} state={state} base={base} onStarted={receive} />
+    );
   if (state.phase === 'in_progress')
     return (
       <QuizRunner
@@ -114,9 +126,31 @@ export function QuizPanel({
         base={base}
         onFinished={receive}
         reload={() => void load()}
+        embedded={embedded}
       />
     );
+  if (embedded) return <QuizPartResult state={state} />;
   return <QuizResultView assessment={assessment} state={state} back={back} />;
+}
+
+/** Bài tổng hợp đã nộp: số câu đúng, điểm phần trắc nghiệm và đáp án (nếu được xem). */
+function QuizPartResult({ state }: { state: QuizState }) {
+  return (
+    <div className="stack">
+      <section className="panel">
+        {state.result ? (
+          <p className="text-sm">
+            Đúng <b>{state.result.correct}</b>/{state.result.total} câu ={' '}
+            <b>{formatScore(state.result.score)}</b> điểm phần trắc nghiệm.
+          </p>
+        ) : (
+          <p className="admin-hint">Điểm phần trắc nghiệm chưa được công bố.</p>
+        )}
+        {!state.revealed && <p className="admin-hint">Giảng viên chưa công bố đáp án.</p>}
+      </section>
+      {state.revealed && <QuizReviewList questions={state.questions} />}
+    </div>
+  );
 }
 
 function QuizIntro({
@@ -213,12 +247,15 @@ function QuizRunner({
   base,
   onFinished,
   reload,
+  embedded,
 }: {
   state: QuizState;
   offset: number;
   base: string;
   onFinished: (state: QuizState) => void;
   reload: () => void;
+  /** Phần của bài tổng hợp: không có đồng hồ và nút nộp riêng. */
+  embedded: boolean;
 }) {
   const [questions, setQuestions] = useState<QuizQuestionView[]>(state.questions);
   const [saving, setSaving] = useState<Record<string, SaveState>>({});
@@ -349,7 +386,7 @@ function QuizRunner({
         ))}
       </ol>
       <aside className="panel sticky top-18 max-lg:static max-lg:-order-1">
-        {left !== null && (
+        {left !== null && !embedded && (
           <p className={`time-left${left < 5 * 60_000 ? ' urgent' : ''}`} role="timer">
             <Icon name="clock" size={13} />
             Còn lại <b>{formatDuration(left)}</b>
@@ -378,14 +415,23 @@ function QuizRunner({
           ))}
         </nav>
         <FlashMessage flash={flash} onDone={clearFlash} />
-        <button className="button primary full-width" disabled={pending} onClick={submit}>
-          {pending ? 'Đang lưu…' : 'Nộp bài'}
-        </button>
-        <p className="admin-hint mt-2.5">
-          Bắt đầu lúc {state.startedAt ? formatDateTime(state.startedAt) : ''}
-          {state.deadline && ` · hạn ${formatDateTime(state.deadline)}`}. Hết giờ bài được nộp tự
-          động.
-        </p>
+        {embedded ? (
+          <p className="admin-hint">
+            {pending ? 'Đang lưu…' : 'Đáp án được lưu ngay mỗi lần chọn.'} Nộp bài ở thanh trên cùng
+            khi làm xong mọi phần.
+          </p>
+        ) : (
+          <>
+            <button className="button primary full-width" disabled={pending} onClick={submit}>
+              {pending ? 'Đang lưu…' : 'Nộp bài'}
+            </button>
+            <p className="admin-hint mt-2.5">
+              Bắt đầu lúc {state.startedAt ? formatDateTime(state.startedAt) : ''}
+              {state.deadline && ` · hạn ${formatDateTime(state.deadline)}`}. Hết giờ bài được nộp
+              tự động.
+            </p>
+          </>
+        )}
       </aside>
       {confirm && <ConfirmDialog request={confirm} onClose={() => setConfirm(null)} />}
     </div>
