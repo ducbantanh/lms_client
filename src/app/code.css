@@ -289,12 +289,12 @@
 .code-problem-row.pending,
 .code-cell-button.pending,
 .code-status-chip.pending {
-  @apply border-amber-300 bg-amber-50;
+  @apply border-amber-300/80 bg-amber-100;
 }
 .code-problem-row.pending .code-problem-result,
 .code-cell-button.pending,
 .code-status-chip.pending {
-  @apply text-amber-700;
+  @apply text-amber-950 font-semibold;
 }
 .code-problem-row.submitted,
 .code-cell-button.submitted,
@@ -430,10 +430,10 @@
   @apply mt-2.5 text-[13px] text-emerald-700;
 }
 .code-import-report.warn {
-  @apply mt-0 mx-0 mb-3 text-amber-700;
+  @apply mt-0 mx-0 mb-3 text-amber-950 font-medium;
 }
 .code-import-report ul {
-  @apply mt-1.5 mx-0 mb-0 pl-4.5 text-amber-700;
+  @apply mt-1.5 mx-0 mb-0 pl-4.5 text-amber-950;
 }
 .code-problem-list {
   @apply flex flex-col gap-2.5 m-0 p-0 list-none;

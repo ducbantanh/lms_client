@@ -25,7 +25,7 @@ export function Modal({
   return (
     <dialog
       ref={dialogRef}
-      className={`m-auto max-h-[calc(100dvh-32px)] overflow-y-auto rounded-lg border border-line-strong bg-white p-0 text-ink shadow-float ${
+      className={`m-auto max-h-[calc(100dvh-32px)] overflow-y-auto rounded-lg border border-line-strong bg-surface p-0 text-ink shadow-float ${
         wide ? 'w-[min(720px,calc(100%-32px))]' : 'w-[min(460px,calc(100%-32px))]'
       } max-w-none`}
       aria-labelledby="dialog-title"
@@ -34,7 +34,7 @@ export function Modal({
         if (event.target === event.currentTarget) onClose();
       }}
     >
-      <div className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-line bg-white px-5 py-3.5">
+      <div className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-line bg-surface px-5 py-3.5">
         <h2 id="dialog-title" className="text-[17px] font-semibold text-ink">
           {title}
         </h2>

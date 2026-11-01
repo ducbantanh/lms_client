@@ -5,11 +5,11 @@ import { Icon, type IconName } from '@/components/ui/icon';
 import { CountUp } from '@/components/ui/charts';
 
 const TONES = {
-  blue: 'bg-primary-50 text-primary-600 ring-1 ring-primary-200/80 dark:bg-primary-950/60 dark:text-primary-300 dark:ring-primary-800/80',
-  green: 'bg-emerald-50 text-emerald-600 ring-1 ring-emerald-200/80 dark:bg-emerald-950/60 dark:text-emerald-300 dark:ring-emerald-800/80',
-  violet: 'bg-violet-50 text-violet-600 ring-1 ring-violet-200/80 dark:bg-violet-950/60 dark:text-violet-300 dark:ring-violet-800/80',
-  red: 'bg-rose-50 text-rose-600 ring-1 ring-rose-200/80 dark:bg-rose-950/60 dark:text-rose-300 dark:ring-rose-800/80',
-  amber: 'bg-amber-50 text-amber-600 ring-1 ring-amber-200/80 dark:bg-amber-950/60 dark:text-amber-300 dark:ring-amber-800/80',
+  blue: 'bg-primary-50 text-primary-700 ring-1 ring-primary-200/80 dark:bg-primary-950/60 dark:text-primary-300 dark:ring-primary-800/80',
+  green: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200/80 dark:bg-emerald-950/60 dark:text-emerald-300 dark:ring-emerald-800/80',
+  violet: 'bg-violet-50 text-violet-700 ring-1 ring-violet-200/80 dark:bg-violet-950/60 dark:text-violet-300 dark:ring-violet-800/80',
+  red: 'bg-rose-50 text-rose-700 ring-1 ring-rose-200/80 dark:bg-rose-950/60 dark:text-rose-300 dark:ring-rose-800/80',
+  amber: 'bg-amber-100 text-amber-900 ring-1 ring-amber-300/80 dark:bg-amber-950/60 dark:text-amber-300 dark:ring-amber-800/80',
 } as const;
 
 /** Thẻ số liệu: nhãn, giá trị đếm tăng dần, icon màu ở góc; `href` thêm link "Xem tất cả". */

@@ -157,7 +157,7 @@ textarea.input {
   @apply flex flex-col gap-1.5 rounded-sm border border-dashed border-line-strong bg-surface-muted p-2.5 font-normal;
 
   & .file-input {
-    @apply bg-white;
+    @apply bg-surface;
   }
   &.is-over::after {
     @apply -inset-0.5 rounded-sm;
@@ -404,12 +404,12 @@ textarea.input {
 }
 /* Điểm chưa công bố (công bố sau giờ đóng bài) */
 .score-pending {
-  @apply my-2.5 flex items-center gap-2 rounded-sm bg-amber-50 px-3 py-2.5 text-sm text-amber-700;
+  @apply my-2.5 flex items-center gap-2 rounded-sm border border-amber-300/80 bg-amber-100 px-3 py-2.5 text-sm font-medium text-amber-950;
 }
 
 /* ---------- Thông báo trong trang ---------- */
 .notice {
-  @apply mb-4 rounded-sm border border-amber-200 bg-amber-50 px-3.5 py-2.5 text-sm text-amber-800;
+  @apply mb-4 rounded-sm border border-amber-300/80 bg-amber-100/80 px-3.5 py-2.5 text-sm font-medium text-amber-950;
 }
 .form-error {
   @apply mb-4 rounded-sm border border-rose-200 bg-rose-50 px-3 py-2.5 text-sm text-rose-700;
@@ -447,13 +447,22 @@ textarea.input {
   @apply mb-4 inline-flex items-center gap-2 text-sm text-ink-muted transition-colors hover:text-primary-600;
 }
 .panel {
-  @apply rounded-card border border-line bg-surface p-5 shadow-card max-md:p-4;
+  border-radius: var(--radius-card, 16px);
+  border: 1px solid var(--color-line, #e2e8f0);
+  background-color: var(--color-surface, #ffffff);
+  box-shadow: var(--shadow-card);
+  padding: 1.25rem;
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
 
   &.flush {
-    @apply overflow-hidden p-0;
+    overflow: hidden;
+    padding: 0;
   }
   & > .toolbar {
-    @apply mb-3;
+    margin-bottom: 0.75rem;
   }
 }
 .panel-title {
@@ -525,24 +534,24 @@ textarea.input {
   background: var(--tone-soft);
 }
 .green {
-  --tone: var(--color-emerald-600);
+  --tone: var(--color-emerald-700);
   --tone-soft: var(--color-emerald-50);
 }
 .blue {
-  --tone: var(--color-primary-600);
+  --tone: var(--color-primary-700);
   --tone-soft: var(--color-primary-50);
 }
 .violet {
-  --tone: var(--color-violet-600);
+  --tone: var(--color-violet-700);
   --tone-soft: var(--color-violet-50);
 }
 .red {
-  --tone: var(--color-rose-600);
+  --tone: var(--color-rose-700);
   --tone-soft: var(--color-rose-50);
 }
 .orange {
-  --tone: var(--color-amber-600);
-  --tone-soft: var(--color-amber-50);
+  --tone: var(--color-amber-800);
+  --tone-soft: var(--color-amber-100);
 }
 
 /* Màu bìa theo mã môn (lib/course-utils coverFor): lớp cover-* đặt biến --cover và gradient cho thẻ */
@@ -663,7 +672,7 @@ textarea.input {
     @apply h-[30px] flex-1 rounded-[2px] text-[13px] font-semibold text-ink-muted transition-colors hover:text-ink;
   }
   & button.selected {
-    @apply bg-white text-ink shadow-[0_1px_2px_rgb(16_24_40/0.08)];
+    @apply bg-surface text-ink shadow-[0_1px_2px_rgb(16_24_40/0.08)];
   }
   &.compact {
     @apply m-0;
@@ -777,22 +786,22 @@ textarea.input {
 
 /* ---------- Nhãn ---------- */
 .badge {
-  @apply mr-1.5 inline-block rounded-sm px-2 py-px text-xs font-semibold whitespace-nowrap;
+  @apply mr-1.5 inline-block rounded-sm px-2 py-px text-xs font-bold whitespace-nowrap;
 
   &.ok {
-    @apply bg-emerald-50 text-emerald-700;
+    @apply border border-emerald-300/80 bg-emerald-50 text-emerald-800;
   }
   &.locked {
-    @apply bg-rose-50 text-rose-700;
+    @apply border border-rose-300/80 bg-rose-50 text-rose-800;
   }
   &.warn {
-    @apply bg-amber-50 text-amber-700;
+    @apply border border-amber-300/80 bg-amber-100 text-amber-950;
   }
   &.muted {
     @apply ml-2 bg-surface-muted text-ink-muted ring-1 ring-line ring-inset;
   }
   &.muted-solid {
-    @apply bg-primary-50 text-primary-700;
+    @apply border border-primary-200/80 bg-primary-50 text-primary-800;
   }
 }
 

@@ -10,9 +10,9 @@ import { Icon } from '@/components/ui/icon';
 import { Modal } from '@/components/ui/modal';
 
 const CONNECTION_TONES = {
-  online: 'bg-emerald-50 text-emerald-700',
-  connecting: 'bg-amber-50 text-amber-700',
-  offline: 'bg-red-50 text-red-600',
+  online: 'bg-emerald-50 text-emerald-800 border-emerald-300/80 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/80',
+  connecting: 'bg-amber-100 text-amber-950 border-amber-300/80 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800/80',
+  offline: 'bg-rose-50 text-rose-800 border-rose-300/80 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800/80',
 } as const;
 
 /** Trạng thái WebSocket. Mặc định chỉ hiện khi có sự cố; `always` dùng ở trang cần dữ liệu realtime. */

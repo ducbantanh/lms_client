@@ -12,6 +12,8 @@
 @layer theme, base, ui, features, components, utilities;
 @import 'tailwindcss/theme.css' layer(theme);
 @import 'tailwindcss/utilities.css' layer(utilities);
+
+@custom-variant dark (&:where(.dark, .dark *));
 @import './base.css' layer(base);
 @import './ui.css' layer(ui);
 @import './code.css' layer(features);
@@ -207,7 +209,8 @@
   html.dark .bg-emerald-50 {
     background-color: rgba(6, 78, 59, 0.4) !important;
   }
-  html.dark .bg-amber-50 {
+  html.dark .bg-amber-50,
+  html.dark .bg-amber-100 {
     background-color: rgba(120, 53, 15, 0.4) !important;
   }
   html.dark .bg-rose-50,
@@ -253,7 +256,8 @@
   }
   html.dark .text-amber-700,
   html.dark .text-amber-800,
-  html.dark .text-amber-900 {
+  html.dark .text-amber-900,
+  html.dark .text-amber-950 {
     color: #fbbf24 !important;
   }
   html.dark .text-amber-600 {
@@ -269,6 +273,14 @@
   html.dark .text-violet-600,
   html.dark .text-violet-700 {
     color: #c084fc !important;
+  }
+
+
+  /* Segmented controls (chọn hình thức làm bài, kiểu câu hỏi, lọc trạng thái...) trong dark mode */
+  html.dark .segmented button.selected {
+    background-color: #334155 !important;
+    color: #ffffff !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) !important;
   }
 
   /* Soft tone icons */

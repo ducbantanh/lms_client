@@ -33,7 +33,7 @@ export function UnreadBanner() {
 
   return (
     <section
-      className="mb-5 overflow-hidden rounded-lg border border-l-3 border-line border-l-primary-600 bg-white shadow-card"
+      className="mb-5 overflow-hidden rounded-lg border border-l-3 border-line border-l-primary-600 bg-surface shadow-card"
       aria-labelledby="unread-banner-title"
     >
       <div className="flex items-center gap-2.5 py-2.5 pr-2.5 pl-3.5">

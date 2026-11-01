@@ -1,21 +1,58 @@
-﻿# LMS Client — Next.js
+# LMS Client — Next.js
 
-Frontend chính nằm ngay tại thư mục `lms_client`, không cần vào project con.
+> 🌐 **Live Demo (Production):** [https://lms-server-wmqp.onrender.com](https://lms-server-wmqp.onrender.com)
+
+Frontend chính nằm ngay tại thư mục `lms-client`, không cần vào project con.
 Dùng Next.js App Router, TypeScript, Font Awesome 5 và font local. Các biến quan trọng, hook và hàm có chú thích tiếng Việt.
 
-## Chạy giao diện
+## Hướng dẫn cài đặt và chạy
 
-Cần Node.js 22.13+:
+### 1. Yêu cầu môi trường
+- **Node.js**: phiên bản `>= 22.13.0`
+- **Backend LMS Server**: Đã khởi động trên `http://127.0.0.1:8080` (Spring Boot + MySQL). Xem hướng dẫn chạy server tại repository `lms-server`.
 
+### 2. Cài đặt thư viện
 ```powershell
-cd "D:\STUDY\SCHOOL\Lap Trinh Mang\lms_client"
-npm ci
+cd lms-client
+npm install
+```
+*(Lưu ý: Quá trình cài đặt sẽ tự động chạy script `postinstall` để sao chép thư viện PDF worker vào `public/vendor/pdfjs/`).*
+
+### 3. Khởi chạy ứng dụng
+
+Có 2 chế độ chạy tùy theo nhu cầu:
+
+#### Cách 1: Chế độ Phát triển (Development - Hot Reload)
+Dùng khi đang lập trình, sửa đổi giao diện hoặc logic:
+```powershell
 npm run dev
 ```
+- Mở trình duyệt tại: **http://127.0.0.1:3000** (hoặc **http://localhost:3000**).
+- Next.js tự động chuyển tiếp (proxy rewrite) các request `/api/v1/*` và WebSocket `/ws` sang backend Spring Boot tại `http://127.0.0.1:8080`.
 
-Mở **http://localhost:3000**. Client luôn kết nối server thật (không còn chế độ demo):
-mở trang sẽ gọi `/auth/me`, chưa đăng nhập thì chuyển sang `/login/`. `npm run dev` không
-proxy API nên chỉ dùng để sửa giao diện; muốn đăng nhập thật hãy dùng `npm run preview` (mục dưới).
+#### Cách 2: Chế độ Bản xuất tĩnh / Xem trước (Production Preview)
+Mô phỏng chính xác bản build tĩnh chạy trên môi trường thực tế (Render hoặc máy chủ LAN):
+```powershell
+npm run build
+npm run preview
+```
+- Mở trình duyệt tại: **http://localhost:3100**.
+- Gateway tích hợp sẵn trong `scripts/` sẽ phục vụ các tệp tĩnh từ thư mục `out/`, đồng thời proxy an toàn các request `/api/v1/*` và `/ws` tới backend (`http://127.0.0.1:8080`).
+
+*(Tùy chọn: Để đổi địa chỉ backend hoặc cho phép các máy khác trong LAN truy cập)*:
+```powershell
+$env:API_TARGET = 'http://127.0.0.1:8080'
+$env:HOST = '0.0.0.0'
+npm run preview
+```
+
+### 4. Tài khoản thử nghiệm mặc định (Profile Dev của Server)
+
+| Vai trò | Tài khoản | Mật khẩu | Chuyển hướng sau đăng nhập |
+|---|---|---|---|
+| **Quản trị viên (Admin)** | `admin` | `admin12345` | `/admin/` (Quản lý user, import sinh viên, audit log) |
+| **Giảng viên (Teacher)** | `teacher01` hoặc `teacher02` | `teacher12345` | `/teacher/` (Quản lý khóa học, ngân hàng đề, chấm bài) |
+| **Sinh viên (Student)** | `student01` | `student12345` | `/` (Học tập, làm bài tập/trắc nghiệm/code, xem điểm) |
 
 ## Cấu trúc thư mục
 
@@ -23,7 +60,7 @@ Theo quy ước của Next.js (App Router + thư mục `src/`): code ứng dụn
 `public/` và file cấu hình nằm ở thư mục gốc.
 
 ```text
-lms_client/
+lms-client/
 ├── src/
 │   ├── app/                       Chỉ chứa route (page, layout, not-found) và code riêng của route
 │   │   ├── layout.tsx             Root layout: session + CSS local (không có khung trang)
@@ -68,10 +105,7 @@ Quy ước đặt file:
   hoặc `src/lib/`. Import bằng alias `@/`, ví dụ `@/components/ui/icon`, `@/lib/api`.
 - `src/lib/` chỉ chứa TypeScript thuần nên test chạy trực tiếp bằng Node, không cần build.
 
-`node_modules/`, `.next/`, `out/`, `next-env.d.ts` và `*.tsbuildinfo` do công cụ tự sinh, đã bỏ qua
-trong Git. `.qa/`, `.browser-test/`, `.npm-cache/` là dữ liệu kiểm tra/cache local.
-Các tài liệu kế hoạch cũ trong `docs/` mô tả thời điểm trước khi sắp xếp lại thư mục; dùng cấu trúc
-trong README này để tra đường dẫn hiện tại.
+`node_modules/`, `.next/`, `out/`, `next-env.d.ts` và `*.tsbuildinfo` do công cụ tự sinh, đã bỏ qua trong Git. Thư mục `docs/` lưu trữ tài liệu thiết kế và ảnh chụp giao diện hệ thống.
 
 ## Đọc source từ đâu?
 
@@ -164,8 +198,7 @@ $env:HOST = '0.0.0.0'
 npm run preview
 ```
 
-Login thật cần gateway preview hoặc webserver proxy API/WebSocket cùng origin. Spring hiện trả
-danh sách khóa học rỗng; sau login, client hiển thị trạng thái rỗng.
+Khi chạy bản build tĩnh độc lập, gateway preview hoặc webserver cần proxy API/WebSocket về cùng origin để đảm bảo cookie phiên HttpOnly hoạt động chính xác.
 
 `postbuild` chuẩn hóa file RSC segment của Next.js trên Windows. Chỉ sửa đầu ra `out/`,
 không sửa `node_modules`. Tham khảo [upstream issue](https://github.com/vercel/next.js/issues/85374).
@@ -182,10 +215,12 @@ npm run build
 npm run format
 ```
 
-Đã có UI khóa học, bộ lọc, yêu thích, ẩn/hiện, grid/list, dashboard, chi tiết mẫu và login.
-Đã có trang quản trị cho Admin (role 0, đăng nhập vào thẳng `/admin/`): `/admin/` tổng quan và
-danh sách online realtime, `/admin/users/` quản lý tài khoản, `/admin/import/` import sinh viên.
-Nội dung khóa học/nộp bài/chấm điểm thật và portal teacher Next.js chưa triển khai.
-Đã kiểm tra trình duyệt với mock API cũ + gateway; chưa xác minh trực tiếp với MySQL/Spring thật.
+## Tổng quan các phân hệ giao diện
+
+Ứng dụng cung cấp giao diện tương thích responsive trên cả máy tính và thiết bị di động, bao gồm 3 phân hệ chính:
+
+- **Portal Sinh viên (`/`):** Không gian học tập cá nhân, danh sách khóa học với bộ lọc / yêu thích / tìm kiếm, xem bài giảng & tài liệu, làm bài tập nộp file, làm bài trắc nghiệm, viết code và chạy test trực tiếp trên trình duyệt, tham gia thi có giám sát toàn màn hình, điểm danh QR và theo dõi lịch học cá nhân.
+- **Portal Giảng viên (`/teacher/`):** Quản lý toàn diện các khóa học phụ trách, biên soạn giáo trình và tài liệu, quản lý ngân hàng câu hỏi theo môn học, thiết lập bài kiểm tra & bài thi giám sát, bảng giám thị trực tiếp realtime qua WebSocket, chấm điểm bài nộp và phản hồi nhận xét, điểm danh lớp học và duyệt đơn xin nghỉ.
+- **Portal Quản trị viên (`/admin/`):** Bảng tổng quan hệ thống và danh sách người dùng trực tuyến theo thời gian thực, quản lý tài khoản và phân quyền, import sinh viên hàng loạt từ danh sách/file văn bản, xếp thời khóa biểu và phòng học, cấu hình hệ thống và tra cứu nhật ký kiểm toán (Audit Logs).
 
 [Xem desktop](docs/preview-desktop.png) · [Xem mobile](docs/preview-mobile.png).

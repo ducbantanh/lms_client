@@ -223,7 +223,7 @@ export function SectionCard({
   ].filter(Boolean);
   return (
     <button
-      className={`group/card ${SECTION_CARD_FRAME} border border-line bg-white shadow-card transition-colors hover:border-primary-600`}
+      className={`group/card ${SECTION_CARD_FRAME} border border-line bg-surface shadow-card transition-colors hover:border-primary-600`}
       onClick={onOpen}
     >
       <span className="flex items-center gap-2.5">

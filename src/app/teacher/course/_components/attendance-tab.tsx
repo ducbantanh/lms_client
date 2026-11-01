@@ -551,7 +551,7 @@ function SessionView({
 /** Màu nút trạng thái đang chọn, theo tone của statusInfo. */
 const PICKED = {
   ok: 'bg-emerald-50 text-emerald-700',
-  warn: 'bg-amber-50 text-amber-700',
+  warn: 'bg-amber-100 text-amber-950 border border-amber-300/80 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800/80',
   muted: 'bg-surface-muted text-ink',
   locked: 'bg-red-50 text-red-600',
 };
@@ -583,7 +583,7 @@ function StatusPicker({
             className={`h-7 px-2.5 text-xs font-semibold whitespace-nowrap transition-colors disabled:cursor-wait disabled:opacity-60 max-md:px-[7px] ${
               current
                 ? PICKED[info.tone as keyof typeof PICKED]
-                : 'bg-white text-ink-muted hover:enabled:bg-surface-muted'
+                : 'bg-surface text-ink-muted hover:enabled:bg-surface-muted'
             }`}
             aria-pressed={current}
             disabled={busy}

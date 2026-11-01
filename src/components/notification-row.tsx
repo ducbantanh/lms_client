@@ -10,7 +10,7 @@ export const NOTIFICATION_LIST = 'm-0 list-none divide-y divide-line p-0';
 export function CategoryBadge({ category }: { category: NotificationCategory }) {
   const info = CATEGORY_INFO[category];
   return (
-    <span className={`badge m-0 bg-(--tone-soft) text-[11px] text-(--tone) ${info.tone}`}>
+    <span className={`badge m-0 bg-(--tone-soft) text-[11px] font-bold text-(--tone) border border-current/25 ${info.tone}`}>
       {info.label}
     </span>
   );

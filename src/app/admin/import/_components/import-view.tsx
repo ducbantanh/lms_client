@@ -165,7 +165,7 @@ export function ImportView() {
               aria-checked={role === value}
               className={`inline-flex h-8.5 items-center gap-2 rounded-[3px] px-4 text-[13px] font-semibold transition focus-visible:outline-primary-600/20 ${
                 role === value
-                  ? 'bg-white text-primary-600 shadow-[0_1px_2px_rgb(16_24_40/0.08),0_0_0_1px_var(--color-line)]'
+                  ? 'bg-surface text-primary-600 shadow-[0_1px_2px_rgb(16_24_40/0.08),0_0_0_1px_var(--color-line)] dark:bg-slate-700 dark:text-primary-300'
                   : 'text-ink-muted hover:text-ink'
               }`}
               title={ROLES[value].description}

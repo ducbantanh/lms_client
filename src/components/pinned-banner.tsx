@@ -21,16 +21,16 @@ export function PinnedBanner({
     <aside
       role="region"
       aria-label="Thông báo ghim của khóa học"
-      className="mb-5 overflow-hidden rounded-xl border border-amber-500/30 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent p-4 shadow-xs transition-all dark:border-amber-400/25 dark:from-amber-400/10"
+      className="mb-5 overflow-hidden rounded-xl border border-amber-300/80 bg-gradient-to-r from-amber-50/90 via-amber-50/40 to-transparent p-4 shadow-xs transition-all dark:border-amber-800/60 dark:from-amber-950/40 dark:via-amber-950/20"
     >
       <div className="flex items-start gap-3">
-        <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-amber-500/15 text-amber-600 dark:bg-amber-400/20 dark:text-amber-300">
+        <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-amber-200/90 bg-amber-100 text-amber-800 dark:border-amber-800/70 dark:bg-amber-950/70 dark:text-amber-300">
           <Icon name="pin" size={15} />
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1 rounded-md bg-amber-500/20 px-2 py-0.5 text-xs font-semibold tracking-wide text-amber-700 uppercase dark:bg-amber-400/25 dark:text-amber-200">
-              <Icon name="pin" size={10} />
+            <span className="inline-flex items-center gap-1 rounded-md border border-amber-300/90 bg-amber-100 px-2.5 py-0.5 text-xs font-bold tracking-wider text-amber-950 uppercase dark:border-amber-800/80 dark:bg-amber-950/70 dark:text-amber-200">
+              <Icon name="pin" size={11} className="text-amber-800 dark:text-amber-300" />
               Thông báo ghim
             </span>
             {announcement.teacherName && (

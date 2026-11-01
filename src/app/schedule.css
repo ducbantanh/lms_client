@@ -93,7 +93,7 @@
   @apply line-through;
 }
 .deadline-chip {
-  @apply inline-flex items-center gap-1 max-w-full py-px px-1.5 overflow-hidden rounded-sm bg-white border border-line text-[11px] font-semibold text-ink-muted text-ellipsis whitespace-nowrap;
+  @apply inline-flex items-center gap-1 max-w-full py-px px-1.5 overflow-hidden rounded-sm bg-surface border border-line text-[11px] font-semibold text-ink-muted text-ellipsis whitespace-nowrap;
 }
 .deadline-chip.closes {
   @apply text-red-600;

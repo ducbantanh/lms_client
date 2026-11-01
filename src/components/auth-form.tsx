@@ -147,7 +147,7 @@ export function AuthForm({ changePassword = false }: { changePassword?: boolean 
 
           {notice && (
             <div className="mb-5 flex items-center gap-2.5 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900" role="alert">
-              <Icon name="info" size={14} className="shrink-0 text-amber-600" />
+              <Icon name="info" size={14} className="shrink-0 text-amber-800 dark:text-amber-300" />
               <span>{notice}</span>
             </div>
           )}
