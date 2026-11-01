@@ -75,7 +75,7 @@ export interface Assessment {
   opensAt: string | null;
   closesAt: string | null;
   status: AssessmentStatus;
-  /** 0 nộp file, 1 trắc nghiệm, 2 lập trình chấm tự động (khớp Assessment.MODE_*). */
+  /** 0 nộp file, 1 trắc nghiệm, 2 lập trình chấm tự động, 3 tổng hợp (khớp Assessment.MODE_*). */
   answerMode: AnswerMode;
   /** Trắc nghiệm: số phút làm bài từ lúc bắt đầu; null = làm tới giờ đóng. */
   timeLimitMinutes: number | null;
@@ -85,6 +85,35 @@ export interface Assessment {
   scoreRelease: ScoreRelease;
   /** Bài kiểm tra có giám sát: sinh viên vào phòng thi mới xem được đề (lib/proctor.ts). */
   proctored: boolean;
+  /**
+   * Bài tổng hợp (answerMode 3): điểm tối đa từng phần, tổng 10; null = bài không có phần đó (null hết với bài
+   * khác). questionCount của bài tổng hợp là số câu trắc nghiệm.
+   */
+  quizWeight: number | null;
+  codeWeight: number | null;
+  fileWeight: number | null;
+}
+
+export type MixedPartKey = 'quiz' | 'code' | 'file';
+
+export const MIXED_PART_LABELS: Record<MixedPartKey, string> = {
+  quiz: 'Trắc nghiệm',
+  code: 'Lập trình',
+  file: 'Nộp file',
+};
+
+/** Các phần của bài tổng hợp theo thứ tự hiển thị, kèm điểm tối đa; rỗng với bài khác. */
+export function mixedParts(
+  assessment: Pick<Assessment, 'quizWeight' | 'codeWeight' | 'fileWeight'>,
+): { key: MixedPartKey; weight: number }[] {
+  const parts: { key: MixedPartKey; weight: number | null }[] = [
+    { key: 'quiz', weight: assessment.quizWeight },
+    { key: 'code', weight: assessment.codeWeight },
+    { key: 'file', weight: assessment.fileWeight },
+  ];
+  return parts.filter(
+    (part): part is { key: MixedPartKey; weight: number } => part.weight !== null,
+  );
 }
 
 export interface CourseContent {
@@ -118,7 +147,8 @@ export interface EnrollReport {
 
 export type CourseFormat = 0 | 1 | 2;
 export type AssessmentType = 0 | 1 | 2;
-export type AnswerMode = 0 | 1 | 2;
+/** 0 nộp file, 1 trắc nghiệm, 2 lập trình, 3 tổng hợp (lib/mixed.ts). */
+export type AnswerMode = 0 | 1 | 2 | 3;
 export type ScoreRelease = 0 | 1 | 2;
 
 export const SCORE_RELEASES: Record<ScoreRelease, string> = {
@@ -350,6 +380,11 @@ export interface Grade {
   gradedBy: string | null;
   /** Điểm máy chấm của bài trắc nghiệm (null với bài nộp file); khác score = giảng viên đã sửa điểm. */
   autoScore: number | null;
+  /**
+   * Bài tổng hợp: điểm phần nộp file giảng viên chấm (null với bài khác); score = autoScore (trắc nghiệm +
+   * lập trình) + manualScore.
+   */
+  manualScore: number | null;
 }
 
 export interface Submission {
@@ -374,6 +409,11 @@ export interface SubmissionRow {
   updatedAt: string | null;
   files: SubmissionFile[];
   grade: Grade | null;
+  /**
+   * Điểm máy chấm (bài trắc nghiệm, bài tổng hợp) kể cả khi chưa có điểm chính thức: bài tổng hợp chờ chấm phần
+   * nộp file; null nếu không có.
+   */
+  autoScore: number | null;
 }
 
 export interface AssessmentSubmissions {
@@ -453,8 +493,20 @@ export function isSubmittable(assessment: Pick<Assessment, 'type' | 'answerMode'
   return assessment.type === 2 || assessment.answerMode !== 0;
 }
 
-/** "Trắc nghiệm · 30 câu · 45 phút", "Lập trình · 3 câu"; null với bài nộp file. */
+/**
+ * "Trắc nghiệm · 30 câu · 45 phút", "Lập trình · 3 câu", "Tổng hợp: trắc nghiệm 4đ · lập trình 4đ · nộp file 2đ ·
+ * 90 phút"; null với bài nộp file.
+ */
 export function quizSummary(assessment: Assessment) {
+  if (assessment.answerMode === 3)
+    return [
+      `Tổng hợp: ${mixedParts(assessment)
+        .map((part) => `${MIXED_PART_LABELS[part.key].toLowerCase()} ${formatScore(part.weight)}đ`)
+        .join(' · ')}`,
+      assessment.timeLimitMinutes ? `${assessment.timeLimitMinutes} phút` : null,
+    ]
+      .filter(Boolean)
+      .join(' · ');
   if (assessment.answerMode === 2) return `Lập trình · ${assessment.questionCount} câu`;
   if (assessment.answerMode !== 1) return null;
   return [

@@ -38,13 +38,15 @@ import { DropZone } from '@/components/ui/drop-zone';
 import { Icon } from '@/components/ui/icon';
 import { CodePanel } from './code-panel';
 import { ExamEntry, ExamShell, useProctorRefresh } from './exam-gate';
+import { MixedPanel } from './mixed-panel';
 import { QuizPanel } from './quiz-panel';
 import { PdfViewer } from '@/components/pdf-viewer';
 import { inExamMode, type StudentProctor } from '@/lib/proctor';
 
 /**
  * Trang /course/assessment/?id=...: đếm ngược khi chưa mở; khi mở thì xem đề và nộp file bài làm,
- * làm bài trắc nghiệm (QuizPanel) hoặc bài lập trình (CodePanel). Bài kiểm tra có giám sát: vào phòng thi
+ * làm bài trắc nghiệm (QuizPanel), bài lập trình (CodePanel) hoặc bài tổng hợp gồm các phần đó (MixedPanel,
+ * ?part=quiz|code|file chọn phần đang làm). Bài kiểm tra có giám sát: vào phòng thi
  * (ExamEntry) rồi làm bài trong chế độ thi phủ kín màn hình (ExamShell).
  */
 export function AssessmentView() {
@@ -144,44 +146,56 @@ function AssessmentPage({
     else setData({ ...data, proctor: next });
   }
 
+  /** Đề PDF và khung bài làm của bài nộp file (embedded: phần nộp file của bài tổng hợp). */
+  const fileArea = (embedded: boolean) => (
+    <div className="columns items-start">
+      <section className="panel flush">
+        <div className="panel-title">
+          <h2>
+            <i className="title-icon red">
+              <Icon name="filePdf" size={12} />
+            </i>
+            Đề bài
+          </h2>
+          {assessment.paperFileId && !exam && (
+            <a href={fileUrl(assessment.paperFileId)} target="_blank" rel="noopener">
+              Mở trong tab mới
+            </a>
+          )}
+        </div>
+        {assessment.paperFileId ? (
+          <PdfViewer
+            url={fileUrl(assessment.paperFileId)}
+            title={`Đề bài: ${assessment.paperFileName ?? assessment.title}`}
+          />
+        ) : (
+          <p className="empty-cell">
+            {embedded
+              ? 'Phần này không có file đề; xem yêu cầu trong mô tả bài.'
+              : 'Bài này không có file đề.'}
+          </p>
+        )}
+      </section>
+      <SubmissionPanel
+        data={data}
+        offset={offset}
+        back={back}
+        reload={reload}
+        onChange={(next) => setData({ ...data, submission: next })}
+        embedded={embedded}
+      />
+    </div>
+  );
+
   const workArea =
-    assessment.answerMode === 1 ? (
+    assessment.answerMode === 3 ? (
+      <MixedPanel assessment={assessment} back={back} reload={reload} filePart={fileArea(true)} />
+    ) : assessment.answerMode === 1 ? (
       <QuizPanel assessment={assessment} back={back} onPhaseChange={reload} />
     ) : assessment.answerMode === 2 ? (
       <CodePanel assessment={assessment} back={back} onSubmitted={reload} />
     ) : (
-      <div className="columns items-start">
-        <section className="panel flush">
-          <div className="panel-title">
-            <h2>
-              <i className="title-icon red">
-                <Icon name="filePdf" size={12} />
-              </i>
-              Đề bài
-            </h2>
-            {assessment.paperFileId && !exam && (
-              <a href={fileUrl(assessment.paperFileId)} target="_blank" rel="noopener">
-                Mở trong tab mới
-              </a>
-            )}
-          </div>
-          {assessment.paperFileId ? (
-            <PdfViewer
-              url={fileUrl(assessment.paperFileId)}
-              title={`Đề bài: ${assessment.paperFileName ?? assessment.title}`}
-            />
-          ) : (
-            <p className="empty-cell">Bài này không có file đề.</p>
-          )}
-        </section>
-        <SubmissionPanel
-          data={data}
-          offset={offset}
-          back={back}
-          reload={reload}
-          onChange={(next) => setData({ ...data, submission: next })}
-        />
-      </div>
+      fileArea(false)
     );
 
   if (exam && proctor && (proctor.status === 'active' || proctor.status === 'locked'))
@@ -275,12 +289,17 @@ function SubmissionPanel({
   back,
   reload,
   onChange,
+  embedded = false,
 }: {
   data: StudentAssessment;
   offset: number;
   back: string;
   reload: () => void;
   onChange: (submission: Submission) => void;
+  /**
+   * Phần nộp file của bài tổng hợp: chỉ thêm/xóa file; đồng hồ, nút nộp và điểm là của cả bài (MixedPanel).
+   */
+  embedded?: boolean;
 }) {
   const router = useRouter();
   const { assessment, submission } = data;
@@ -291,7 +310,11 @@ function SubmissionPanel({
   const [confirm, setConfirm] = useState<ConfirmRequest | null>(null);
   const clearFlash = useCallback(() => setFlash(null), []);
   // Hết giờ thì tải lại: server khóa bài làm và tính các file đã tải là bài nộp
-  const left = useRemaining(submission.editable ? assessment.closesAt : null, offset, reload);
+  const left = useRemaining(
+    submission.editable && !embedded ? assessment.closesAt : null,
+    offset,
+    reload,
+  );
   const room = MAX_SUBMISSION_FILES - submission.files.length;
   const pending = scorePending(assessment, Date.parse(data.serverTime));
 
@@ -384,7 +407,7 @@ function SubmissionPanel({
           Còn lại <b>{formatDuration(left)}</b>
         </p>
       )}
-      {submission.grade && (
+      {submission.grade && !embedded && (
         <div className="grade-box">
           <b>
             {formatScore(submission.grade.score)} <small>/ {MAX_SCORE} điểm</small>
@@ -396,8 +419,8 @@ function SubmissionPanel({
           </p>
         </div>
       )}
-      <SubmissionNote submission={submission} closesAt={assessment.closesAt} />
-      {!submission.editable && !submission.grade && pending && (
+      {!embedded && <SubmissionNote submission={submission} closesAt={assessment.closesAt} />}
+      {!submission.editable && !submission.grade && pending && !embedded && (
         <p className="score-pending">
           <Icon name="clock" size={12} />
           {pending.at
@@ -433,9 +456,30 @@ function SubmissionPanel({
           ))}
         </ul>
       ) : (
-        submission.editable && <p className="admin-hint">Chưa có file bài làm.</p>
+        <p className="admin-hint">
+          {submission.editable || !embedded ? 'Chưa có file bài làm.' : 'Bạn không nộp file nào.'}
+        </p>
       )}
-      {submission.editable ? (
+      {embedded ? (
+        submission.editable && (
+          <label className="form-field mt-3.5">
+            Chọn file bài làm (PDF, DOCX, PPTX, ZIP · tối đa 20 MB/file, {MAX_SUBMISSION_FILES}{' '}
+            file)
+            <DropZone className="drop-box" hint="Hoặc kéo thả file vào đây">
+              <input
+                ref={inputRef}
+                className="input file-input"
+                type="file"
+                accept=".pdf,.docx,.pptx,.zip"
+                multiple
+                disabled={!!busy || room <= 0}
+                onChange={(event) => void upload(event.target.files)}
+              />
+            </DropZone>
+            {busy && <small role="status">{busy}</small>}
+          </label>
+        )
+      ) : submission.editable ? (
         <>
           <label className="form-field mt-3.5">
             Chọn file bài làm (PDF, DOCX, PPTX, ZIP · tối đa 20 MB/file, {MAX_SUBMISSION_FILES}{' '}
